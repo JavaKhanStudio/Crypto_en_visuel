@@ -17,7 +17,7 @@ function troop(world, team) {
 const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1);
 
 // Returns a promise that resolves when the march (and its outcome) is over.
-export function march(world, teams, win, { duration = 3.2 } = {}) {
+export function march(world, teams, win, { duration = 3.2, onHit } = {}) {
   const path = world.road.path, troops = teams.map(t => troop(world, t));
   const len = path.getLength();
   return new Promise(res => {
@@ -38,14 +38,16 @@ export function march(world, teams, win, { duration = 3.2 } = {}) {
         if (t > duration && !win) tr.mat.opacity = Math.max(0, 1 - (t - duration));
       }
       if (t > duration && !tick.hit) {
-        tick.hit = true;
-        const gate = new THREE.Vector3(CITY.x, 3, CITY.z + 20);
+        tick.hit = true; onHit?.();
         if (win) {
           fx.fireworks(new THREE.Vector3(CITY.x, 0, CITY.z), [0xffd27a, 0x4da3ff, 0xffffff, 0xffc24d], 14);
           const f = world.city.userData.flag; tick.flag = f;
         } else {
-          fx.ring(gate, COLORS.e, { radius: 16, life: 1.6 });
-          fx.burst(gate, COLORS.e, { count: 160, speed: 14, life: 1.8, size: .8 });
+          for (const tr of troops) {   // the lone army is crushed where it stands
+            const front = path.getPointAt(tr.team === 'a' ? .42 : .58);
+            fx.ring(front, COLORS.e, { radius: 14, life: 1.6 });
+            fx.burst(front.setY(front.y + 2), COLORS.e, { count: 160, speed: 14, life: 1.8, size: .8 });
+          }
         }
       }
       if (tick.flag) tick.flag.rotation.z = Math.min(Math.PI / 2, (t - duration) * 1.2); // Eve's flag falls

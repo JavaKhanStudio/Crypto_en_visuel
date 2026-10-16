@@ -50,15 +50,16 @@ const towers = {
       const k = this.blocks.length + 1, team = k % 2 ? 'b' : 'a', base = team === 'a' ? CASTLE_A : CASTLE_B;
       const height = Math.ceil(k / 2);
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.5, 3.2), new THREE.MeshStandardMaterial({ color: COLORS[team], emissive: COLORS[team], emissiveIntensity: 1.2, transparent: true, opacity: .9 }));
-      mesh.position.set(base.x, base.y + 30 + height * 2.1, base.z);
+      mesh.position.set(base.x, base.y + 14 + height * 2.1, base.z - 17);   // a column behind the castle
       mesh.scale.setScalar(.01);
-      this.scene.add(mesh); this.blocks.push({ mesh, born: performance.now() });
+      mesh.visible = !this.hidden; this.scene.add(mesh); this.blocks.push({ mesh, born: performance.now() });
     }
     // the "?" floats over whoever would receive the next message
     const next = (n + 1) % 2 ? 'b' : 'a', base = next === 'a' ? CASTLE_A : CASTLE_B;
-    this.qTarget = new THREE.Vector3(base.x, base.y + 30 + (Math.ceil((n + 1) / 2)) * 2.1 + .4, base.z);
+    this.qTarget = new THREE.Vector3(base.x, base.y + 14 + (Math.ceil((n + 1) / 2)) * 2.1 + .6, base.z - 17);
     if (!this.q.position.lengthSq()) this.q.position.copy(this.qTarget);
   },
+  setVisible(v) { this.q.visible = v; for (const b of this.blocks) b.mesh.visible = v; this.hidden = !v; },
   update(dt, time) {
     for (const b of this.blocks) {
       const age = (performance.now() - b.born) / 1000, s = age < .6 ? 1 - Math.pow(1 - age / .6, 3) * Math.cos(age * 12) : 1;

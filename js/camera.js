@@ -14,7 +14,7 @@ export const SHOTS = {
   castleB:   { pos: v(36, 34, 48), target: v(CASTLE_B.x, CASTLE_B.y + 7, 0) },
   city:      { pos: v(18, 34, 62), target: v(0, 8, 14) },
   valley:    { pos: v(0, 22, 70), target: v(0, 4, 18) },
-  both:      { pos: v(0, 60, 115), target: v(0, 6, 4) },
+  both:      { pos: v(12, 70, 136), target: v(12, 6, 2) },
   gateB:     { pos: v(52, 16, 18), target: v(CASTLE_B.x - 8, CASTLE_B.y + 3, 0) },
   high:      { pos: v(0, 190, 30), target: v(0, 0, 0) },
 };

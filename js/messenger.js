@@ -100,7 +100,7 @@ export class Messenger {
       this.u += this.dir * this.speed * dt / this.len;
       const crossed = this.fate === 'capture' && (this.dir > 0 ? prev < this.captureAt && this.u >= this.captureAt : prev > this.captureAt && this.u <= this.captureAt);
       if (crossed) return this.capture();
-      if (this.fate === 'reject' && Math.abs(this.u - this.end) < .035) return this.reject();
+      if (this.fate === 'reject' && (this.dir > 0 ? this.u >= .965 : this.u <= .035)) return this.reject();
       if ((this.dir > 0 && this.u >= 1) || (this.dir < 0 && this.u <= 0)) return this.arrive();
       this.obj.position.copy(this.path.getPointAt(Math.min(1, Math.max(0, this.u))));
       this.face(this.path.getTangentAt(Math.min(1, Math.max(0, this.u))).multiplyScalar(this.dir));

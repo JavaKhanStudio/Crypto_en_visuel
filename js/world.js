@@ -308,8 +308,8 @@ export function buildWorld(scene) {
   return world;
 }
 
-const nightTop = new THREE.Color(0x0a0f2c), nightHor = new THREE.Color(0xd9734f), dayTop = new THREE.Color(0x3d7fd6), dayHor = new THREE.Color(0xffc48a);
-const nightFog = new THREE.Color(0x3a3150), dayFog = new THREE.Color(0xc9b7a4);
+const nightTop = new THREE.Color(0x0a0f2c), nightHor = new THREE.Color(0xd9734f), dayTop = new THREE.Color(0x2f6cc0), dayHor = new THREE.Color(0xff9a5c);
+const nightFog = new THREE.Color(0x3a3150), dayFog = new THREE.Color(0x8d93a8);
 function setDawn(w, v) {
   w.dawn = v;
   const u = w.sky.userData.uniforms;
@@ -317,9 +317,9 @@ function setDawn(w, v) {
   w.sky.userData.stars.material.opacity = .85 * (1 - v);
   w.scene.fog.color.copy(nightFog).lerp(dayFog, v);
   w.moonLight.color.set(0xbfd0ff).lerp(new THREE.Color(0xffd7a8), v);
-  w.moonLight.intensity = 2.4 + v * 1.4;
+  w.moonLight.intensity = 2.4 + v * .5;
   w.moonLight.position.set(-50 + v * 110, 130 - v * 60, 90 - v * 20);
-  w.hemi.intensity = 1.5 + v * .6;
+  w.hemi.intensity = 1.5 + v * .2;
 }
 
 function update(w, dt, t) {

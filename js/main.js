@@ -95,9 +95,8 @@ async function dawn(k) {
     await new Promise(res => { let v = 0; const tick = dt => { v = Math.min(1, v + dt / 2.4); world.setDawn(v); if (v >= 1) { tickers.delete(tick); res(); } }; tickers.add(tick); });
   } else await wait(800);
   const teams = { both: ['a', 'b'], a: ['a'], b: ['b'], forged: ['b'], none: [] }[outcome];
-  if (teams.length) await march(world, teams, outcome === 'both');
-  toast(t('dawn.' + outcome), 5000);
-  (outcome === 'both' ? sfx.win : outcome === 'none' ? () => {} : sfx.lose)();
+  const verdict = () => { toast(t('dawn.' + outcome), 5000); (outcome === 'both' ? sfx.win : outcome === 'none' ? () => {} : sfx.lose)(); };
+  if (teams.length) await march(world, teams, outcome === 'both', { onHit: verdict }); else verdict();
   return outcome;
 }
 
@@ -116,6 +115,7 @@ function setMode(m, opts = {}) {
   mode = m;
   for (const [k, el] of Object.entries(panels)) el.classList.toggle('hidden', k !== m);
   ladderEl.classList.toggle('hidden', m === 'quiz');
+  ladder3d.setVisible(m !== 'quiz');
   document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
   rig.setOrbit(0); story.token++;   // leaving the story cancels its running action
   if (m === 'story') story.go(opts.step ?? story.i);
