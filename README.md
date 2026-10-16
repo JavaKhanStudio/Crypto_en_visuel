@@ -1,8 +1,8 @@
 # Le problème des deux généraux — démo 3D
 
-Démo interactive pour le cours **Cryptographie** de Simon Bédard : deux armées, Alice et Bob,
-doivent attaquer la ville d'Eve au même moment, et ne peuvent se parler que par des messagers
-qu'Eve peut capturer. La démo montre pourquoi aucun nombre fini d'accusés de réception ne donne
+Démo interactive pour le cours **Cryptographie** de Simon Bédard : deux armées, Aldebert et Baudouin,
+doivent attaquer la ville d'Enguerrand au même moment, et ne peuvent se parler que par des messagers
+qu'Enguerrand peut capturer. La démo montre pourquoi aucun nombre fini d'accusés de réception ne donne
 la certitude, ce que fait TCP à la place, et ce que la cryptographie (HMAC) règle ou ne règle pas.
 
 Interactive demo of the Two Generals' Problem, French first, English with `?lang=en`.
@@ -22,11 +22,11 @@ puis http://localhost:8793/.
 
 | Mode | Contenu |
 |---|---|
-| **Histoire** | 17 étapes en 6 chapitres : le problème, un messager, l'accusé, la régression infinie (avec la preuve par l'absurde), le monde réel (rafales, TCP, l'aube), et la crypto (faux messager d'Eve, HMAC, ce que le HMAC ne fait pas). Flèches ou télécommande de présentation pour avancer. |
+| **Histoire** | 17 étapes en 6 chapitres : le problème, un messager, l'accusé, la régression infinie (avec la preuve par l'absurde), le monde réel (rafales, TCP, l'aube), et la crypto (faux messager d'Enguerrand, HMAC, ce que le HMAC ne fait pas). Flèches ou télécommande de présentation pour avancer. |
 | **Bac à sable** | Envoyer des messagers dans les deux sens, protocole automatique, rafale de 10, probabilité de capture, « le prochain est capturé », faux messager, HMAC, règle de l'aube. |
 | **Quiz** | 8 questions (FR/EN) avec explication de chaque réponse. |
 
-Le panneau **Qui sait quoi ?** tient l'échelle de connaissance (« Alice sait que Bob sait que… ») ;
+Le panneau **Qui sait quoi ?** tient l'échelle de connaissance (« Aldebert sait que Baudouin sait que… ») ;
 au-dessus des châteaux, une colonne de blocs lumineux la double en 3D, et un « ? » flotte là où
 le prochain messager devrait arriver.
 
@@ -38,7 +38,7 @@ Liens directs : `#story=5`, `#sandbox`, `#quiz` ; `?lang=en`.
 index.html          la page, les panneaux
 css/style.css
 js/main.js          rendu, bloom, boucle, modes
-js/world.js         terrain, châteaux, ville d'Eve, route, ciel, aube
+js/world.js         terrain, châteaux, ville d'Enguerrand, route, ciel, aube
 js/camera.js        plans nommés, vols, poursuite d'un messager
 js/messenger.js     un cavalier : livré, capturé, ou refusé (HMAC)
 js/sim.js           le protocole : numéros de message, qui sait quoi, l'aube
