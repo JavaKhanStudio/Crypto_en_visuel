@@ -45,7 +45,7 @@ export class Bubbles {
   }
 
   update(dt) {
-    const w = innerWidth, h = innerHeight;
+    const w = innerWidth, h = innerHeight, top = document.getElementById('topbar').getBoundingClientRect().bottom + 8;
     for (const it of this.items.values()) {
       if (it.shown < it.full.length) {
         it.shown = Math.min(it.full.length, it.shown + dt * 70);
@@ -58,7 +58,7 @@ export class Bubbles {
       const behind = tmp.z > 1;
       const x = (tmp.x * .5 + .5) * w, y = (-tmp.y * .5 + .5) * h;
       const bw = it.el.offsetWidth, bh = it.el.offsetHeight;
-      const cx = Math.min(w - bw - 8, Math.max(8, x - bw / 2)), cy = Math.min(h - bh - 8, Math.max(80, y - bh - 14));
+      const cx = Math.min(w - bw - 8, Math.max(8, x - bw / 2)), cy = Math.min(h - bh - 8, Math.max(top, y - bh - 14));
       it.el.style.transform = `translate(${cx}px, ${cy}px)`;
       it.el.style.visibility = behind ? 'hidden' : 'visible';
     }

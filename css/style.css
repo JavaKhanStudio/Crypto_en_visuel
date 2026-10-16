@@ -146,7 +146,7 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 900px) {
-  .brand p, .ladder { display: none; }
+  .brand p, .ladder, .chapters { display: none; }
   .panel.side { top: auto; bottom: 14px; left: 14px; right: 14px; width: auto; max-height: 45%; }
   #topbar { flex-wrap: wrap; gap: 8px; }
   .brand h1 { font-size: 16px; }
