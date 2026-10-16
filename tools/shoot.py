@@ -5,7 +5,7 @@ Serve the repo first:  python3 -m http.server 8793   (from the repo root)
 
     tools/shoot.py out/home                       # -> out/home.png, first screen
     tools/shoot.py out/s5 --hash '#story=5' --wait 6000
-    tools/shoot.py out/sb --hash '#sandbox' --eval "demo.sendFrom('a')" --wait 4000
+    tools/shoot.py out/sb --hash '#sandbox' --eval "demo.sim.send('a')" --wait 4000
 
 --eval runs JS after load (window.demo is the debug handle). Prints page errors.
 """
