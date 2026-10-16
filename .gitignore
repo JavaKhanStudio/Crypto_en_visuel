@@ -1,0 +1,8 @@
+__pycache__/
+out/
+.claude/skills/board
+.claude/skills/digest-contexts
+.claude/skills/find-doctrine
+.claude/skills/start-worker
+.claude/skills/write-context-pack
+.claude/skills/write-lexicon
