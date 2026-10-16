@@ -9,7 +9,7 @@ const v = (x, y, z) => new THREE.Vector3(x, y, z);
 // Named shots: where the camera sits, what it looks at.
 export const SHOTS = {
   overview:  { pos: v(0, 95, 150), target: v(0, 4, 0) },
-  intro:     { pos: v(-150, 70, 120), target: v(0, 8, 0) },
+  intro:     { pos: v(-78, 46, 74), target: v(8, 4, -4) },
   castleA:   { pos: v(-36, 34, 48), target: v(CASTLE_A.x, CASTLE_A.y + 7, 0) },
   castleB:   { pos: v(36, 34, 48), target: v(CASTLE_B.x, CASTLE_B.y + 7, 0) },
   city:      { pos: v(18, 34, 62), target: v(0, 8, 14) },
@@ -70,9 +70,9 @@ export class CameraRig {
     if (this.follow) {
       // behind the rider, a little to the valley side, so the city stays in frame
       const p = this.follow.obj.position, dir = this.follow.obj.userData.dir || v(1, 0, 0);
-      const want = p.clone().addScaledVector(dir, -13).add(v(0, 8, 9));
+      const want = p.clone().addScaledVector(dir, -20).add(v(0, 13, 15));
       this.camera.position.lerp(want, 1 - Math.pow(.02, dt));
-      c.target.lerp(p.clone().add(v(0, 2, 0)), 1 - Math.pow(.005, dt));
+      c.target.lerp(p.clone().addScaledVector(dir, 8).add(v(0, 2, 0)), 1 - Math.pow(.005, dt));
       this.camera.lookAt(c.target);
       return;
     }
