@@ -227,6 +227,7 @@ BEAM.axis = new THREE.Vector3(0, -1, 0).applyAxisAngle(new THREE.Vector3(1, 0, 0
 const _apex = new THREE.Vector3(), _axis = new THREE.Vector3(), _v = new THREE.Vector3();
 function inBeam(w, p) {
   const pivot = w.city.userData.pivot;
+  if (!pivot.visible) return false;
   pivot.updateWorldMatrix(true, false);
   _apex.setFromMatrixPosition(pivot.matrixWorld);
   _axis.copy(BEAM.axis).transformDirection(pivot.matrixWorld);
@@ -321,6 +322,7 @@ export function buildWorld(scene) {
   world.update = (dt, t) => update(world, dt, t);
   world.setDawn = v => setDawn(world, v);
   world.inBeam = p => inBeam(world, p);
+  world.setBeam = on => { city.userData.pivot.visible = on; };
   return world;
 }
 

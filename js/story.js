@@ -46,7 +46,7 @@ export const STEPS = [
       x.say('n', t('m.burstResult', { ok }));
     } },
   { id: 's12', ch: 4, shot: 'both', orbit: .03, state: S(0, 1), say: [['n', null, 'tcp']] },
-  { id: 's13', ch: 4, shot: 'both', state: S(2, 1), go: async (x) => {
+  { id: 's13', ch: 4, shot: 'both', state: S(2, 1), noBeam: true, go: async (x) => {
       x.apply(); await x.dawn(1);
     }, go2: async (x) => {
       x.apply(S(0, 1));
@@ -80,6 +80,7 @@ export class Story {
     this.i = i; const tok = ++this.token, step = STEPS[i], c = this.ctx;
     location.hash = 'story=' + (i + 1);
     c.bubbles.clear(); c.resetWorld();
+    if (step.noBeam) c.world.setBeam(false);   // dawn: Étienne's searchlight is off
     this.applyState(step.state);
     c.rig.setOrbit(0);
     c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
@@ -137,7 +138,7 @@ export class Story {
     c.bubbles.clear(); c.rig.setOrbit(0);
     const x = {
       sim: c.sim, rig: c.rig, live,
-      apply: st => { if (live()) { c.resetWorld(); this.applyState(st || STEPS[this.i].state); } },
+      apply: st => { if (live()) { c.resetWorld(); if (STEPS[this.i].noBeam) c.world.setBeam(false); this.applyState(st || STEPS[this.i].state); } },
       fly: shot => live() ? c.rig.fly(shot) : null,
       say: (who, text) => live() && this.say(who, null, text),
       ride: async (from, opts) => { const m = c.sim.send(from, opts); c.rig.chase(m.obj); const r = await m.done; await wait(600); return r; },

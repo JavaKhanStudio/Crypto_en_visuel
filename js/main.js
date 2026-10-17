@@ -15,7 +15,7 @@ import { renderLadder, ladder3d } from './ladder.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
 import { Quiz } from './quiz.js';
-import { march, resetCityFlag } from './army.js';
+import { march, resetCityFlag, clearArmies } from './army.js';
 import { sfx } from './sound.js';
 import { t, setLang, applyStatic, onLang } from './i18n.js';
 
@@ -84,7 +84,7 @@ const sim = new Sim(world, {
   },
 });
 
-function resetWorld() { world.setDawn(0); resetCityFlag(world); bubbles.clear(); }
+function resetWorld() { world.setDawn(0); resetCityFlag(world); clearArmies(world); world.setBeam(true); bubbles.clear(); }
 
 // Sunrise (or, after a forged order, midnight) and the armies that act on it.
 async function dawn(k) {

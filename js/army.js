@@ -1,5 +1,6 @@
 // Dawn: the armies that attack march down the road towards Eve's city.
-// Together they take it; alone, the army is crushed under the walls.
+// Together they take it and stay camped under the walls until the world is reset;
+// alone, the army is crushed under the walls.
 import * as THREE from 'three';
 import { COLORS, CITY } from './world.js';
 import * as fx from './fx.js';
@@ -14,14 +15,17 @@ function troop(world, team) {
   return { im, mat, offs, team };
 }
 
+const live = new Set();   // marches still on the map: { tick, troops }
+
 const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1);
 
 // Returns a promise that resolves when the march (and its outcome) is over.
 export function march(world, teams, win, { duration = 3.2, onHit } = {}) {
+  clearArmies(world);
   const path = world.road.path, troops = teams.map(t => troop(world, t));
   const len = path.getLength();
   return new Promise(res => {
-    let t = 0;
+    let t = 0, done = false;
     const tick = (dt, time) => {
       t += dt; const k = Math.min(1, t / duration);
       for (const tr of troops) {
@@ -51,15 +55,19 @@ export function march(world, teams, win, { duration = 3.2, onHit } = {}) {
         }
       }
       if (tick.flag) tick.flag.rotation.z = Math.min(Math.PI / 2, (t - duration) * 1.2); // Eve's flag falls
-      if (t > duration + 2.6) {
-        world.tickers.delete(tick);
-        for (const tr of troops) world.scene.remove(tr.im);
-        res();
+      if (t > duration + 2.6 && !done) {
+        done = true; res();
+        if (!win) clearArmies(world);   // the winners keep standing (and bobbing) at the walls
       }
     };
-    world.tickers.add(tick);
+    world.tickers.add(tick); live.add({ tick, troops });
   });
 }
 const easeOut = k => 1 - Math.pow(1 - k, 2);
+
+export function clearArmies(world) {
+  for (const m of live) { world.tickers.delete(m.tick); for (const tr of m.troops) world.scene.remove(tr.im); }
+  live.clear();
+}
 
 export function resetCityFlag(world) { world.city.userData.flag.rotation.z = 0; }
