@@ -1,4 +1,4 @@
-// The guided story: 17 steps in 6 chapters. Each step sets the protocol to the
+// The guided story: 16 steps in 6 chapters. Each step sets the protocol to the
 // state the story has reached (so Back, Next and the chapter chips always land
 // somewhere consistent), flies the camera, pins its bubbles, and offers buttons.
 import * as THREE from 'three';
@@ -36,11 +36,6 @@ export const STEPS = [
       await x.sim.auto(4, ['deliver', 'deliver', 'deliver', 'deliver']);
       if (!x.live()) return;
       await x.fly('both'); x.say('n');
-    } },
-  { id: 's9', ch: 3, shot: 'both', state: S(2, 1), go: async (x) => {
-      x.apply(); await x.sim.auto(1, ['capture']);
-      if (!x.live()) return;
-      await x.fly('castleA');
     } },
   { id: 's10', ch: 3, shot: 'high', orbit: .05, state: S(2, 1), say: ['n'] },
   { id: 's11', ch: 4, shot: 'valley', state: S(0, 0, { p: .5 }), go: async (x) => {
