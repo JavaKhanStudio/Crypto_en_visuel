@@ -48,6 +48,8 @@ button.icon { padding: .4em .6em; }
   border: 1px solid var(--edge); border-radius: 16px; backdrop-filter: blur(14px); }
 .brand .crest { font-size: 28px; filter: drop-shadow(0 0 8px rgba(255,194,77,.6)); }
 .brand .series { display: block; margin-bottom: 2px; color: var(--b); font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+.brand a.series { text-decoration: none; }
+.brand a.series:hover { text-decoration: underline; }
 .brand h1 { font: 600 20px/1.1 var(--serif); margin: 0; letter-spacing: .02em; }
 .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 #modes, #lang { display: flex; gap: 6px; padding: 6px; background: var(--glass); border: 1px solid var(--edge);

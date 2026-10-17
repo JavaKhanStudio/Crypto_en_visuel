@@ -3,7 +3,8 @@
 
 Serve the repo first:  python3 -m http.server 8793   (from the repo root)
 
-    tools/shoot.py out/home                       # -> out/home.png, first screen
+    tools/shoot.py out/dg                         # -> out/dg.png, Two Generals' first screen
+    tools/shoot.py out/home --page ''             # the series home page
     tools/shoot.py out/s5 --hash '#story=5' --wait 6000
     tools/shoot.py out/sb --hash '#sandbox' --eval "demo.sim.send('a')" --wait 4000
 
@@ -14,7 +15,8 @@ from playwright.sync_api import sync_playwright
 
 ap = argparse.ArgumentParser()
 ap.add_argument("out")
-ap.add_argument("--base", default="http://localhost:8793/index.html")
+ap.add_argument("--base", default="http://localhost:8793/")
+ap.add_argument("--page", default="deux-generaux/", help="the episode folder; '' for the home page")
 ap.add_argument("--hash", default="")
 ap.add_argument("--query", default="")
 ap.add_argument("--size", default="1440x860")
@@ -28,7 +30,7 @@ with sync_playwright() as p:
     errors, logs = [], []
     pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.on("console", lambda m: logs.append(f"{m.type}: {m.text}") if m.type in ("error", "warning") else None)
-    pg.goto(a.base + a.query + a.hash, wait_until="load")
+    pg.goto(a.base + a.page + a.query + a.hash, wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
     for js in a.eval:
         pg.evaluate(js)

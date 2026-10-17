@@ -13,7 +13,7 @@ with sync_playwright() as p:
         pg = b.new_page(viewport={"width": 1440, "height": 860})
         errors = []
         pg.on("pageerror", lambda e: errors.append(str(e)))
-        pg.goto(f"http://localhost:8793/index.html?instant=1#story={step}", wait_until="load")
+        pg.goto(f"http://localhost:8793/deux-generaux/index.html?instant=1#story={step}", wait_until="load")
         pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
         pg.evaluate("""() => { window.__ev = []; const h = demo.sim.hooks, f = h.onMessenger;
           h.onMessenger = (m, ev) => { if (ev !== 'sent') window.__ev.push([ev, m.u]); f(m, ev); }; }""")

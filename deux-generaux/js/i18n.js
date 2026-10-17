@@ -198,6 +198,7 @@ export function applyStatic() {
   document.title = t('tab');
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   for (const b of document.querySelectorAll('#lang button')) b.classList.toggle('active', b.dataset.lang === lang);
+  for (const a of document.querySelectorAll('a.series')) a.href = '../?lang=' + lang;   // the series home, same language
 }
 export function setLang(l) {
   lang = l; localStorage.setItem('dg-lang', l);

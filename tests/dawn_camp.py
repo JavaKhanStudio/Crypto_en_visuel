@@ -12,7 +12,7 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 860})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
-    pg.goto("http://localhost:8793/index.html?instant=1#story=12", wait_until="load")
+    pg.goto("http://localhost:8793/deux-generaux/index.html?instant=1#story=12", wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
     beam_step = pg.evaluate(BEAM)
     pg.click("#step-actions .primary")

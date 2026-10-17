@@ -30,7 +30,7 @@ opts = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
 with sync_playwright() as p:
     b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
     pg = b.new_page()
-    pg.goto("http://localhost:8793/index.html#story=4", wait_until="load")
+    pg.goto("http://localhost:8793/deux-generaux/index.html#story=4", wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
     print(opts or "as shipped", {k: f"{v:.0%}" for k, v in pg.evaluate(JS, opts).items()})
     b.close()

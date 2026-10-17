@@ -16,7 +16,7 @@ JS = """() => {
 with sync_playwright() as p:
     b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
     pg = b.new_page()
-    pg.goto("http://localhost:8793/index.html#story=4", wait_until="load")
+    pg.goto("http://localhost:8793/deux-generaux/index.html#story=4", wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
     r = pg.evaluate(JS)
     print("".join("#" if x > 0 else "." for x in r))

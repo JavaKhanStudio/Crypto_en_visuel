@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Asset lab (r29): the riders and a guard alone on a turntable, animated exactly as
-     in the demo (gallop() from js/messenger.js). Serve the repo root, open
+     in the demo (gallop() from deux-generaux/js/messenger.js). Serve the repo root, open
      tools/assets.html; ?freeze=<seconds> stops the clock at that time, ?yaw=<rad>
      fixes the turntable, ?only=<name> shows one asset. Headless: tools/shoot_assets.py. -->
 <html><head><meta charset="utf-8"><title>Asset lab</title>
@@ -9,7 +9,7 @@
 </head><body><div id="l"></div>
 <script type="module">
 import * as THREE from 'three';
-import { buildRider, guard, gallop } from '../js/messenger.js';
+import { buildRider, guard, gallop } from '../deux-generaux/js/messenger.js';
 const q = new URLSearchParams(location.search);
 const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);
