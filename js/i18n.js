@@ -2,6 +2,8 @@
 // t('key', {vars}) reads the current language; setLang() re-renders [data-i18n].
 
 const fr = {
+  series: 'Crypto en visuel',
+  tab: 'Deux généraux — Crypto en visuel',
   title: 'Le problème des deux généraux',
   subtitle: "Peut-on se mettre d'accord quand chaque message peut se perdre ?",
   loading: 'Construction des châteaux…',
@@ -92,6 +94,8 @@ const fr = {
 };
 
 const en = {
+  series: 'Crypto, Visualized',
+  tab: 'Two Generals — Crypto, Visualized',
   title: 'The Two Generals’ Problem',
   subtitle: 'Can two parties agree when any message may be lost?',
   loading: 'Building the castles…',
@@ -189,7 +193,7 @@ export function t(key, vars = {}) {
 
 export function applyStatic() {
   document.documentElement.lang = lang;
-  document.title = t('title');
+  document.title = t('tab');
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   for (const b of document.querySelectorAll('#lang button')) b.classList.toggle('active', b.dataset.lang === lang);
 }

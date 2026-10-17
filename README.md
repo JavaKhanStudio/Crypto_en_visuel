@@ -1,4 +1,7 @@
-# Le problème des deux généraux — démo 3D
+# Crypto en visuel — Le problème des deux généraux
+
+**Crypto en visuel** (*Crypto, Visualized*) : des notions de cryptographie racontées par de petites
+histoires en 3D. Premier épisode : le problème des deux généraux.
 
 Démo interactive pour le cours **Cryptographie** de Simon Bédard : deux armées, Arnaud et Bastien,
 doivent attaquer la ville d'Étienne au même moment, et ne peuvent se parler que par des messagers
