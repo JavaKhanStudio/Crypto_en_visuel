@@ -45,7 +45,12 @@ const M = {
   window: new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffb347, emissiveIntensity: 2.4 }),
   gate: new THREE.MeshStandardMaterial({ color: 0x1b120b, roughness: 1 }),
   roof: c => new THREE.MeshStandardMaterial({ color: c, roughness: .6, metalness: .1, flatShading: true }),
+  // Étienne's city: black basalt, blood-red windows
+  evilStone: new THREE.MeshStandardMaterial({ color: 0x3b3239, roughness: .85, flatShading: true }),
+  evilTrim: new THREE.MeshStandardMaterial({ color: 0x1c1519, roughness: .9, flatShading: true }),
+  evilWindow: new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff2a18, emissiveIntensity: 3 }),
 };
+const EVIL = { stone: M.evilStone, trim: M.evilTrim, win: M.evilWindow, spiky: true };
 
 // ---------- terrain ----------
 function buildTerrain() {
@@ -98,37 +103,39 @@ export function buildRoad() {
 }
 
 // ---------- building blocks ----------
-function merlons(group, count, placer, size = [.7, .9, .7]) {
-  const im = new THREE.InstancedMesh(new THREE.BoxGeometry(...size), M.stone, count);
+function merlons(group, count, placer, size = [.7, .9, .7], { stone = M.stone, spiky = false } = {}) {
+  const geo = spiky ? new THREE.ConeGeometry(size[0] * .55, size[1] * 1.8, 4) : new THREE.BoxGeometry(...size);
+  const im = new THREE.InstancedMesh(geo, stone, count);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1), p = new THREE.Vector3();
   for (let i = 0; i < count; i++) { const [x, y, z, ry] = placer(i); q.setFromEuler(new THREE.Euler(0, ry || 0, 0)); p.set(x, y, z); m.compose(p, q, s); im.setMatrixAt(i, m); }
   im.castShadow = true; group.add(im);
 }
 
-function tower(r, h, roofColor, { roof = true, windows = 2 } = {}) {
+function tower(r, h, roofColor, { roof = true, windows = 2, stone = M.stone, trim = M.darkStone, win = M.window, spiky = false } = {}) {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.08, h, 12), M.stone);
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.08, h, 12), stone);
   body.position.y = h / 2; body.castShadow = body.receiveShadow = true; g.add(body);
-  const ring = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.18, r * 1.18, .6, 12), M.darkStone);
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.18, r * 1.18, .6, 12), trim);
   ring.position.y = h; g.add(ring);
-  merlons(g, 10, i => { const a = i / 10 * Math.PI * 2; return [Math.cos(a) * r * 1.1, h + .75, Math.sin(a) * r * 1.1, -a]; }, [.6, .9, .5]);
+  merlons(g, 10, i => { const a = i / 10 * Math.PI * 2; return [Math.cos(a) * r * 1.1, h + .75, Math.sin(a) * r * 1.1, -a]; }, [.6, .9, .5], { stone: trim, spiky });
   if (roof) {
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(r * 1.35, h * .55, 12), M.roof(roofColor));
-    cone.position.y = h + 1.25 + h * .275; cone.castShadow = true; g.add(cone);
+    // spiky: a tall needle instead of a cone roof
+    const rh = spiky ? h * 1.1 : h * .55, cone = new THREE.Mesh(new THREE.ConeGeometry(r * (spiky ? 1.05 : 1.35), rh, spiky ? 6 : 12), M.roof(roofColor));
+    cone.position.y = h + 1.25 + rh / 2; cone.castShadow = true; g.add(cone);
   }
   for (let i = 0; i < windows; i++) {
-    const a = i / windows * Math.PI * 2 + .4, w = new THREE.Mesh(new THREE.BoxGeometry(.35, .7, .2), M.window);
+    const a = i / windows * Math.PI * 2 + .4, w = new THREE.Mesh(new THREE.BoxGeometry(.35, .7, .2), win);
     w.position.set(Math.cos(a) * r * 1.01, h * (.45 + .25 * (i % 2)), Math.sin(a) * r * 1.01); w.rotation.y = -a + Math.PI / 2; g.add(w);
   }
   return g;
 }
 
-function wall(len, h, t) {
+function wall(len, h, t, { stone = M.stone, trim = M.stone, spiky = false } = {}) {
   const g = new THREE.Group();
-  const b = new THREE.Mesh(new THREE.BoxGeometry(len, h, t), M.stone);
+  const b = new THREE.Mesh(new THREE.BoxGeometry(len, h, t), stone);
   b.position.y = h / 2; b.castShadow = b.receiveShadow = true; g.add(b);
   const n = Math.floor(len / 1.4);
-  merlons(g, n, i => [-len / 2 + .7 + i * (len - 1.4) / (n - 1), h + .45, 0]);
+  merlons(g, n, i => [-len / 2 + .7 + i * (len - 1.4) / (n - 1), h + .45, 0], undefined, { stone: trim, spiky });
   return g;
 }
 
@@ -181,17 +188,17 @@ function buildCity() {
   for (let i = 0; i < segs; i++) {
     const a0 = i / segs * Math.PI * 2, a1 = (i + 1) / segs * Math.PI * 2, am = (a0 + a1) / 2;
     if (Math.abs(am - Math.PI / 2) < .1) continue; // gate gap, facing the road (+z)
-    const len = 2 * R * Math.sin(Math.PI / segs) + .2, w = wall(len, 4.5, 1.2);
+    const len = 2 * R * Math.sin(Math.PI / segs) + .2, w = wall(len, 4.5, 1.2, EVIL);
     w.position.set(Math.cos(am) * R, 0, Math.sin(am) * R); w.rotation.y = -am + Math.PI / 2; g.add(w);
   }
   for (let i = 0; i < 7; i++) {
-    const a = i / 7 * Math.PI * 2 + Math.PI / 2 + Math.PI / 7, t = tower(1.9, 8.5, COLORS.e, { windows: 1 });
+    const a = i / 7 * Math.PI * 2 + Math.PI / 2 + Math.PI / 7, t = tower(1.9, 8.5, 0x3a0a10, { windows: 1, ...EVIL });
     t.position.set(Math.cos(a) * R, 0, Math.sin(a) * R); g.add(t);
   }
-  for (const s of [-1, 1]) { const t = tower(1.5, 7.5, COLORS.e, { windows: 1 }); t.position.set(s * 2.6, 0, R); g.add(t); }
+  for (const s of [-1, 1]) { const t = tower(1.5, 7.5, 0x3a0a10, { windows: 1, ...EVIL }); t.position.set(s * 2.6, 0, R); g.add(t); }
   // houses
-  const n = 70, houses = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0xb8a27f, flatShading: true, roughness: .9 }), n);
-  const roofs = new THREE.InstancedMesh(new THREE.ConeGeometry(.78, 1, 4), M.roof(0x7a2f2a), n);
+  const n = 70, houses = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x5e5052, flatShading: true, roughness: .9 }), n);
+  const roofs = new THREE.InstancedMesh(new THREE.ConeGeometry(.78, 1, 4), M.roof(0x3a1418), n);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
   let placed = 0, seed = 1;
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -206,35 +213,84 @@ function buildCity() {
     placed++;
   }
   houses.castShadow = houses.receiveShadow = roofs.castShadow = true; g.add(houses, roofs);
-  // the watchtower and its brazier
-  const wt = tower(2.6, 22, 0x2a0d12, { roof: false, windows: 4 }); g.add(wt);
-  const brazier = new THREE.Mesh(new THREE.SphereGeometry(1.3, 16, 12), new THREE.MeshBasicMaterial({ color: 0xff5530 }));
-  brazier.position.y = 24; g.add(brazier);
-  const fireLight = new THREE.PointLight(0xff4422, 60, 70, 1.6); fireLight.position.y = 25; g.add(fireLight);
-  // a searchlight sweeping the valley
-  const beamGeo = new THREE.ConeGeometry(BEAM.radius, BEAM.len, 32, 1, true); beamGeo.translate(0, -BEAM.len / 2, 0); beamGeo.rotateX(BEAM.tilt);
-  const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ color: 0xff4455, transparent: true, opacity: .09, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-  const pivot = new THREE.Group(); pivot.position.y = 23; pivot.add(beam); g.add(pivot);
-  const f = flag(COLORS.e, 5, 3); f.position.y = 24; g.add(f);
+  // the watchtower: two black horns, and between them the Eye
+  const wt = tower(2.6, 22, 0x2a0d12, { roof: false, windows: 4, ...EVIL }); g.add(wt);
+  for (const s of [-1, 1]) {
+    const horn = new THREE.Mesh(new THREE.ConeGeometry(.75, 7.5, 6), M.evilTrim);
+    horn.position.set(s * 2.1, 26, 0); horn.rotation.z = s * -.32; horn.castShadow = true; g.add(horn);
+  }
+  const eye = buildEye(); eye.position.y = BEAM.eyeY; g.add(eye);
+  const fireLight = new THREE.PointLight(0xff4422, 60, 70, 1.6); fireLight.position.y = BEAM.eyeY; g.add(fireLight);
+  // the Eye's gaze: a cone from the pupil down to the ground, and the lit patch where it lands.
+  // pivot.rotation.y is the sweep angle; update() aims the cone and lays the patch on the terrain.
+  const beamGeo = new THREE.ConeGeometry(1, 1, 32, 1, true); beamGeo.translate(0, -.5, 0); beamGeo.rotateX(-Math.PI / 2);   // apex at 0, base at z = 1
+  const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ color: 0xff4455, transparent: true, opacity: .11, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  const pivot = new THREE.Group(); pivot.position.y = BEAM.eyeY; pivot.add(beam); g.add(pivot);
+  const spotGeo = new THREE.CircleGeometry(BEAM.radius, 40, 0, Math.PI * 2); spotGeo.rotateX(-Math.PI / 2);
+  const spot = new THREE.Mesh(spotGeo, new THREE.MeshBasicMaterial({ color: 0xff3a30, transparent: true, opacity: .45, blending: THREE.AdditiveBlending, depthWrite: false }));
+  spot.userData.base = Float32Array.from(spotGeo.attributes.position.array); spot.renderOrder = 2; g.add(spot);
+  const f = flag(COLORS.e, 5, 3); f.position.set(0, 4.5, R); g.add(f);   // over the gate, facing the road
   g.position.copy(CITY);
-  g.userData = { brazier, fireLight, pivot, beam, flag: f };
+  g.userData = { eye, fireLight, pivot, beam, spot, flag: f, target: new THREE.Vector3() };
   return g;
 }
 
-// Is the point p (world space) inside the searchlight's cone right now?
-const BEAM = { len: 46, radius: 7, tilt: -Math.PI / 2 + .42 };
-BEAM.axis = new THREE.Vector3(0, -1, 0).applyAxisAngle(new THREE.Vector3(1, 0, 0), BEAM.tilt);
+// The Eye: a slit-pupilled ball of fire, its halo always facing the camera.
+function buildEye() {
+  const g = new THREE.Group();
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshBasicMaterial({ color: 0xff7a1a }));
+  ball.scale.set(1.25, 1.9, 1.1); g.add(ball);
+  const iris = new THREE.Mesh(new THREE.SphereGeometry(1.02, 24, 16, 0, Math.PI * 2, 0, Math.PI), new THREE.MeshBasicMaterial({ color: 0xffd040, transparent: true, opacity: .55, blending: THREE.AdditiveBlending, depthWrite: false }));
+  iris.scale.set(1.05, 1.75, .9); iris.position.z = .25; g.add(iris);
+  const pupil = new THREE.Mesh(new THREE.BoxGeometry(.28, 2.9, .3), new THREE.MeshBasicMaterial({ color: 0x050102 }));
+  pupil.position.z = 1.05; g.add(pupil);
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d'), gr = x.createRadialGradient(64, 64, 8, 64, 64, 64);
+  gr.addColorStop(0, 'rgba(255,140,40,1)'); gr.addColorStop(.45, 'rgba(255,60,20,.55)'); gr.addColorStop(1, 'rgba(255,20,0,0)');
+  x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  halo.scale.set(9, 11, 1); g.add(halo);
+  g.userData = { ball, halo };
+  return g;
+}
+
+// The gaze lands on the ground at `reach` from the city's centre (it crosses the road
+// on both sides of the gate); `radius` is the lit patch.
+// The Eye swings its gaze all the way round and back (quickest over the road, in
+// front): a one-way spin caught riders riding against it twice as often as the others.
+const BEAM = { eyeY: 27, reach: 36, radius: 6, swing: .175 };
+const gaze = t => Math.PI * Math.sin(t * BEAM.swing);
 const _apex = new THREE.Vector3(), _axis = new THREE.Vector3(), _v = new THREE.Vector3();
+
+// Aim the cone and lay the patch on the terrain for sweep angle a (radians about +y, 0 = +z).
+function aimBeam(c, a) {
+  const city = c.pivot.parent.position, tx = Math.sin(a) * BEAM.reach, tz = Math.cos(a) * BEAM.reach;
+  const ty = heightAt(city.x + tx, city.z + tz) - city.y;
+  c.target.set(city.x + tx, city.y + ty, city.z + tz);
+  const drop = BEAM.eyeY - ty, len = Math.hypot(drop, BEAM.reach);
+  c.pivot.rotation.y = a;
+  c.beam.rotation.x = Math.atan2(drop, BEAM.reach);
+  c.beam.scale.set(BEAM.radius, BEAM.radius, len);
+  c.eye.rotation.y = a;
+  const pos = c.spot.geometry.attributes.position, b = c.spot.userData.base;
+  for (let i = 0; i < pos.count; i++) {
+    const x = tx + b[i * 3], z = tz + b[i * 3 + 2];
+    pos.setXYZ(i, x, heightAt(city.x + x, city.z + z) - city.y + .3, z);
+  }
+  pos.needsUpdate = true; c.spot.geometry.computeBoundingSphere();
+}
+
+// Is the point p (world space) inside the Eye's cone right now?
 function inBeam(w, p) {
-  const pivot = w.city.userData.pivot;
-  if (!pivot.visible) return false;
-  pivot.updateWorldMatrix(true, false);
-  _apex.setFromMatrixPosition(pivot.matrixWorld);
-  _axis.copy(BEAM.axis).transformDirection(pivot.matrixWorld);
+  const c = w.city.userData;
+  if (!c.pivot.visible) return false;
+  _apex.set(0, BEAM.eyeY, 0).add(w.city.position);
+  _axis.subVectors(c.target, _apex);
+  const len = _axis.length(); _axis.divideScalar(len);
   _v.subVectors(p, _apex);
   const along = _v.dot(_axis);
-  if (along <= 0 || along > BEAM.len) return false;
-  return _v.addScaledVector(_axis, -along).length() <= BEAM.radius * along / BEAM.len;
+  if (along <= 0 || along > len) return false;
+  return _v.addScaledVector(_axis, -along).length() <= BEAM.radius * along / len;
 }
 
 // ---------- trees ----------
@@ -322,7 +378,10 @@ export function buildWorld(scene) {
   world.update = (dt, t) => update(world, dt, t);
   world.setDawn = v => setDawn(world, v);
   world.inBeam = p => inBeam(world, p);
-  world.setBeam = on => { city.userData.pivot.visible = on; };
+  world.setBeam = on => { city.userData.pivot.visible = city.userData.spot.visible = on; };
+  world.aimBeam = a => aimBeam(city.userData, a);
+  world.BEAM = BEAM; world.gaze = gaze;   // for tests/beam_odds.py
+  world.aimBeam(0);
   return world;
 }
 
@@ -355,7 +414,8 @@ function update(w, dt, t) {
     flames[i].scale.set(1, s, 1);
   }
   const c = w.city.userData;
-  c.pivot.rotation.y = t * .35;
+  aimBeam(c, gaze(t));
   c.fireLight.intensity = 55 + Math.sin(t * 11) * 8 + Math.sin(t * 17.3) * 6;
-  c.brazier.scale.setScalar(1 + Math.sin(t * 9) * .06);
+  c.eye.userData.halo.material.rotation = Math.sin(t * 2) * .1;
+  c.eye.userData.halo.scale.set(9 + Math.sin(t * 9) * .6, 11 + Math.sin(t * 7.3) * .8, 1);
 }

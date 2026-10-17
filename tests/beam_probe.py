@@ -4,15 +4,13 @@ one sweep during which world.inBeam() holds at torso height. Serve the repo firs
 (python3 -m http.server 8793). Prints a strip, '#' = lit at some angle, and the overall share."""
 from playwright.sync_api import sync_playwright
 JS = """() => {
-  const w = demo.world, piv = w.city.userData.pivot, out = [];
-  const saved = piv.rotation.y;
+  const w = demo.world, out = [];
   for (let i = 0; i <= 60; i++) {
     const p = w.road.path.getPointAt(i / 60).clone(); p.y += 3;
     let hit = 0;
-    for (let k = 0; k < 360; k++) { piv.rotation.y = k / 360 * Math.PI * 2; if (w.inBeam(p)) hit++; }
+    for (let k = 0; k < 360; k++) { w.aimBeam(k / 360 * Math.PI * 2); if (w.inBeam(p)) hit++; }
     out.push(hit / 360);
   }
-  piv.rotation.y = saved;
   return out;
 }"""
 with sync_playwright() as p:

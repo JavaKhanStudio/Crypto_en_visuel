@@ -17,6 +17,7 @@ export const SHOTS = {
   both:      { pos: v(12, 70, 136), target: v(12, 6, 2) },
   gateB:     { pos: v(52, 16, 18), target: v(CASTLE_B.x - 8, CASTLE_B.y + 3, 0) },
   high:      { pos: v(0, 190, 30), target: v(0, 0, 0) },
+  eye:       { pos: v(14, 33, 30), target: v(0, 25, 0) },
 };
 
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
