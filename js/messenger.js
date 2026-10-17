@@ -18,7 +18,7 @@ const _torso = new THREE.Vector3();
 
 function box(w, h, d, mat, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = true; return m; }
 
-function buildRider(team, forged) {
+export function buildRider(team, forged) {
   const color = COLORS[team], g = new THREE.Group(), hm = forged ? darkHorseMat : horseMat;
   const body = new THREE.Group(); g.add(body);
   body.add(box(2.6, 1.1, 1, hm, 0, 2, 0));
@@ -35,8 +35,13 @@ function buildRider(team, forged) {
   const torso = new THREE.Mesh(new THREE.CylinderGeometry(.35, .45, 1.3, 8), cloth); torso.position.set(-.1, 3.2, 0); body.add(torso);
   const head = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), skinMat); head.position.set(-.1, 4.1, 0); body.add(head);
   const helm = new THREE.Mesh(new THREE.ConeGeometry(.36, .5, 8), steelMat); helm.position.set(-.1, 4.45, 0); body.add(helm);
-  const cape = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.6), new THREE.MeshStandardMaterial({ color, side: THREE.DoubleSide, emissive: color, emissiveIntensity: .3 }));
-  cape.position.set(-.6, 3, 0); cape.rotation.y = Math.PI / 2; cape.rotation.z = -.3; body.add(cape);
+  // cape: hangs from the shoulders and streams backwards; it flutters about the
+  // shoulder line, never sideways (r29: swinging about the forward axis read as a
+  // rectangle wagging left and right behind the rider)
+  const capeGeo = new THREE.PlaneGeometry(.9, 1.5); capeGeo.translate(0, -.75, 0);
+  const capeMesh = new THREE.Mesh(capeGeo, new THREE.MeshStandardMaterial({ color, side: THREE.DoubleSide, emissive: color, emissiveIntensity: .3 }));
+  capeMesh.rotation.y = Math.PI / 2;
+  const cape = new THREE.Group(); cape.position.set(-.5, 3.75, 0); cape.rotation.z = -.35; cape.add(capeMesh); body.add(cape);
   const scroll = new THREE.Mesh(new THREE.CylinderGeometry(.12, .12, .8, 8), scrollMat); scroll.position.set(.35, 3.3, .45); scroll.rotation.x = Math.PI / 2; body.add(scroll);
   // beacon: a small glowing gem above the head, so the rider reads from far away
   const beacon = new THREE.Mesh(new THREE.OctahedronGeometry(.45), new THREE.MeshBasicMaterial({ color }));
@@ -45,13 +50,20 @@ function buildRider(team, forged) {
   return g;
 }
 
-function guard() {
+export function guard() {
   const g = new THREE.Group();
   const b = new THREE.Mesh(new THREE.ConeGeometry(.55, 1.8, 8), guardMat); b.position.y = .9; g.add(b);
   const h = new THREE.Mesh(new THREE.SphereGeometry(.3, 8, 6), steelMat); h.position.y = 2; g.add(h);
   const spear = box(.08, 3, .08, steelMat, .5, 1.6, 0); spear.rotation.z = -.15; g.add(spear);
   g.traverse(o => o.castShadow = true);
   return g;
+}
+
+// One frame of the gallop: body bob, legs, cape. Shared with tools/assets.html.
+export function gallop(ud, time) {
+  ud.body.position.y = Math.abs(Math.sin(time * 9)) * .35;
+  ud.legs.forEach((l, i) => l.rotation.z = Math.sin(time * 18 + (i % 2 ? Math.PI : 0) + (i > 1 ? .8 : 0)) * .7);
+  ud.cape.rotation.z = -.35 - Math.sin(time * 12) * .12;
 }
 
 export class Messenger {
@@ -82,12 +94,8 @@ export class Messenger {
   update(dt, time) {
     const ud = this.obj.userData;
     this.t += dt;
-    const gallop = this.phase === 'ride' || this.phase === 'leaving';
-    if (gallop) {
-      ud.body.position.y = Math.abs(Math.sin(time * 9)) * .35;
-      ud.legs.forEach((l, i) => l.rotation.z = Math.sin(time * 18 + (i % 2 ? Math.PI : 0) + (i > 1 ? .8 : 0)) * .7);
-      ud.cape.rotation.x = Math.sin(time * 12) * .25;
-    }
+    const galloping = this.phase === 'ride' || this.phase === 'leaving';
+    if (galloping) gallop(ud, time);
     ud.beacon.rotation.y += dt * 3;
 
     if (this.phase === 'leaving') {
