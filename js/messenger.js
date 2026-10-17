@@ -1,6 +1,7 @@
 // A messenger on horseback riding the road. Its fate is decided when it leaves:
 // 'deliver' (reaches the far gate), 'capture' (Eve's guards take it on the way),
-// 'reject' (a forged rider turned away at the gate by the HMAC check).
+// 'reject' (a forged rider turned away at the gate by the HMAC check),
+// 'beam' (caught only if Étienne's searchlight sweeps over it on the way).
 // `done` resolves with 'delivered' | 'captured' | 'rejected'.
 import * as THREE from 'three';
 import { COLORS, CITY } from './world.js';
@@ -12,6 +13,8 @@ const skinMat = new THREE.MeshStandardMaterial({ color: 0xe0b48f, roughness: .8 
 const scrollMat = new THREE.MeshStandardMaterial({ color: 0xf3e3bf, emissive: 0x6b5a30, emissiveIntensity: .4 });
 const guardMat = new THREE.MeshStandardMaterial({ color: 0x8a1020, roughness: .6, flatShading: true });
 const steelMat = new THREE.MeshStandardMaterial({ color: 0xb0b6c0, metalness: .8, roughness: .3 });
+
+const _torso = new THREE.Vector3();
 
 function box(w, h, d, mat, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = true; return m; }
 
@@ -100,6 +103,7 @@ export class Messenger {
       this.u += this.dir * this.speed * dt / this.len;
       const crossed = this.fate === 'capture' && (this.dir > 0 ? prev < this.captureAt && this.u >= this.captureAt : prev > this.captureAt && this.u <= this.captureAt);
       if (crossed) return this.capture();
+      if (this.fate === 'beam' && this.world.inBeam(_torso.copy(this.obj.position).setY(this.obj.position.y + 3))) return this.capture();
       if (this.fate === 'reject' && (this.dir > 0 ? this.u >= .965 : this.u <= .035)) return this.reject();
       if ((this.dir > 0 && this.u >= 1) || (this.dir < 0 && this.u <= 0)) return this.arrive();
       this.obj.position.copy(this.path.getPointAt(Math.min(1, Math.max(0, this.u))));

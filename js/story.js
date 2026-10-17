@@ -21,12 +21,14 @@ export const STEPS = [
   { id: 's2', ch: 0, shot: 'castleA', state: S(0, 0), say: ['a'] },
   { id: 's3', ch: 0, shot: 'valley', state: S(0, 0), say: [['e', 'road']] },
   { id: 's4', ch: 1, shot: 'both', state: S(0, 0), go: async (x) => {
-      await x.ride('a', { fate: 'deliver' });
+      x.apply();
+      if (await x.ride('a', { fate: 'beam' }) === 'captured') return x.caught();
       await x.fly('castleB');
     } },
   { id: 's5', ch: 1, shot: 'castleA', state: S(0, 1), say: ['a'] },
   { id: 's6', ch: 2, shot: 'both', state: S(0, 1), go: async (x) => {
-      await x.ride('b', { fate: 'deliver' });
+      x.apply();
+      if (await x.ride('b', { fate: 'beam' }) === 'captured') return x.caught();
       await x.fly('castleA'); x.say('a');
     } },
   { id: 's7', ch: 2, shot: 'castleB', state: S(2, 1), say: ['b'] },
@@ -146,6 +148,8 @@ export class Story {
       ride: async (from, opts) => { const m = c.sim.send(from, opts); c.rig.chase(m.obj); const r = await m.done; await wait(600); return r; },
       forge: async () => { const m = c.sim.forge(); c.rig.chase(m.obj); const r = await m.done; await wait(900); return r; },
       dawn: k => c.dawn(k),
+      // the searchlight took the rider: show the valley, let Étienne gloat, and the button sends again
+      caught: async () => { if (!live()) return; await c.rig.fly('both'); x.say('e', 'caught'); },
       mode: m => c.setMode(m),
     };
     try { await fn(x); } finally { if (live()) buttons.forEach(b => b.disabled = false); }

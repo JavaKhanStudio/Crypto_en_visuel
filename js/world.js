@@ -212,13 +212,28 @@ function buildCity() {
   brazier.position.y = 24; g.add(brazier);
   const fireLight = new THREE.PointLight(0xff4422, 60, 70, 1.6); fireLight.position.y = 25; g.add(fireLight);
   // a searchlight sweeping the valley
-  const beamGeo = new THREE.ConeGeometry(7, 46, 32, 1, true); beamGeo.translate(0, -23, 0); beamGeo.rotateX(-Math.PI / 2 + .42);
+  const beamGeo = new THREE.ConeGeometry(BEAM.radius, BEAM.len, 32, 1, true); beamGeo.translate(0, -BEAM.len / 2, 0); beamGeo.rotateX(BEAM.tilt);
   const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ color: 0xff4455, transparent: true, opacity: .09, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   const pivot = new THREE.Group(); pivot.position.y = 23; pivot.add(beam); g.add(pivot);
   const f = flag(COLORS.e, 5, 3); f.position.y = 24; g.add(f);
   g.position.copy(CITY);
   g.userData = { brazier, fireLight, pivot, beam, flag: f };
   return g;
+}
+
+// Is the point p (world space) inside the searchlight's cone right now?
+const BEAM = { len: 46, radius: 7, tilt: -Math.PI / 2 + .42 };
+BEAM.axis = new THREE.Vector3(0, -1, 0).applyAxisAngle(new THREE.Vector3(1, 0, 0), BEAM.tilt);
+const _apex = new THREE.Vector3(), _axis = new THREE.Vector3(), _v = new THREE.Vector3();
+function inBeam(w, p) {
+  const pivot = w.city.userData.pivot;
+  pivot.updateWorldMatrix(true, false);
+  _apex.setFromMatrixPosition(pivot.matrixWorld);
+  _axis.copy(BEAM.axis).transformDirection(pivot.matrixWorld);
+  _v.subVectors(p, _apex);
+  const along = _v.dot(_axis);
+  if (along <= 0 || along > BEAM.len) return false;
+  return _v.addScaledVector(_axis, -along).length() <= BEAM.radius * along / BEAM.len;
 }
 
 // ---------- trees ----------
@@ -305,6 +320,7 @@ export function buildWorld(scene) {
   const world = { scene, sky, hemi, moonLight, road, castleA, castleB, city, time: 0, dawn: 0 };
   world.update = (dt, t) => update(world, dt, t);
   world.setDawn = v => setDawn(world, v);
+  world.inBeam = p => inBeam(world, p);
   return world;
 }
 
