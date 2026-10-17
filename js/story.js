@@ -37,7 +37,7 @@ export const STEPS = [
       if (!x.live()) return;
       await x.fly('both'); x.say('n');
     } },
-  { id: 's10', ch: 3, shot: 'high', orbit: .05, state: S(2, 1), say: ['n'] },
+  { id: 's10', ch: 3, shot: 'high', orbit: .05, state: S(2, 1) },
   { id: 's11', ch: 4, shot: 'valley', state: S(0, 0, { p: .5 }), go: async (x) => {
       x.apply(); x.rig.fly('both', 2.5);
       const res = await x.sim.burst('a', 10, 380);
@@ -61,7 +61,7 @@ export const STEPS = [
       x.apply(); await x.forge(); await x.fly('castleB');
     } },
   { id: 's16', ch: 5, shot: 'castleB', state: S(0, 1, { hmac: true }), say: ['b'] },
-  { id: 's17', ch: 5, shot: 'overview', orbit: .06, state: S(0, 0), go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
+  { id: 's17', ch: 5, shot: 'overview', orbit: .06, state: S(0, 0), say: ['n'], go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
 ];
 
 export class Story {
