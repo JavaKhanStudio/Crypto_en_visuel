@@ -96,15 +96,21 @@ addEventListener('keydown', e => {
 });
 
 // ---------- loop ----------
+// demo.freeze() stops the clock and demo.step(dt) advances it by hand (tools/enigma_frames.py)
 const clock = new THREE.Clock();
-function loop() {
-  const dt = Math.min(clock.getDelta(), .05), time = clock.elapsedTime;
+let frozen = false, time = 0;
+function tick(dt) {
+  time += dt;
   world.update(dt, time);
   for (const f of [...tickers]) f(dt, time);
   updateFx(dt);
   rig.update(dt);
   bubbles.update(dt);
   composer.render();
+}
+function loop() {
+  const dt = Math.min(clock.getDelta(), .05);
+  if (!frozen) tick(dt);
   requestAnimationFrame(loop);
 }
 
@@ -115,4 +121,5 @@ else if (h === 'sandbox' || h === 'quiz') setMode(h);
 else setMode('story', { step: Math.max(0, Math.min(STEPS.length - 1, (parseInt(h.split('=')[1]) || 1) - 1)) });
 loop();
 document.getElementById('loading').classList.add('done');
-window.demo = { THREE, scene, camera, world, stage, rig, story, sandbox, quiz, setMode, ready: true };
+window.demo = { THREE, scene, camera, world, stage, rig, story, sandbox, quiz, setMode, ready: true,
+  freeze: () => { frozen = true; }, step: dt => tick(dt) };

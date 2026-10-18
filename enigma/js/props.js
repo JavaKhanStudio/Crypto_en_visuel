@@ -184,20 +184,28 @@ export function machine() {
   axle.rotation.z = Math.PI / 2; g.add(axle);
   for (const c of Object.values(drum)) g.add(c);
   Object.assign(g.userData, { keys, lamps, drum, axle });
-  // e = 0: packed in the well; 1: taken out above the machine, spread and three times bigger
+  // e = 0: packed in the well; 1: taken out above the machine, spread and three times bigger.
+  // In two movements that overlap: the stack is lifted out whole and grows (e 0 → .55), then its
+  // parts slide apart and turn see-through (e .3 → 1), the entry plate first, the reflector last,
+  // the way the current goes. out[id]: how far part id has spread (0..1), for its tag.
+  const smooth = (a, b, e) => { const x = Math.min(1, Math.max(0, (e - a) / (b - a))); return x * x * (3 - 2 * x); };
+  const LAG = { entry: 0, III: .04, II: .08, I: .12, ref: .16 };
+  const out = {};
   g.userData.setApart = e => {
     g.userData.apart = e;
-    const s = 1 + (APART_S - 1) * e, c = PACKED_C.clone().lerp(APART_C, e);
+    const lift = smooth(0, .55, e), s = 1 + (APART_S - 1) * lift, c = PACKED_C.clone().lerp(APART_C, lift);
     for (const id of DRUM) {
-      const o = drum[id]; o.position.copy(c).setX(PACKED[id] + (APART[id] - PACKED[id]) * e); o.scale.setScalar(s);
-      const b = o.userData.body.material; b.opacity = .95 - .8 * e; b.depthWrite = e < .5;
-      if (o.userData.band) o.userData.band.material.opacity = .9 - .75 * e;
-      if (o.userData.wheel) { o.userData.wheel.material.opacity = 1 - .8 * e; o.userData.wheel.material.depthWrite = e < .5; }
-      if (o.userData.wireMat) o.userData.wireMat.opacity = .15 + .3 * e;
+      const u = out[id] = smooth(.3 + LAG[id], .84 + LAG[id], e);
+      const o = drum[id]; o.position.copy(c).setX(PACKED[id] * s + (APART[id] - PACKED[id] * s) * u); o.scale.setScalar(s);
+      const b = o.userData.body.material; b.opacity = .95 - .8 * u; b.depthWrite = u === 0;
+      if (o.userData.band) o.userData.band.material.opacity = .9 - .75 * u;
+      if (o.userData.wheel) { o.userData.wheel.material.opacity = 1 - .8 * u; o.userData.wheel.material.depthWrite = u === 0; }
+      if (o.userData.wireMat) o.userData.wireMat.opacity = .15 + .3 * u;
     }
-    const x0 = PACKED.ref + (APART.ref - PACKED.ref) * e, x1 = PACKED.entry + (APART.entry - PACKED.entry) * e;
-    axle.position.copy(c).setX((x0 + x1) / 2); axle.scale.set(.6 + e, (x1 - x0) * 1.05, .6 + e);
+    const x0 = drum.ref.position.x, x1 = drum.entry.position.x;
+    axle.position.copy(c).setX((x0 + x1) / 2); axle.scale.set(.6 + lift, (x1 - x0) * 1.05, .6 + lift);
   };
+  g.userData.out = out;
   g.userData.setApart(0);
   return g;
 }

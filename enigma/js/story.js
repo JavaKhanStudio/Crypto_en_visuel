@@ -80,7 +80,13 @@ export class Story {
     location.hash = 'story=' + (i + 1);
     c.bubbles.clear(); this.said.clear();
     c.stage.speed = c.instant ? 50 : 1;
+    // a drum that opens or closes between two steps does it during the flight, never in one frame
+    const was = Object.fromEntries(Object.entries(c.stage.machines).map(([k, m]) => [k, m.userData.apart]));
     c.stage.apply(this.state());
+    if (!c.instant) for (const [k, m] of Object.entries(c.stage.machines)) {
+      const e = m.userData.apart;
+      if (Math.abs(was[k] - e) > .01) { m.userData.setApart(was[k]); c.stage.apart(k, e, 2.2); }
+    }
     c.rig.setOrbit(0);
     c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => {
       if (tok !== this.token) return;

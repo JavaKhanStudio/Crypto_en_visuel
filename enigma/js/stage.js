@@ -116,11 +116,9 @@ export class Stage {
   relabel() {
     const st = this.st;
     for (const k of ['a', 'b']) {
-      const e = st.apart[k] ?? 0, d = this.machines[k].userData.drum;
       for (const id of DRUM) {
         const tag = this.names[k][id], name = raw('part')[id];
         const i = ORDER.indexOf(id), text = i >= 0 ? `${name} · ${this.windowLetter(k, id)}` : name;
-        tag.visible = e > .6;
         if (text !== tag.userData.text) setLabel(tag, text, i >= 0 ? '#ffd84d' : '#c9b48a', .5);
       }
     }
@@ -135,7 +133,11 @@ export class Stage {
   windowLetter(k, id) { const r = this.machines[k].userData.drum[id].userData; return A[((Math.round(-r.spin.rotation.x / STEP) % 26) + 26) % 26]; }
   placeNames(k) {
     const m = this.machines[k], d = m.userData.drum, s = d.III.scale.x;
-    for (const id of DRUM) this.names[k][id].position.copy(d[id].getWorldPosition(new THREE.Vector3())).add(v(0, R * s + (ORDER.includes(id) ? .75 : 1.25), 0));
+    for (const id of DRUM) {
+      const tag = this.names[k][id], f = Math.min(1, Math.max(0, (m.userData.out[id] - .6) / .4));   // a part's tag fades in as it settles
+      tag.position.copy(d[id].getWorldPosition(new THREE.Vector3())).add(v(0, R * s + (ORDER.includes(id) ? .75 : 1.25), 0));
+      tag.material.opacity = f; tag.visible = f > 0;
+    }
   }
 
   // ---------- the path of the current ----------
@@ -243,12 +245,12 @@ export class Stage {
   async apart(k, e = 1, dur = 2.4) {
     const m = this.machines[k].userData, e0 = m.apart ?? 0;
     sfx.wind();
-    const ok = await this.tween(dur, x => { m.setApart(e0 + (e - e0) * ease(x)); this.relabelSoon(); });
+    // on the camera's own ease, so the drum grows no faster than the camera backs away from it
+    const ok = await this.tween(dur, x => m.setApart(e0 + (e - e0) * ease(x)));
     if (!ok) return false;
     this.st.apart[k] = e; this.relabel();
     return true;
   }
-  relabelSoon() { for (const k of ['a', 'b']) for (const tag of Object.values(this.names[k])) tag.visible = (this.machines[k].userData.apart ?? 0) > .6; }
 
   // Turn rotor `name` of machine k by one notch.
   async notch(k, name, dur = .5) {
