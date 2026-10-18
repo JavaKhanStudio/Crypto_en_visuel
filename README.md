@@ -17,7 +17,7 @@ dans cryptographie r66.
 | 1 | Le problème des deux généraux | https://javakhanstudio.github.io/Crypto_en_visuel/deux-generaux/ | publié |
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
-| 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | bientôt |
+| 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
 | 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | bientôt |
 | 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | bientôt |
 | 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | bientôt |
@@ -59,6 +59,22 @@ que le certificat permet de vérifier. 15 étapes en 6 chapitres, un bac à sabl
 secrètes, Eve regarde ou se met au milieu, Bob signe ou non), un quiz de 7 questions.
 La couleur d'un pot ne dépend que de sa recette (`diffie-hellman/js/paint.js`) : même recette,
 même couleur. `tests/dh_story.py` clique chaque bouton et vérifie le contenu de chaque pot.
+
+## Épisode 4 — La scytale
+
+La carte « Une histoire de casse - La scytale » du cours : une bandelette enroulée sur un bâton,
+le message écrit dans la longueur ; déroulée, elle n'affiche qu'un charabia, et seul un bâton du
+même diamètre la remet en ordre. La diapo ne donne pas de message : l'épisode prend « ATTAQUEZ
+DEMAIN À L'AUBE » (en anglais « ATTACK TOMORROW AT DAWN », même forme : 20 lettres) sur un bâton
+de 4 lettres par tour, soit 4 lignes de 5 (ATTAQ, UEZDE, MAINA, LAUBE) et la bandelette
+AUMLTEAATZIUADNBQEAE. Eve essaie un bâton de 3 lettres par tour (ALAZABA, UTAIDQE, METUNE) puis
+de 5 (AEIB…), Bob relit avec le sien. 12 étapes en 5 chapitres, un bac à sable (votre message,
+le bâton d'Alice et celui de relecture, de 2 à 6 lettres par tour), un quiz de 6 questions.
+L'arithmétique est seule dans `scytale/js/scytale.js` ; la bandelette (`scytale/js/strip.js`) est
+un ruban dont chaque point est placé à chaque image : à plat, en hélice sur un bâton, roulé sur
+la tête du messager. Le tableau en haut à droite (`card.js`) garde à chaque lettre la couleur de
+la ligne où Alice l'a écrite. `tests/scytale_story.py` clique chaque bouton et vérifie ce que lit
+chaque bâton.
 
 ## Lancer
 

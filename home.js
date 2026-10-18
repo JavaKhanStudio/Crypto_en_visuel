@@ -16,7 +16,7 @@ const EPISODES = [
   { n: 1, slug: 'deux-generaux', icon: '🏰', live: true },
   { n: 2, slug: 'cadenas', icon: '🔒', live: true },
   { n: 3, slug: 'diffie-hellman', icon: '🎨', live: true },
-  { n: 4, slug: 'scytale', icon: '📜' },
+  { n: 4, slug: 'scytale', icon: '📜', live: true },
   { n: 5, slug: 'enigma', icon: '⚙️' },
   { n: 6, slug: 'pingouin', icon: '🐧' },
   { n: 7, slug: 'sel', icon: '🧂' },
