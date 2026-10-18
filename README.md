@@ -16,7 +16,7 @@ dans cryptographie r66.
 |---|---|---|---|
 | 1 | Le problème des deux généraux | https://javakhanstudio.github.io/Crypto_en_visuel/deux-generaux/ | publié |
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
-| 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | bientôt |
+| 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | bientôt |
 | 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | bientôt |
 | 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | bientôt |
@@ -46,6 +46,19 @@ l'ouvrir, seul Bob l'ouvre. 10 étapes en 5 chapitres, un bac à sable (Eve inte
 Eve a volé la clé ou non, qui essaie d'ouvrir), un quiz de 6 questions. Même structure que
 `deux-generaux/` (`cadenas/js/stage.js` tient les accessoires et leurs animations).
 `tests/cadenas_story.py` clique chaque bouton de l'histoire et vérifie où finit la boîte.
+
+## Épisode 3 — Les couleurs de Diffie-Hellman
+
+L'échange de Diffie-Hellman raconté avec les valeurs des cartes « Diffie-Hellman - Les couleurs »,
+« - Les calculs », « - Au milieu » et « - La parade » du cours : JAUNE public, ROUGE (Alice) et
+BLEU (Bob) secrets, ORANGE et VERT envoyés sous les yeux d'Eve, le même MARRON des deux côtés ;
+puis les nombres de la carte suivante (p = 23, g = 5, a = 6 → 8, b = 15 → 19, secret 2). Eve ne
+sait pas démélanger. Ensuite Eve se met au milieu (son NOIR, son KAKI envoyé des deux côtés, un
+secret avec chacun, un message lu et rechiffré), et la parade : la part de Bob porte un sceau
+que le certificat permet de vérifier. 15 étapes en 6 chapitres, un bac à sable (couleurs
+secrètes, Eve regarde ou se met au milieu, Bob signe ou non), un quiz de 7 questions.
+La couleur d'un pot ne dépend que de sa recette (`diffie-hellman/js/paint.js`) : même recette,
+même couleur. `tests/dh_story.py` clique chaque bouton et vérifie le contenu de chaque pot.
 
 ## Lancer
 
