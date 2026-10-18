@@ -48,6 +48,7 @@ export class Stage {
     if (!this.pots.has(id)) {
       const p = pot(); p.userData.id = id;
       p.userData.label = label(); p.add(p.userData.label);
+      p.userData.stem = stem(); p.add(p.userData.stem);
       this.scene.add(p); this.pots.set(id, p);
     }
     return this.pots.get(id);
@@ -66,7 +67,6 @@ export class Stage {
       const p = this.pot(id);
       p.visible = true; p.position.copy(this.slotSpot(k, slot)); p.rotation.set(0, 0, 0); p.scale.setScalar(1);
       Object.assign(p.userData, { at: k, slot, secret: !!o.secret });
-      this.liftLabel(p);
       p.userData.setPaint(recipe, o.level ?? .8); p.userData.setSeal(o.seal);
     }
     this.chest.visible = !!st.chest;
@@ -90,9 +90,23 @@ export class Stage {
       l.visible = !!text;
       if (text && text !== l.userData.text) setLabel(l, text, '#' + colorOf(p.userData.recipe).getHexString());
     }
+    this.layoutLabels();
   }
-  // neighbours' tags would overlap: the middle pot's tag sits higher, the back row's (already up on the shelf) higher still
-  liftLabel(p) { const i = p.userData.slot; p.userData.label.position.y = POT_H + .45 + (i % 3 === 1 ? .5 : 0) + (i >= 3 ? .55 : 0); }
+  // A tag sits just over its pot. The middle pot's goes up a step only when it would run into a
+  // neighbour's tag on the same row; the back row's goes up to clear the front row's. A stem in the
+  // tag's colour pins it to its pot's rim: without it, a lifted tag reads as a pot behind's (r55).
+  layoutLabels() {
+    const seen = [...this.pots.values()].filter(p => p.visible && p.userData.label.visible);
+    for (const p of seen) {
+      const i = p.userData.slot, l = p.userData.label;
+      const hits = i % 3 === 1 && seen.some(q => q !== p && q.userData.at === p.userData.at && (q.userData.slot >= 3) === (i >= 3)
+        && Math.abs(q.position.x - p.position.x) < (q.userData.label.scale.x + l.scale.x) / 2 + .1);
+      l.position.y = POT_H + .45 + (hits ? .5 : 0) + (i >= 3 ? .55 : 0);
+      const st = p.userData.stem, len = l.position.y - .17 - POT_H;
+      st.scale.y = len; st.position.y = POT_H + len / 2; st.material.color.copy(colorOf(p.userData.recipe));
+    }
+    for (const p of this.pots.values()) p.userData.stem.visible = p.userData.label.visible;
+  }
   setNumbers(on) { this.st.numbers = on; this.relabel(); }
 
   // ---------- animation helpers ----------
@@ -197,7 +211,7 @@ export class Stage {
     const spot = this.slotSpot(to, slot);
     if (!await this.arc(obj, spot, { dur: .8, height: 1.2 })) return false;
     obj.userData.at = to; obj.userData.slot = slot;
-    if (obj !== this.chest) this.liftLabel(obj);
+    if (obj !== this.chest) this.layoutLabels();
     if (obj === this.chest) this.st.chest = [to, slot, obj.userData.band, 0];
     else this.save(obj);
     if (to === 'e') { sfx.capture(); icon(obj.position.clone().add(v(0, 2.4, 0)), '✋', '#ff4d5e', { size: 1.1, rise: 1.4 }); }
@@ -210,7 +224,7 @@ export class Stage {
   // Under her tower, Eve looks at the pot going past and pours herself a copy of it.
   async copy(srcId, id, slot) {
     const src = this.pot(srcId), p = this.pot(id);
-    Object.assign(p.userData, { at: 'e', slot, secret: false }); this.liftLabel(p);
+    Object.assign(p.userData, { at: 'e', slot, secret: false });
     p.visible = true; p.position.copy(this.slotSpot('e', slot)); p.rotation.set(0, 0, 0); p.scale.setScalar(.01);
     p.userData.setPaint(src.userData.recipe, .6); p.userData.setSeal(null);
     this.st.pots[id] = ['e', slot, src.userData.recipe, { level: .6 }];
@@ -223,7 +237,7 @@ export class Stage {
   // A new empty pot, ready to pour into.
   async empty(id, k, slot) {
     const p = this.pot(id);
-    Object.assign(p.userData, { at: k, slot, secret: false }); this.liftLabel(p);
+    Object.assign(p.userData, { at: k, slot, secret: false });
     p.visible = true; p.position.copy(this.slotSpot(k, slot)); p.rotation.set(0, 0, 0);
     p.userData.setPaint('', 0); p.userData.setSeal(null);
     this.st.pots[id] = [k, slot, '', {}];
@@ -274,6 +288,11 @@ function label() {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false }));
   s.renderOrder = 20; s.visible = false; s.userData.text = '';
   return s;
+}
+function stem() {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, 1, 6), new THREE.MeshBasicMaterial());
+  m.visible = false;
+  return m;
 }
 function setLabel(s, text, color) {
   const c = document.createElement('canvas'), x = c.getContext('2d'), font = '700 40px system-ui, sans-serif';
