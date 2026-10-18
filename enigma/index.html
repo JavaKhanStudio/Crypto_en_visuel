@@ -1,7 +1,104 @@
 <!doctype html>
-<!-- Reserved address of a « Crypto en visuel » episode not built yet: it sends to its card
-     on the series home page. The episode's own page replaces this file when it is published. -->
-<html lang="fr"><head><meta charset="utf-8"><title>Crypto en visuel — bientôt</title>
-<meta http-equiv="refresh" content="0; url=../#enigma">
-<script>location.replace('../' + location.search + '#enigma');</script>
-</head><body><a href="../#enigma">Crypto en visuel</a></body></html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enigma, une touche — Crypto en visuel</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "../vendor/three/three.module.min.js",
+        "three/addons/": "../vendor/three/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="bubbles"></div>
+
+  <header id="topbar">
+    <div class="brand">
+      <span class="crest">⚙️</span>
+      <div>
+        <a class="series" href="../" data-i18n="series">Crypto en visuel</a>
+        <h1 data-i18n="title">Enigma, une touche</h1>
+        <p data-i18n="subtitle">On appuie sur une touche : les rotors tournent, le courant fait l’aller-retour jusqu’à une lampe.</p>
+      </div>
+    </div>
+    <nav id="modes">
+      <button data-mode="story" class="active" data-i18n="mode.story">Histoire</button>
+      <button data-mode="sandbox" data-i18n="mode.sandbox">Bac à sable</button>
+      <button data-mode="quiz" data-i18n="mode.quiz">Quiz</button>
+    </nav>
+    <div class="right">
+      <button id="sound" class="icon" title="Son" aria-label="Son">🔈</button>
+      <div id="lang" role="group" aria-label="Langue">
+        <button data-lang="fr">FR</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Story mode -->
+  <section id="story" class="panel bottom">
+    <div class="chapters" id="chapters"></div>
+    <div class="narration">
+      <h2 id="step-title"></h2>
+      <p id="step-text"></p>
+    </div>
+    <div class="actions" id="step-actions"></div>
+    <div class="nav">
+      <button id="prev" data-i18n="nav.prev">◀ Précédent</button>
+      <span id="step-count"></span>
+      <button id="next" class="primary" data-i18n="nav.next">Suivant ▶</button>
+    </div>
+  </section>
+
+  <!-- Sandbox mode -->
+  <section id="sandbox" class="panel side hidden">
+    <h2 data-i18n="sb.title">Bac à sable</h2>
+    <p class="hint" data-i18n="sb.hint"></p>
+    <fieldset>
+      <legend data-i18n="sb.start">Position de départ</legend>
+      <div class="rotors" id="sb-start"></div>
+    </fieldset>
+    <fieldset>
+      <legend data-i18n="sb.keys">Clavier</legend>
+      <div class="kbd" id="sb-keys"></div>
+      <label class="check"><input type="checkbox" id="sb-slow"><span data-i18n="sb.slow"></span></label>
+    </fieldset>
+    <div class="row"><button id="sb-reset" data-i18n="sb.reset"></button></div>
+    <div class="row"><button id="sb-replay" class="primary" data-i18n="sb.replay"></button></div>
+    <div id="sb-status" class="stats"></div>
+  </section>
+
+  <!-- Quiz mode -->
+  <section id="quiz" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="card">
+      <div class="quiz-head">
+        <span id="quiz-progress"></span>
+        <span id="quiz-score"></span>
+      </div>
+      <h2 id="quiz-q"></h2>
+      <p id="quiz-multi" class="hint"></p>
+      <ol id="quiz-options" type="A"></ol>
+      <div id="quiz-feedback"></div>
+      <div class="nav">
+        <button id="quiz-check" class="primary" data-i18n="quiz.check">Valider</button>
+        <button id="quiz-next" class="primary hidden" data-i18n="quiz.next">Question suivante ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- The slide's table, filled in as the current runs, in every mode but the quiz -->
+  <aside id="card" class="panel"></aside>
+
+  <div id="toast"></div>
+  <div id="loading"><div class="spinner"></div><p data-i18n="loading">On câble les rotors…</p></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

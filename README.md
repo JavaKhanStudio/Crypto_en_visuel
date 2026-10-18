@@ -18,7 +18,7 @@ dans cryptographie r66.
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
-| 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | bientôt |
+| 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | publié |
 | 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | bientôt |
 | 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | bientôt |
 | 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | bientôt |
@@ -75,6 +75,22 @@ un ruban dont chaque point est placé à chaque image : à plat, en hélice sur 
 la tête du messager. Le tableau en haut à droite (`card.js`) garde à chaque lettre la couleur de
 la ligne où Alice l'a écrite. `tests/scytale_story.py` clique chaque bouton et vérifie ce que lit
 chaque bâton.
+
+## Épisode 5 — Enigma, une touche
+
+Une seule touche, lentement, avec les valeurs de la carte « Enigma - À la main » du cours :
+rotors I, II, III, réflecteur B, départ AAA, sans câble au tableau de connexions. Alice tape O :
+le rotor de droite avance d'abord (AAB), puis le courant traverse III, II, I (D, K, N), le
+réflecteur (K), et revient par I, II, III (B, J, T) jusqu'à la lampe T. Le même O en AAB allume
+I (G R U C Y V I) ; OUI depuis AAA donne TVG, qui part par radio sous l'antenne d'Eve ; Bob,
+réglé sur AAA, tape TVG et lit OUI. L'anglais garde ces valeurs (OUI y est présenté comme le oui
+de la diapo). Les rotors sortent de la machine et s'écartent, en verre, pour qu'on voie leurs
+fils ; le tableau en haut à droite est celui de la diapo, rempli au passage du courant.
+13 étapes en 6 chapitres, un bac à sable (position de départ, clavier, « remettre au départ et
+taper le chiffré »), un quiz de 7 questions. L'arithmétique est seule dans `enigma/js/enigma.js`
+(pas réel d'Enigma I, double pas compris) ; `tests/enigma_values.mjs` la compare à la diapo
+(`node tests/enigma_values.mjs`), `tests/enigma_story.py` clique chaque bouton de l'histoire et
+du bac à sable et vérifie positions, lampes et lignes du tableau.
 
 ## Lancer
 
