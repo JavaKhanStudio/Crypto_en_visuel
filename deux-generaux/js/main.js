@@ -15,7 +15,7 @@ import { renderLadder, ladder3d } from './ladder.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
 import { Quiz } from './quiz.js';
-import { march, resetCityFlag, clearArmies } from './army.js';
+import { march, resetCityFlag, clearArmies, fadeArmies, hasArmies, haltArmies } from './army.js';
 import { sfx } from './sound.js';
 import { t, setLang, applyStatic, onLang } from './i18n.js';
 
@@ -84,15 +84,37 @@ const sim = new Sim(world, {
   },
 });
 
-function resetWorld() { world.setDawn(0); resetCityFlag(world); clearArmies(world); world.setBeam(true); bubbles.clear(); }
+// Leaving a sunrise, night falls back as the camera flies to the next shot while the camped armies fade, Étienne's
+// flag rises again and his gaze comes back (r69): snapping day to night in one frame was a flash. ?instant=1 still snaps.
+const DUSK = 2.2;   // the length of the camera's flight to the next shot
+let dusk = null, era = 0;   // era: a sunrise still rising when the world is reset stops there
+function resetWorld() {
+  endDusk(); era++; haltArmies(world); world.setBeam(true); bubbles.clear();
+  const v0 = world.dawn || 0, flag = world.city.userData.flag, r0 = flag.rotation.z;
+  if (instant || (v0 === 0 && r0 === 0 && !hasArmies())) { world.setDawn(0); resetCityFlag(world); clearArmies(world); return; }
+  let k = 0; gaze(0);
+  dusk = dt => {
+    k = Math.min(1, k + dt / DUSK); const e = 1 - Math.pow(1 - k, 2);
+    world.setDawn(v0 * (1 - e)); flag.rotation.z = r0 * (1 - e); fadeArmies(1 - e); gaze(e);
+    if (k >= 1) endDusk();
+  };
+  tickers.add(dusk);
+}
+function endDusk() {
+  if (!dusk) return;
+  tickers.delete(dusk); dusk = null;
+  world.setDawn(0); resetCityFlag(world); clearArmies(world); gaze(1);
+}
+// the Eye's gaze lit to k of its full strength (the cone .11, the patch .45, as world.js builds them)
+function gaze(k) { const c = world.city.userData; c.beam.material.opacity = .11 * k; c.spot.material.opacity = .45 * k; }
 
 // Sunrise (or, after a forged order, midnight) and the armies that act on it.
 async function dawn(k) {
-  const outcome = sim.dawn(k);
+  endDusk(); const outcome = sim.dawn(k), mine = era;
   bubbles.clear(); rig.setOrbit(0);
   rig.fly('both', 2);
   if (outcome !== 'forged') {
-    await new Promise(res => { let v = 0; const tick = dt => { v = Math.min(1, v + dt / 2.4); world.setDawn(v); if (v >= 1) { tickers.delete(tick); res(); } }; tickers.add(tick); });
+    await new Promise(res => { let v = 0; const tick = dt => { if (era !== mine) return tickers.delete(tick); v = Math.min(1, v + dt / 2.4); world.setDawn(v); if (v >= 1) { tickers.delete(tick); res(); } }; tickers.add(tick); });
   } else await wait(800);
   const teams = { both: ['a', 'b'], a: ['a'], b: ['b'], forged: ['b'], none: [] }[outcome];
   const verdict = () => { toast(t('dawn.' + outcome), 5000); (outcome === 'both' ? sfx.win : outcome === 'none' ? () => {} : sfx.lose)(); };

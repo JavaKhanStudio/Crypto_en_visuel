@@ -70,4 +70,10 @@ export function clearArmies(world) {
   live.clear();
 }
 
+// the armies on the map, faded to opacity k (1 = as they marched); the dusk after a sunrise uses it
+export function fadeArmies(k) { for (const m of live) for (const tr of m.troops) tr.mat.opacity = k; }
+// stops the marches where they stand (no more steps, outcome or falling flag), troops left on the map
+export function haltArmies(world) { for (const m of live) world.tickers.delete(m.tick); }
+export const hasArmies = () => live.size > 0;
+
 export function resetCityFlag(world) { world.city.userData.flag.rotation.z = 0; }
