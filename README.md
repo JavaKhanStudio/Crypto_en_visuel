@@ -21,7 +21,7 @@ dans cryptographie r66.
 | 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | publié |
 | 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | publié |
 | 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | publié |
-| 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | bientôt |
+| 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | publié |
 
 Dans un épisode, `#story=N` est l'**étape** N de son histoire (pas un numéro d'épisode),
 `#sandbox` et `#quiz` ses autres modes, `?lang=en` l'anglais. Les anciens liens vers la racine
@@ -129,6 +129,25 @@ tables de Blowfish sont calculées depuis les décimales de pi) ; le bac à sabl
 un worker (`sel/js/worker.js`). `tests/sel_values.mjs` les compare aux diapos, à la RFC 1321 et à
 la bibliothèque bcrypt de Python (`node tests/sel_values.mjs`), `tests/sel_story.py` clique chaque
 bouton de l'histoire et du bac à sable et vérifie la base, la copie d'Eve et son compteur.
+
+## Épisode 8 — Le garde trop pressé (HMAC, timing attack)
+
+La timing attack sur la comparaison d'un HMAC, avec les valeurs des cartes « HMAC » et
+« HMAC - La timing attack » du cours : clé `cle_secrete_partagee`, message
+« Transfert 1000 euros a Bob », HMAC-SHA256 `1598e59f…`. Le badge d'Alice (message + HMAC) passe
+le garde, qui recalcule le HMAC et compare les 64 lettres. Eve ne connaît pas la clé, donc pas le
+bon HMAC de son ordre (« …a Eve », `b2ef0922…`) ; un badge au hasard est refusé dès la première
+lettre. Mais le garde compare avec `==`, qui s'arrête au premier caractère différent : plus le
+début est juste, plus la réponse tarde. Eve chronomètre, essaie les 16 lettres hexadécimales à
+chaque position et garde la plus lente — au plus 64 × 16 = 1 024 essais, au lieu de 16⁶⁴ — et
+reconstitue le HMAC lettre par lettre ; son faux ordre passe. `hmac.compare_digest` regarde
+toujours les 64 lettres : seize barres égales, l'attaque s'effondre. 10 étapes en 5 chapitres, un
+bac à sable (choisir l'ordre d'Eve et le garde en service, == ou compare_digest, puis lancer
+l'attaque) et un quiz de 6 questions. `garde/js/hmac.js` est un vrai SHA-256 (FIPS 180-4) et un
+vrai HMAC-SHA256 (RFC 2104), calculés dans la page. `tests/garde_values.mjs` les compare à
+`node:crypto` et aux valeurs de Python (`node tests/garde_values.mjs`), `tests/garde_story.py`
+clique chaque bouton de l'histoire et du bac à sable et vérifie le verdict du garde, le registre
+de Bob, le préfixe retrouvé par Eve et ses barres de temps.
 
 ## Lancer
 

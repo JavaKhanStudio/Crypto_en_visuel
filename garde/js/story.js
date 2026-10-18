@@ -1,0 +1,128 @@
+// The guided story: 10 steps in 5 chapters, on the course's slides about HMAC (« HMAC »,
+// « HMAC - La timing attack »). Alice's badge passes; Eve cannot forge one; but the hasty guard's
+// == leaks the answer time, so Eve finds the HMAC letter by letter; a compare_digest guard does not.
+// Each step puts the room where the story has reached (so Back, Next and the chapter chips always
+// land somewhere consistent), flies the camera, pins its bubbles, and offers buttons.
+import { t, raw, onLang } from './i18n.js';
+import { KEY, MSG_A, MSG_E, MAC_A, guess } from './data.js';
+
+// A story step's state for the stage (see Stage.apply): the guard on duty, the message Eve is
+// after, the prefix she has recovered so far, and which corner card to show.
+const code = { guard: 'eq', msg: MSG_A, table: { kind: 'code' } };
+const hunt = (prefix = '') => ({ guard: 'eq', msg: MSG_E, prefix, table: { kind: 'hunt' } });
+const safe = { guard: 'cd', msg: MSG_E, table: { kind: 'safe' } };
+const recap = { guard: 'cd', msg: MSG_E, table: { kind: 'recap' } };
+
+export const STEPS = [
+  { id: 's1', ch: 0, shot: 'intro', orbit: .02, state: code, say: ['a', 'b', 'e'] },
+  { id: 's2', ch: 0, shot: 'booth', state: code, go: async x => {
+      x.apply(); const r = await x.stage.present('a', MSG_A, MAC_A); if (!r) return;
+      await x.fly('gate'); if (!await x.stage.answer(r)) return; x.say('a');
+    } },
+  { id: 's3', ch: 1, shot: 'booth', state: { ...hunt(), table: { kind: 'code' } }, go: async x => {
+      x.apply(); const r = await x.stage.present('e', MSG_E, guess('')); if (!r) return;
+      if (!await x.stage.answer(r)) return; x.say('e');
+    } },
+  { id: 's4', ch: 1, shot: 'eve', state: hunt(), go: async x => {
+      x.apply();
+      let r = await x.stage.present('e', MSG_E, guess('', '0')); if (!r) return;         // wrong first letter: the shortest "no"
+      if (!await x.stage.answer(r)) return; if (!await x.stage.wait(.4)) return;
+      r = await x.stage.present('e', MSG_E, guess('', 'b')); if (!r) return;             // right first letter: one letter longer
+      if (!await x.stage.answer(r)) return; x.say('e');
+    } },
+  { id: 's5', ch: 2, shot: 'chart', state: hunt(), go: async x => {
+      x.apply(); if (!await x.stage.round({ full: 5 })) return; x.say('e');
+    } },
+  { id: 's6', ch: 2, shot: 'chart', state: hunt('b'), go: async x => {
+      x.apply(); if (!await x.stage.round({ full: 3 })) return; x.say('e');
+    } },
+  { id: 's7', ch: 2, shot: 'wide', state: hunt('b2'), go: async x => {
+      x.apply(); if (!await x.stage.finish()) return; await x.fly('gate'); x.say('e');
+    } },
+  { id: 's8', ch: 3, shot: 'chart', state: safe, go: async x => {
+      x.apply(); if (!await x.stage.noise()) return; x.say('e');
+    } },
+  { id: 's9', ch: 3, shot: 'wide', orbit: .02, state: recap, say: ['a', 'e'] },
+  { id: 's10', ch: 4, shot: 'wide', orbit: .02, state: recap, go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
+];
+
+export class Story {
+  constructor(ctx) {
+    this.ctx = ctx; this.i = 0; this.token = 0;
+    this.el = { title: document.getElementById('step-title'), text: document.getElementById('step-text'),
+      actions: document.getElementById('step-actions'), count: document.getElementById('step-count'),
+      chapters: document.getElementById('chapters'), prev: document.getElementById('prev'), next: document.getElementById('next') };
+    this.el.prev.onclick = () => this.go(this.i - 1);
+    this.el.next.onclick = () => this.go(this.i + 1);
+    this.said = new Map();   // bubble id -> text key, to re-say them after a language switch
+    onLang(() => { this.ctx.stage.relabel(); this.render(true); });
+  }
+
+  state(i = this.i) { return STEPS[i].state; }
+
+  go(i) {
+    i = Math.max(0, Math.min(STEPS.length - 1, i));
+    this.i = i; const tok = ++this.token, step = STEPS[i], c = this.ctx;
+    location.hash = 'story=' + (i + 1);
+    c.bubbles.clear(); this.said.clear();
+    c.stage.speed = c.instant ? 50 : 1;
+    c.stage.apply(this.state());
+    c.rig.setOrbit(0);
+    c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => {
+      if (tok !== this.token) return;
+      if (step.orbit) c.rig.setOrbit(step.orbit);
+      if (step.auto) this.run(step.go);
+    });
+    this.render();
+    // bubbles appear once the camera has mostly arrived
+    setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : 1300);
+  }
+
+  say(who, key = who) {
+    const step = STEPS[this.i];
+    this.said.set(who, key);
+    this.ctx.bubbles.show('story-' + who, who, raw('steps')[step.id][key], () => this.ctx.stage.head(who));
+  }
+
+  render(langOnly = false) {
+    const step = STEPS[this.i], s = raw('steps')[step.id];
+    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
+    this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
+    this.el.chapters.innerHTML = '';
+    raw('ch').forEach((name, k) => {
+      const b = document.createElement('button'); b.textContent = `${k + 1}. ${name}`;
+      b.classList.toggle('active', step.ch === k);
+      b.onclick = () => this.go(STEPS.findIndex(x => x.ch === k));
+      this.el.chapters.appendChild(b);
+    });
+    this.el.actions.innerHTML = '';
+    for (const key of ['go', 'go2']) {
+      if (!step[key]) continue;
+      const b = document.createElement('button'); b.className = key === 'go' ? 'primary' : '';
+      b.textContent = s[key];
+      b.onclick = () => this.run(step[key]);
+      this.el.actions.appendChild(b);
+    }
+    if (langOnly) for (const [who, key] of this.said) if (this.ctx.bubbles.items.has('story-' + who)) this.say(who, key);
+  }
+
+  async run(fn) {
+    const tok = this.token, c = this.ctx, st = c.stage;
+    const live = () => tok === this.token;
+    const buttons = [...this.el.actions.querySelectorAll('button')];
+    buttons.forEach(b => b.disabled = true);
+    c.bubbles.clear(); this.said.clear();
+    c.rig.setOrbit(0);
+    const x = {
+      stage: st, rig: c.rig, live,
+      // back to the step's own state, unless the visitor has moved on
+      apply: () => { if (live()) st.apply(this.state()); },
+      fly: shot => live() ? c.rig.fly(shot) : null,
+      say: (who, key) => live() && this.say(who, key),
+      celebrate: () => live() && c.celebrate(),
+      mode: m => c.setMode(m),
+    };
+    try { await fn(x); } finally { if (live()) buttons.forEach(b => b.disabled = false); }
+  }
+}
