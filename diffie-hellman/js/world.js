@@ -11,6 +11,8 @@ export const PLACES = {
   b: { table: new THREE.Vector3(30, 0, 3), person: new THREE.Vector3(27.3, 0, 2.4), house: new THREE.Vector3(35, 0, -9) },
 };
 export const TABLE_TOP = 1.5;
+// a step along the back of each table, so its back row of pots shows over the front row
+export const SHELF_H = .45, SHELF_D = 1.1;
 export const TABLE_SIZE = { a: [3.8, 2.4], e: [4.8, 2.6], b: [3.8, 2.4] };
 // The other houses of the village.
 export const HOUSES = [[-20, -30, .4], [14, -33, -.3], [52, -20, -.9], [-56, -16, .9], [-48, 26, 2.4], [48, 28, -2.3], [8, 34, 3.1]]
@@ -129,6 +131,8 @@ function workshop() {
 export function table(w = 3.2, d = 2) {
   const g = new THREE.Group();
   const top = new THREE.Mesh(new THREE.BoxGeometry(w, .16, d), M.wood); top.position.y = TABLE_TOP - .08; top.castShadow = top.receiveShadow = true; g.add(top);
+  const shelf = new THREE.Mesh(new THREE.BoxGeometry(w - .1, SHELF_H, SHELF_D), M.wood);
+  shelf.position.set(0, TABLE_TOP + SHELF_H / 2, -d / 2 + SHELF_D / 2 + .05); shelf.castShadow = shelf.receiveShadow = true; g.add(shelf);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
     const leg = new THREE.Mesh(new THREE.BoxGeometry(.16, TABLE_TOP - .16, .16), M.wood);
     leg.position.set(sx * (w / 2 - .2), (TABLE_TOP - .16) / 2, sz * (d / 2 - .2)); leg.castShadow = true; g.add(leg);

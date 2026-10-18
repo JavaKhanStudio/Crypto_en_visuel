@@ -12,11 +12,11 @@ export class Bubbles {
   constructor(camera) { this.camera = camera; this.items = new Map(); }
 
   // who: 'a' | 'b' | 'e' | 'n'. anchor: Vector3, Object3D or () => Vector3.
-  // side: 'up' sits above the anchor; 'left' beside it, its tail pointing right at it.
+  // side: 'up' sits above the anchor; 'left' beside it, its tail pointing right at it, when it fits.
   show(id, who, text, anchor, { lift = 0, ttl = 0, side = 'up' } = {}) {
     this.hide(id, true);
     const el = document.createElement('div');
-    el.className = `bubble ${who} ${side}`;
+    el.className = `bubble ${who}`;
     el.innerHTML = `<span class="who"></span><span class="txt"></span>`;
     el.querySelector('.who').textContent = raw('who')[who];
     layer.appendChild(el);
@@ -78,7 +78,9 @@ export class Bubbles {
       const behind = tmp.z > 1;
       const x = (tmp.x * .5 + .5) * w, y = (-tmp.y * .5 + .5) * h;
       const bw = it.el.offsetWidth, bh = it.el.offsetHeight;
-      const left = it.side === 'left';
+      // no room on the left (the speaker is near the screen's edge): back above the head
+      const left = it.side === 'left' && x - bw - 22 >= 8;
+      it.el.classList.toggle('left', left);
       const cx = Math.min(w - bw - 8, Math.max(8, left ? x - bw - 22 : x - bw / 2));
       const cy = Math.min(h - bh - 8, Math.max(top, left ? y - bh / 2 : y - bh - 14));
       it.el.style.transform = `translate(${cx}px, ${cy}px)`;

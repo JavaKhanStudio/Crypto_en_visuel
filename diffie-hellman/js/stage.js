@@ -4,7 +4,7 @@
 // is checked. apply(state) puts everything where a story step says, instantly; the async
 // actions animate from there.
 import * as THREE from 'three';
-import { PLACES, TABLE_TOP, TABLE_SIZE } from './world.js';
+import { PLACES, TABLE_TOP, TABLE_SIZE, SHELF_H } from './world.js';
 import { pot, chest, certificate, person, COLORS, POT_H, POT_R } from './props.js';
 import { mix, colorOf } from './paint.js';
 import { burst, ring, icon } from './fx.js';
@@ -37,10 +37,10 @@ export class Stage {
   }
 
   // ---------- where things rest ----------
-  // six places on a table: 0 1 2 along the front edge, 3 4 5 behind them
+  // six places on a table: 0 1 2 along the front edge, 3 4 5 behind them, up on the shelf
   slotSpot(k, i) {
     const [w] = TABLE_SIZE[k], dx = (w - 1.3) / 2;
-    return PLACES[k].table.clone().add(v((i % 3 - 1) * dx, TABLE_TOP, i < 3 ? .5 : -.6));
+    return PLACES[k].table.clone().add(v((i % 3 - 1) * dx, TABLE_TOP + (i < 3 ? 0 : SHELF_H), i < 3 ? .5 : -.6));
   }
   certSpot() { return this.slotSpot('a', 5).add(v(.45, 0, 0)); }   // back right of Alice's table, clear of the pots
   head(k) { return PLACES[k].person.clone().add(v(0, 4.3, 0)); }
@@ -91,8 +91,8 @@ export class Stage {
       if (text && text !== l.userData.text) setLabel(l, text, '#' + colorOf(p.userData.recipe).getHexString());
     }
   }
-  // neighbours' tags would overlap: the middle pot's tag sits higher, the back row's higher still
-  liftLabel(p) { const i = p.userData.slot; p.userData.label.position.y = POT_H + .45 + (i % 3 === 1 ? .5 : 0) + (i >= 3 ? 1 : 0); }
+  // neighbours' tags would overlap: the middle pot's tag sits higher, the back row's (already up on the shelf) higher still
+  liftLabel(p) { const i = p.userData.slot; p.userData.label.position.y = POT_H + .45 + (i % 3 === 1 ? .5 : 0) + (i >= 3 ? .55 : 0); }
   setNumbers(on) { this.st.numbers = on; this.relabel(); }
 
   // ---------- animation helpers ----------

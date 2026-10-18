@@ -138,8 +138,9 @@ export class Story {
     const step = STEPS[this.i];
     this.said.set(who, key);
     this.ctx.bubbles.show('story-' + who, who, raw('steps')[step.id][key], () => this.ctx.stage.head(who),
-      // Eve speaks from her left: above her head, her bubble would cover the tags of her table's back row
-      { side: who === 'e' ? 'left' : 'up' });
+      // everyone stands left of their table and speaks from that side: above the head, the bubble
+      // would cover the tags of the table's back row
+      { side: 'left' });
   }
 
   // the step's recap cards, one over each table (re-made after a language switch)
