@@ -12,7 +12,7 @@ import { hmacHex } from './hmac.js';
 import { KEY, MSG_E, HEX, N, guess, looks } from './data.js';
 import { burst, icon } from './fx.js';
 import { sfx } from './sound.js';
-import { t, raw, dec } from './i18n.js';
+import { t, raw, dec, ord } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -77,7 +77,7 @@ export class Stage {
   }
   drawChart() {
     const st = this.st, L = raw('scene');
-    drawChart(this.world.chart, { title: t('scene.chart', { i: Math.min(N, st.prefix.length + 1) }),
+    drawChart(this.world.chart, { title: t('scene.chart', { i: Math.min(N, st.prefix.length + 1), o: ord(Math.min(N, st.prefix.length + 1)) }),
       sub: L.known + ' ' + (st.prefix || '—') + (st.prefix.length < N ? '_' : ''), bars: st.bars,
       max: st.guard === 'cd' ? answerTime(N) * 1.1 : Math.max(answerTime(3), ...st.bars.map(b => b?.t || 0)) * 1.1, fmt: x => dec(x, 1) });
   }

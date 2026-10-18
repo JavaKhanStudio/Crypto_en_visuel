@@ -20,7 +20,7 @@ const fr = {
     looked: '{n} lettres regardées',
     ledger: 'Registre de Bob',
     badge: 'BADGE',
-    chart: 'Temps de réponse — {i}e lettre',
+    chart: 'Temps de réponse — {o} lettre',
     known: 'connu :',
   },
   ch: ['Le contrôle', 'Eve essaie', 'Lettre par lettre', 'Le garde patient', 'À vous'],
@@ -212,4 +212,6 @@ export function onLang(f) { listeners.push(f); }
 
 // numbers as each language writes them: 1 024 / 1,024, and 0,2 / 0.2
 export const num = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, lang === 'fr' ? ' ' : ',');
+// French ordinals: 1re, 2e, 3e… (English puts the plain number after 'letter')
+export const ord = n => lang === 'fr' ? n + (n === 1 ? 're' : 'e') : String(n);
 export const dec = (x, d = 2) => lang === 'fr' ? x.toFixed(d).replace('.', ',') : x.toFixed(d);

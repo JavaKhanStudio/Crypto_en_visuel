@@ -171,8 +171,14 @@ export function drawChart(g, c) {
       x.textAlign = 'center'; x.fillStyle = '#c9d4ea'; x.font = `700 ${H * .065}px ${mono}`; x.fillText('0123456789abcdef'[i], cx + bw / 2, H * .93);
       if (!b) continue;
       const h = (base - top) * b.t / max;
-      x.fillStyle = b.hi ? '#ffd84d' : '#ff4d5e'; x.fillRect(cx + bw * .15, base - h, bw * .7, h);
-      x.fillStyle = b.hi ? '#ffd84d' : '#e8b0b8'; x.font = `700 ${H * .045}px ${mono}`; x.fillText(c.fmt(b.t), cx + bw / 2, base - h - H * .03);
+      x.fillStyle = b.hi ? '#ffd84d' : '#ff4d5e'; x.fillRect(cx + bw * .1, base - h, bw * .8, h);
+      // the value, turned on its side along the bar: sixteen values written across would run together.
+      // Inside the bar's top when it is tall enough, else just above it.
+      const v = c.fmt(b.t), fs = bw * .58; x.font = `700 ${fs}px ${mono}`;
+      const len = x.measureText(v).width, inside = h > len + fs * .8;
+      x.save(); x.translate(cx + bw / 2, inside ? base - h + fs * .4 : base - h - fs * .4); x.rotate(-Math.PI / 2);
+      x.textAlign = inside ? 'right' : 'left'; x.fillStyle = inside ? '#120c10' : b.hi ? '#ffd84d' : '#e8b0b8';
+      x.fillText(v, 0, 0); x.restore();
     }
   });
 }
