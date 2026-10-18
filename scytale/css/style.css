@@ -181,4 +181,5 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 #card .line.flat .cell { width: 17px; }
 #card .cell.hot { transform: translateY(-3px) scale(1.18); box-shadow: 0 0 0 2px #fff, 0 0 14px #ffd66b; }
 #card .legend { margin: 6px 0 0; color: var(--muted); font-size: 11.5px; }
-@media (max-width: 900px) { #card { top: auto; bottom: 230px; right: 8px; max-width: calc(100% - 16px); } }
+@media (max-width: 900px) { #card { top: auto; bottom: calc(var(--dock, 230px) + 8px); right: 8px; max-width: calc(100% - 16px);
+  max-height: calc(100% - var(--dock, 230px) - var(--top, 0px) - 16px); overflow: auto; } }

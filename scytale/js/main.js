@@ -74,6 +74,18 @@ const quiz = new Quiz(ctx);
 const panels = { story: document.getElementById('story'), sandbox: document.getElementById('sandbox'), quiz: document.getElementById('quiz') };
 const card = document.getElementById('card');
 let mode = null;
+// On a phone the corner card sits just above whichever bottom panel is open, however tall that
+// panel grows with the step, and never climbs under the top bar (r83). See #card in style.css.
+function dock() {
+  const open = Object.values(panels).find(p => !p.classList.contains('hidden') && p.offsetHeight);
+  const top = Math.max(...['topbar', 'modes', 'lang'].map(id => document.getElementById(id)?.getBoundingClientRect().bottom ?? 0));
+  const root = document.documentElement.style;
+  root.setProperty('--dock', `${open ? innerHeight - open.getBoundingClientRect().top : 14}px`);
+  root.setProperty('--top', `${top}px`);
+}
+const docker = new ResizeObserver(dock);
+for (const el of [...Object.values(panels), document.getElementById('topbar')]) docker.observe(el);
+addEventListener('resize', dock);
 function setMode(m, opts = {}) {
   mode = m; card.classList.toggle('hidden', m === 'quiz');
   for (const [k, el] of Object.entries(panels)) el.classList.toggle('hidden', k !== m);

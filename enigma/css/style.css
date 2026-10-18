@@ -189,4 +189,5 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 #card td.empty { font: 12px var(--sans); color: var(--muted); text-align: left; }
 #card .msg { margin: 6px 0 2px; font: 700 16px "Courier New", monospace; color: #ffd84d; }
 #card .msg span { font: 12px var(--sans); color: var(--muted); }
-@media (max-width: 900px) { #card { top: auto; bottom: 230px; right: 8px; max-width: calc(100% - 16px); } }
+@media (max-width: 900px) { #card { top: auto; bottom: calc(var(--dock, 230px) + 8px); right: 8px; max-width: calc(100% - 16px);
+  max-height: calc(100% - var(--dock, 230px) - var(--top, 0px) - 16px); overflow: auto; } }

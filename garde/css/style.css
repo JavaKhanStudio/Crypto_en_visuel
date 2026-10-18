@@ -183,7 +183,8 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 #card .verdict.ok { color: var(--ok); } #card .verdict.bad { color: #ff8f9a; }
 #sb-msg { width: 100%; font: 700 13px "Courier New", monospace; background: #1b1d2a; color: var(--ink); border: 1px solid var(--edge); border-radius: 8px; padding: 6px; resize: none; }
 .stats .intact { color: var(--ok); } .stats .changed { color: #ffb05c; } .stats .garbage, .stats .ko { color: #ff8f9a; }
-@media (max-width: 900px) { #card { top: auto; bottom: 230px; right: 8px; max-width: calc(100% - 16px); } }
+@media (max-width: 900px) { #card { top: auto; bottom: calc(var(--dock, 230px) + 8px); right: 8px; max-width: calc(100% - 16px);
+  max-height: calc(100% - var(--dock, 230px) - var(--top, 0px) - 16px); overflow: auto; } }
 /* Salt: the cells of the corner card, the password boxes of the sandbox */
 #card td.head { font: 600 11.5px var(--sans); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; padding-top: 4px; }
 #card td.say { font: 12.5px var(--sans); color: var(--ink); white-space: normal; }
