@@ -53,8 +53,23 @@ const M = {
 const EVIL = { stone: M.evilStone, trim: M.evilTrim, win: M.evilWindow, spiky: true };
 
 // ---------- terrain ----------
+const TERRAIN = { size: 420, seg: 180 };
+// The height of the terrain as drawn: heightAt() at the grid's vertices, flat between them, cut
+// the way PlaneGeometry cuts each cell (diagonal from (ix, iz + 1) to (ix + 1, iz)). Where the
+// ground curves up, the drawn triangles stand above heightAt(): a road laid on heightAt() sank
+// into them below the yellow castle (r73).
+function groundAt(x, z) {
+  const c = TERRAIN.size / TERRAIN.seg, o = TERRAIN.size / 2;
+  const gx = (x + o) / c, gz = (z + o) / c, ix = Math.floor(gx), iz = Math.floor(gz), fx = gx - ix, fz = gz - iz;
+  const h = (i, k) => heightAt(i * c - o, k * c - o);
+  const a = h(ix, iz), b = h(ix, iz + 1), d = h(ix + 1, iz);
+  if (fx + fz <= 1) return a + fx * (d - a) + fz * (b - a);
+  const cc = h(ix + 1, iz + 1);
+  return cc + (1 - fx) * (b - cc) + (1 - fz) * (d - cc);
+}
+
 function buildTerrain() {
-  const size = 420, seg = 180;
+  const { size, seg } = TERRAIN;
   const g = new THREE.PlaneGeometry(size, size, seg, seg);
   g.rotateX(-Math.PI / 2);
   const pos = g.attributes.position, colors = [];
@@ -84,15 +99,17 @@ export function buildRoad() {
   // re-sample densely so the road hugs the ground
   const dense = curve.getSpacedPoints(240).map(p => new THREE.Vector3(p.x, heightAt(p.x, p.z) + .25, p.z));
   const path = new THREE.CatmullRomCurve3(dense);
-  const pts = path.getSpacedPoints(400), half = 1.7, verts = [], idx = [];
+  // ACROSS vertices across the width, each laid on the drawn ground, so no crease of the terrain
+  // between them rises through the road
+  const pts = path.getSpacedPoints(400), half = 1.7, ACROSS = 5, verts = [], idx = [];
   for (let i = 0; i < pts.length; i++) {
     const t = path.getTangentAt(i / (pts.length - 1)), n = new THREE.Vector3(-t.z, 0, t.x).normalize();
-    for (const s of [-1, 1]) {
-      const p = pts[i].clone().addScaledVector(n, half * s);
-      p.y = heightAt(p.x, p.z) + .18;
+    for (let j = 0; j < ACROSS; j++) {
+      const p = pts[i].clone().addScaledVector(n, half * (j / (ACROSS - 1) * 2 - 1));
+      p.y = groundAt(p.x, p.z) + .18;
       verts.push(p.x, p.y, p.z);
+      if (i && j) { const k = i * ACROSS + j, u = k - ACROSS; idx.push(u - 1, u, k - 1, u, k, k - 1); }
     }
-    if (i) { const k = i * 2; idx.push(k - 2, k - 1, k, k - 1, k + 1, k); }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
