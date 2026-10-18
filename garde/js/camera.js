@@ -12,7 +12,7 @@ export const SHOTS = {
   intro:    { pos: v(-95, 72, 150), target: v(-25, 18, -8) },
   booth:    { pos: v(0, 46, 72), target: v(0, 31, -16) },                       // the guard, his booth, the board behind
   eve:      { pos: v(-56, 44, 62), target: v(-56, 22, 2) },                     // Eve and her stopwatch
-  chart:    { pos: v(-30, 32, 34), target: v(-30, 18, -6) },                    // Eve's chart of answer times
+  chart:    { pos: v(-38, 28, 38), target: v(-34, 18, -6) },                    // Eve's chart of answer times
   gate:     { pos: v(46, 42, 78), target: v(40, 16, -6) },                      // the gate and Bob's ledger
   // the sandbox panel covers the left quarter: each shot sits a little right of what it shows
   sbA:      { pos: v(14, 46, 80), target: v(8, 28, -14) },                      // the booth and the board
