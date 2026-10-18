@@ -245,6 +245,8 @@ function setLabel(s, text, color) {
   x.font = font; x.fillStyle = 'rgba(16,18,28,.85)'; x.strokeStyle = color; x.lineWidth = 4;
   x.beginPath(); x.roundRect(2, 2, w - 4, 80, 40); x.fill(); x.stroke();
   x.fillStyle = color; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, w / 2, 44);
-  s.material.map?.dispose(); s.material.map = new THREE.CanvasTexture(c); s.material.needsUpdate = true;
+  // the canvas is sRGB: read as linear, the pale « clé privée » crossed the bloom threshold and glowed (r76)
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  s.material.map?.dispose(); s.material.map = tex; s.material.needsUpdate = true;
   s.scale.set(w / 84 * .9, .9, 1);
 }
