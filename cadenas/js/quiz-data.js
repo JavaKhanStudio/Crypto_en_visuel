@@ -48,10 +48,10 @@ export const QUIZ = [
   { correct: [0],
     fr: { q: 'Eve ferme une boîte avec son cadenas de Bob et l’envoie à Bob, en signant « Alice ». Bob peut-il savoir qu’elle ne vient pas d’Alice ?',
       o: ['Non : n’importe qui peut fermer une boîte pour Bob, le cadenas ne dit pas qui l’a fermée', 'Oui : le cadenas d’Eve est différent de celui d’Alice', 'Oui : seule Alice peut fermer une boîte pour Bob', 'Non, parce que Bob ne peut pas ouvrir la boîte d’Eve'],
-      ok: 'Exact : le cadenas protège ce qu’il y a dans la boîte, il ne prouve pas qui l’envoie. Prouver l’expéditeur, c’est un autre outil, qui viendra plus tard dans le cours.',
+      ok: 'Exact : le cadenas protège ce qu’il y a dans la boîte, il ne prouve pas qui l’envoie. Prouver l’expéditeur, c’est un autre outil, qui viendra plus tard.',
       ko: 'Tous les cadenas de Bob sont identiques, et tout le monde en a un : Bob ouvre la boîte d’Eve sans problème, mais rien ne lui dit qui l’a fermée. Le cadenas protège le contenu, pas l’identité de l’expéditeur.' },
     en: { q: 'Eve locks a box with her Bob padlock and sends it to Bob, signed « Alice ». Can Bob tell it does not come from Alice?',
       o: ['No: anyone can lock a box for Bob, the padlock does not say who locked it', 'Yes: Eve’s padlock differs from Alice’s', 'Yes: only Alice can lock a box for Bob', 'No, because Bob cannot open Eve’s box'],
-      ok: 'Right: the padlock protects what is inside the box, it does not prove who sent it. Proving the sender takes another tool, later in the course.',
+      ok: 'Right: the padlock protects what is inside the box, it does not prove who sent it. Proving the sender takes another tool, which comes later.',
       ko: 'All of Bob’s padlocks are identical and everyone has one: Bob opens Eve’s box just fine, but nothing tells him who locked it. The padlock protects the contents, not the sender’s identity.' } },
 ];
