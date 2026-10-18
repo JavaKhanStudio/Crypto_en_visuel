@@ -229,7 +229,8 @@ function buildCity() {
   const spotGeo = new THREE.CircleGeometry(BEAM.radius, 40, 0, Math.PI * 2); spotGeo.rotateX(-Math.PI / 2);
   const spot = new THREE.Mesh(spotGeo, new THREE.MeshBasicMaterial({ color: 0xff3a30, transparent: true, opacity: .45, blending: THREE.AdditiveBlending, depthWrite: false }));
   spot.userData.base = Float32Array.from(spotGeo.attributes.position.array); spot.renderOrder = 2; g.add(spot);
-  const f = flag(COLORS.e, 5, 3); f.position.set(0, 4.5, R); g.add(f);   // over the gate, facing the road
+  // on the needle of the west gate tower (h 7.5, needle tip at 7.5 + 1.25 + 7.5 * 1.1), flying over the gate
+  const f = flag(COLORS.e, 5, 3); f.position.set(-2.6, 16.6, R); g.add(f);
   g.position.copy(CITY);
   g.userData = { eye, fireLight, pivot, beam, spot, flag: f, target: new THREE.Vector3() };
   return g;
