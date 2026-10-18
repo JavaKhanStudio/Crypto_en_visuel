@@ -15,7 +15,7 @@ dans cryptographie r66.
 | N° | Épisode | Adresse | État |
 |---|---|---|---|
 | 1 | Le problème des deux généraux | https://javakhanstudio.github.io/Crypto_en_visuel/deux-generaux/ | publié |
-| 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | bientôt |
+| 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | bientôt |
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | bientôt |
 | 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | bientôt |
@@ -36,6 +36,16 @@ qu'Étienne peut capturer. La démo montre pourquoi aucun nombre fini d'accusés
 la certitude, ce que fait TCP à la place, et ce que la cryptographie (HMAC) règle ou ne règle pas.
 
 Interactive demo of the Two Generals' Problem, French first, English with `?lang=en`.
+
+## Épisode 2 — Le cadenas de Bob
+
+La clé publique racontée avec la carte « Deux clés - Le cadenas de Bob » du cours : Bob fabrique
+des cadenas ouverts et les distribue partout (sa clé publique), il garde la seule clé (sa clé
+privée) ; Alice ferme sa boîte, Eve l'intercepte avec le même cadenas en main et ne peut pas
+l'ouvrir, seul Bob l'ouvre. 10 étapes en 5 chapitres, un bac à sable (Eve intercepte ou non,
+Eve a volé la clé ou non, qui essaie d'ouvrir), un quiz de 6 questions. Même structure que
+`deux-generaux/` (`cadenas/js/stage.js` tient les accessoires et leurs animations).
+`tests/cadenas_story.py` clique chaque bouton de l'histoire et vérifie où finit la boîte.
 
 ## Lancer
 

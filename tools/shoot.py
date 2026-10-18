@@ -31,7 +31,11 @@ with sync_playwright() as p:
     pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.on("console", lambda m: logs.append(f"{m.type}: {m.text}") if m.type in ("error", "warning") else None)
     pg.goto(a.base + a.page + a.query + a.hash, wait_until="load")
-    pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
+    try:
+        pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
+    except Exception:
+        print("page never ready; errors:", errors or "none", *logs[:10], sep="\n  ")
+        raise SystemExit(1)
     for js in a.eval:
         pg.evaluate(js)
         pg.wait_for_timeout(300)

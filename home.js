@@ -14,7 +14,7 @@ addEventListener('hashchange', forwardOldLink);
 // n = episode number, fixed for good; live = published. Order and picks: cryptographie r66.
 const EPISODES = [
   { n: 1, slug: 'deux-generaux', icon: '🏰', live: true },
-  { n: 2, slug: 'cadenas', icon: '🔒' },
+  { n: 2, slug: 'cadenas', icon: '🔒', live: true },
   { n: 3, slug: 'diffie-hellman', icon: '🎨' },
   { n: 4, slug: 'scytale', icon: '📜' },
   { n: 5, slug: 'enigma', icon: '⚙️' },
