@@ -19,7 +19,7 @@ dans cryptographie r66.
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
 | 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | publié |
-| 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | bientôt |
+| 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | publié |
 | 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | bientôt |
 | 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | bientôt |
 
@@ -91,6 +91,25 @@ taper le chiffré »), un quiz de 7 questions. L'arithmétique est seule dans `e
 (pas réel d'Enigma I, double pas compris) ; `tests/enigma_values.mjs` la compare à la diapo
 (`node tests/enigma_values.mjs`), `tests/enigma_story.py` clique chaque bouton de l'histoire et
 du bac à sable et vérifie positions, lampes et lignes du tableau.
+
+## Épisode 6 — Le pingouin et la chaîne
+
+Les modes d'opération avec les valeurs des cartes du cours (« Modes - L'exemple suivi »,
+« ECB - Un exemple », « CBC - Un exemple », « CBC - L'IV - Un exemple », « Bit-flip - Un exemple »,
+autour de « Modes d'opération - ECB - Le pingouin ») : clé `cle-de-16-octets`, le message de 53
+octets GUARDIASECURITY! | montant=00100EUR | GUARDIASECURITY! | Alice en 4 caisses sur un tapis
+roulant. En ECB, chaque caisse passe seule dans la presse AES et C1 = C3 (97 a7 33 44…) ; le
+pingouin de la diapo, chiffré pour de vrai (un octet par pixel, un bloc = 16 pixels d'une ligne),
+garde sa silhouette en ECB et devient du bruit en CBC. En CBC, chaque caisse passe d'abord dans un
+anneau XOR avec le bloc chiffré précédent (l'IV 7e fa 5a… pour le premier) ; un autre IV
+(1a 2f 1c…) donne un tout autre chiffré. Eve retourne les bits 09 de l'octet 8 de C1 (ea → e3) :
+Bob lit P1 détruit et montant=90100EUR. La parade : un HMAC sur l'IV et le chiffré, vérifié par Bob
+avant de déchiffrer. La diapo ne donne pas de clé HMAC : l'épisode prend `cle-hmac-secrete`.
+13 étapes en 6 chapitres, un bac à sable (votre message, ECB ou CBC, le bit qu'Eve retourne, avec
+ou sans HMAC), un quiz de 7 questions. `pingouin/js/aes.js` est un vrai AES-128 (ECB, CBC, PKCS#7),
+`tests/pingouin_values.mjs` le compare aux diapos et au vecteur de FIPS-197
+(`node tests/pingouin_values.mjs`), `tests/pingouin_story.py` clique chaque bouton de l'histoire et
+du bac à sable et vérifie les caisses, le tableau et le verdict de Bob.
 
 ## Lancer
 
