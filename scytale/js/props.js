@@ -82,9 +82,14 @@ export function person(kind) {
   } else if (kind === 'n') {   // the messenger: a traveller's broad hat
     const hat = mat(0x6b5330), crown = new THREE.Mesh(new THREE.CylinderGeometry(.3, .38, .28, 14), hat); crown.position.y = 2.98; g.add(crown);
     const brim = new THREE.Mesh(new THREE.CylinderGeometry(.75, .75, .05, 18), hat); brim.position.y = 2.86; g.add(brim);
-  } else {                     // Eve: a deep red hood
-    const hood = new THREE.Mesh(new THREE.ConeGeometry(.62, 1.3, 12, 1, true), mat(0x9e1b2e, { side: THREE.DoubleSide })); hood.position.y = 2.85; g.add(hood);
-    const mask = new THREE.Mesh(new THREE.TorusGeometry(.4, .06, 6, 16, Math.PI), dark); mask.position.set(0, 2.62, .05); g.add(mask);
+  } else {                     // Eve: a spy's dark fedora with a red band, a black eye mask (r65: not a pointed hood)
+    const felt = mat(0x2a2a30), hat = new THREE.Group(); hat.position.y = 2.86; hat.rotation.x = .12; g.add(hat);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(.74, .74, .05, 24), felt); brim.castShadow = true; hat.add(brim);
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(.31, .41, .36, 16), felt); crown.position.y = .19; crown.castShadow = true; hat.add(crown);
+    const hatband = new THREE.Mesh(new THREE.CylinderGeometry(.415, .42, .1, 16), mat(0x9e1b2e)); hatband.position.y = .08; hat.add(hatband);
+    const mask = new THREE.Mesh(new THREE.TorusGeometry(.42, .075, 6, 20, Math.PI), dark); mask.rotation.x = Math.PI / 2; mask.position.y = 2.6; g.add(mask);
+    for (const x of [-.14, .14]) { const white = new THREE.Mesh(new THREE.SphereGeometry(.07, 10, 8), mat(0xfaf6ee)); white.position.set(x, 2.6, .45); g.add(white);
+      const pupil = new THREE.Mesh(new THREE.SphereGeometry(.04, 8, 6), dark); pupil.position.set(x, 2.6, .51); g.add(pupil); }
   }
   g.userData.head = head; g.userData.arms = arms;
   return g;
