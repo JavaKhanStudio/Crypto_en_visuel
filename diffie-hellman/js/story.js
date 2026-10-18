@@ -98,7 +98,11 @@ export const STEPS = [
       await x.carry('bM', 'b', 'a', { courier: 0, slot: 1, peek: () => x.stage.copy('bM', 'eV', 5) }); if (!x.live()) return;
       await x.fly('aliceClose'); await x.stage.check('bM', 'a'); x.say('a', 'a2'); x.say('e', 'e2');
     } },
-  { id: 's15', ch: 5, shot: 'wide', orbit: .02, state: { pots: SHARED }, go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
+  // the wide shot is too far to read a pot's tag: a card over each table says what is on it
+  { id: 's15', ch: 5, shot: 'wide', orbit: .02, state: { pots: SHARED }, recap: {
+      a: [['J', 'pub'], ['R', 'secret'], ['BJR', 'never']],
+      e: [['J', 'pub'], ['JR', 'seen'], ['BJ', 'seen']],
+      b: [['J', 'pub'], ['B', 'secret'], ['BJR', 'never']] }, go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
 ];
 
 export class Story {
@@ -127,13 +131,21 @@ export class Story {
     });
     this.render();
     // bubbles appear once the camera has mostly arrived
-    setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : 1300);
+    setTimeout(() => { if (tok === this.token) { for (const s of step.say || []) this.say(s); this.cards(); } }, c.instant ? 0 : 1300);
   }
 
   say(who, key = who) {
     const step = STEPS[this.i];
     this.said.set(who, key);
-    this.ctx.bubbles.show('story-' + who, who, raw('steps')[step.id][key], () => this.ctx.stage.head(who));
+    this.ctx.bubbles.show('story-' + who, who, raw('steps')[step.id][key], () => this.ctx.stage.head(who),
+      // Eve speaks from her left: above her head, her bubble would cover the tags of her table's back row
+      { side: who === 'e' ? 'left' : 'up' });
+  }
+
+  // the step's recap cards, one over each table (re-made after a language switch)
+  cards() {
+    for (const [k, rows] of Object.entries(STEPS[this.i].recap || {}))
+      this.ctx.bubbles.card('recap-' + k, k, rows, () => this.ctx.stage.slotSpot(k, 4).setY(3.4));
   }
 
   render(langOnly = false) {
@@ -158,6 +170,7 @@ export class Story {
       this.el.actions.appendChild(b);
     }
     if (langOnly) for (const [who, key] of this.said) if (this.ctx.bubbles.items.has('story-' + who)) this.say(who, key);
+    if (langOnly && this.ctx.bubbles.items.has('recap-a')) this.cards();
   }
 
   async run(fn) {

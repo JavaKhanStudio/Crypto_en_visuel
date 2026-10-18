@@ -108,6 +108,11 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 }
 .bubble.show { opacity: 1; }
 .bubble::after { content: ""; position: absolute; left: 50%; bottom: -9px; margin-left: -9px; border: 9px solid transparent; border-bottom: 0; border-top-color: rgba(252, 248, 238, .96); }
+.bubble.left { transform-origin: 100% 50%; }
+.bubble.left::after { left: auto; right: -9px; bottom: auto; top: 50%; margin: -9px 0 0; border: 9px solid transparent; border-right: 0; border-left-color: rgba(252, 248, 238, .96); }
+.bubble.card .row { display: flex; align-items: center; gap: 7px; margin-top: 4px; white-space: nowrap; }
+.bubble.card .row b { padding: 1px 9px; border: 3px solid; border-radius: 99px; background: rgba(16,18,28,.86); color: #fff; font: 700 12px var(--sans); }
+.bubble.card .row i { font-style: normal; font-size: 13px; }
 .bubble .who { display: block; font: 700 11px var(--sans); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
 .bubble.a .who { color: #1f6fd1; }
 .bubble.b .who { color: #b07d00; }

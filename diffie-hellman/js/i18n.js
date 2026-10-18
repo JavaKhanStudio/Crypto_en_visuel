@@ -16,6 +16,8 @@ const fr = {
   paint: { J: 'JAUNE', R: 'ROUGE', B: 'BLEU', N: 'NOIR', W: 'BLANC', JR: 'ORANGE', BJ: 'VERT', BJR: 'MARRON',
     JN: 'KAKI', JNR: 'BORDEAUX', BJN: 'SAPIN', BJJR: 'OCRE', JW: 'CRÈME' },
   'paint.mix': 'mélange', 'paint.secret': '(secret)', 'paint.empty': 'vide',
+  // the recap cards of the last step: what each pot is, in one word
+  recap: { pub: 'public', secret: 'secret', seen: 'vu par Eve', never: 'jamais envoyé' },
   ch: ['Le problème', 'Les couleurs', 'L’échange', 'Le secret commun', 'Eve au milieu', 'La parade'],
   steps: {
     s1: { t: 'Se mettre d’accord sans se parler',
@@ -105,6 +107,7 @@ const en = {
   paint: { J: 'YELLOW', R: 'RED', B: 'BLUE', N: 'BLACK', W: 'WHITE', JR: 'ORANGE', BJ: 'GREEN', BJR: 'BROWN',
     JN: 'KHAKI', JNR: 'BURGUNDY', BJN: 'PINE', BJJR: 'OCHRE', JW: 'CREAM' },
   'paint.mix': 'mix', 'paint.secret': '(secret)', 'paint.empty': 'empty',
+  recap: { pub: 'public', secret: 'secret', seen: 'seen by Eve', never: 'never sent' },
   ch: ['The problem', 'The colours', 'The exchange', 'The shared secret', 'Eve in the middle', 'The fix'],
   steps: {
     s1: { t: 'Agreeing without talking',

@@ -3,6 +3,7 @@
 // the camera.
 import * as THREE from 'three';
 import { raw } from './i18n.js';
+import { colorOf } from './paint.js';
 
 const layer = document.getElementById('bubbles');
 const tmp = new THREE.Vector3();
@@ -11,19 +12,37 @@ export class Bubbles {
   constructor(camera) { this.camera = camera; this.items = new Map(); }
 
   // who: 'a' | 'b' | 'e' | 'n'. anchor: Vector3, Object3D or () => Vector3.
-  show(id, who, text, anchor, { lift = 0, ttl = 0 } = {}) {
+  // side: 'up' sits above the anchor; 'left' beside it, its tail pointing right at it.
+  show(id, who, text, anchor, { lift = 0, ttl = 0, side = 'up' } = {}) {
     this.hide(id, true);
     const el = document.createElement('div');
-    el.className = `bubble ${who}`;
+    el.className = `bubble ${who} ${side}`;
     el.innerHTML = `<span class="who"></span><span class="txt"></span>`;
     el.querySelector('.who').textContent = raw('who')[who];
     layer.appendChild(el);
-    const item = { el, anchor, lift, full: text, shown: this.instant ? text.length : 0, who };
+    const item = { el, anchor, lift, side, full: text, shown: this.instant ? text.length : 0, who };
     if (this.instant) el.querySelector('.txt').textContent = text;
     this.items.set(id, item);
     requestAnimationFrame(() => el.classList.add('show'));
     if (ttl) item.timer = setTimeout(() => this.hide(id), ttl);
     return item;
+  }
+
+  // A card of colour chips over a table, for the recap: rows of [recipe, word key], each chip
+  // its paint's name in a frame of its colour, then the word (recap.pub, recap.secret...).
+  card(id, who, rows, anchor) {
+    const it = this.show(id, who, '', anchor, { lift: 0 });
+    it.el.classList.add('card'); it.rows = rows;
+    this.fillCard(it);
+    return it;
+  }
+  fillCard(it) {
+    const txt = it.el.querySelector('.txt'); txt.textContent = '';
+    for (const [recipe, word] of it.rows) {
+      const row = document.createElement('span'), chip = document.createElement('b'), w = document.createElement('i');
+      row.className = 'row'; chip.textContent = raw('paint')[recipe]; chip.style.borderColor = '#' + colorOf(recipe).getHexString();
+      w.textContent = raw('recap')[word]; row.append(chip, w); txt.appendChild(row);
+    }
   }
 
   hide(id, now = false) {
@@ -40,6 +59,7 @@ export class Bubbles {
   relabel(texts) {
     for (const [id, it] of this.items) {
       it.el.querySelector('.who').textContent = raw('who')[it.who];
+      if (it.rows) this.fillCard(it);
       if (texts[id]) { it.full = texts[id]; it.shown = it.full.length; it.el.querySelector('.txt').textContent = it.full; }
     }
   }
@@ -58,7 +78,9 @@ export class Bubbles {
       const behind = tmp.z > 1;
       const x = (tmp.x * .5 + .5) * w, y = (-tmp.y * .5 + .5) * h;
       const bw = it.el.offsetWidth, bh = it.el.offsetHeight;
-      const cx = Math.min(w - bw - 8, Math.max(8, x - bw / 2)), cy = Math.min(h - bh - 8, Math.max(top, y - bh - 14));
+      const left = it.side === 'left';
+      const cx = Math.min(w - bw - 8, Math.max(8, left ? x - bw - 22 : x - bw / 2));
+      const cy = Math.min(h - bh - 8, Math.max(top, left ? y - bh / 2 : y - bh - 14));
       it.el.style.transform = `translate(${cx}px, ${cy}px)`;
       it.el.style.visibility = behind ? 'hidden' : 'visible';
     }
