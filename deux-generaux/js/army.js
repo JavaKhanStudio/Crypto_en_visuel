@@ -45,7 +45,7 @@ export function march(world, teams, win, { duration = 3.2, onHit } = {}) {
         tick.hit = true; onHit?.();
         if (win) {
           fx.fireworks(new THREE.Vector3(CITY.x, 0, CITY.z), [0xffd27a, 0x4da3ff, 0xffffff, 0xffc24d], 14);
-          const f = world.city.userData.flag; tick.flag = f;
+          const f = world.city.userData.flag; tick.flag = f; tick.fall = true;
         } else {
           for (const tr of troops) {   // the lone army is crushed where it stands
             const front = path.getPointAt(tr.team === 'a' ? .42 : .58);
@@ -54,8 +54,12 @@ export function march(world, teams, win, { duration = 3.2, onHit } = {}) {
           }
         }
       }
-      if (tick.flag) tick.flag.rotation.z = Math.min(Math.PI / 2, (t - duration) * 1.2); // Eve's flag falls
-      if (t > duration + 2.6 && !done) {
+      if (tick.flag) {   // Étienne's flag topples off its tower and drops out of sight
+        const f = tick.flag, s = t - duration, y0 = f.userData.y0 ??= f.position.y;
+        f.rotation.z = Math.min(2, s * 1.6); f.position.y = Math.max(0, y0 - Math.max(0, s - .3) ** 2 * 7); f.visible = s < 2.2;
+      }
+      if (tick.fall) crumble(world, tick, t - duration);
+      if (t > duration + (win ? FALL + 1 : 2.6) && !done) {
         done = true; res();
         if (!win) clearArmies(world);   // the winners keep standing (and bobbing) at the walls
       }
@@ -64,6 +68,25 @@ export function march(world, teams, win, { duration = 3.2, onHit } = {}) {
   });
 }
 const easeOut = k => 1 - Math.pow(1 - k, 2);
+
+// Victory: Étienne's spire crumbles into his city over FALL seconds, in clouds of dust, and once
+// it is down a second round of fireworks goes up (r71). s: seconds since the armies hit the walls.
+const FALL = 2.6;
+function crumble(world, tick, s) {
+  const k = Math.min(1, Math.max(0, (s - .3) / FALL));
+  world.setFall(k);
+  const base = new THREE.Vector3(CITY.x, CITY.y + 1, CITY.z), puffs = Math.floor(k * 6);
+  for (tick.puffs ??= 0; tick.puffs < puffs; tick.puffs++) {   // a puff of dust as each floor goes down
+    const y = 26 * (1 - k * k) + 2;
+    fx.burst(base.clone().setY(base.y + y * Math.random()), 0x9d9081, { count: 140, speed: 6, up: 3, size: 2.2, life: 2.2, gravity: 2, glow: false });
+    fx.burst(base.clone(), 0x7d7064, { count: 160, speed: 10, up: 1, size: 2.6, life: 2.6, gravity: 1.5, glow: false });
+  }
+  if (k >= 1 && !tick.cheered) {
+    tick.cheered = true;
+    fx.ring(base.clone(), 0xffd27a, { radius: 22, life: 1.6 });
+    fx.fireworks(new THREE.Vector3(CITY.x, 0, CITY.z), [0xffd27a, 0x4da3ff, 0xffffff, 0xffc24d], 18);
+  }
+}
 
 export function clearArmies(world) {
   for (const m of live) { world.tickers.delete(m.tick); for (const tr of m.troops) world.scene.remove(tr.im); }
@@ -76,4 +99,7 @@ export function fadeArmies(k) { for (const m of live) for (const tr of m.troops)
 export function haltArmies(world) { for (const m of live) world.tickers.delete(m.tick); }
 export const hasArmies = () => live.size > 0;
 
-export function resetCityFlag(world) { world.city.userData.flag.rotation.z = 0; }
+export function resetCityFlag(world) {
+  const f = world.city.userData.flag;
+  f.rotation.z = 0; if (f.userData.y0 !== undefined) f.position.y = f.userData.y0; f.visible = true; world.setFall(0);
+}

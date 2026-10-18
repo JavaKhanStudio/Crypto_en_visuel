@@ -15,7 +15,7 @@ export function updateFx(dt) {
 }
 
 // A spray of glowing points, e.g. gold at a gate, red at a capture.
-export function burst(pos, color, { count = 70, speed = 9, life = 1.4, up = 6, size = .5, gravity = 14 } = {}) {
+export function burst(pos, color, { count = 70, speed = 9, life = 1.4, up = 6, size = .5, gravity = 14, glow = true } = {}) {   // glow: false for dust, which hides instead of shining
   const g = new THREE.BufferGeometry(), p = new Float32Array(count * 3), vel = [];
   for (let i = 0; i < count; i++) {
     p.set([pos.x, pos.y, pos.z], i * 3);
@@ -23,7 +23,7 @@ export function burst(pos, color, { count = 70, speed = 9, life = 1.4, up = 6, s
     v.y += up * Math.random(); vel.push(v);
   }
   g.setAttribute('position', new THREE.BufferAttribute(p, 3));
-  const m = new THREE.PointsMaterial({ color, size, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+  const m = new THREE.PointsMaterial({ color, size, transparent: true, blending: glow ? THREE.AdditiveBlending : THREE.NormalBlending, depthWrite: false });
   const obj = new THREE.Points(g, m); scene.add(obj);
   live.push({ obj, age: 0, life, dispose: () => { g.dispose(); m.dispose(); }, step(k, dt) {
     const a = g.attributes.position;

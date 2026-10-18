@@ -85,17 +85,17 @@ const sim = new Sim(world, {
 });
 
 // Leaving a sunrise, night falls back as the camera flies to the next shot while the camped armies fade, Étienne's
-// flag rises again and his gaze comes back (r69): snapping day to night in one frame was a flash. ?instant=1 still snaps.
+// spire rises again (his flag, which fell off it, is back at the end) and his gaze comes back (r69): snapping day to night in one frame was a flash. ?instant=1 still snaps.
 const DUSK = 2.2;   // the length of the camera's flight to the next shot
 let dusk = null, era = 0;   // era: a sunrise still rising when the world is reset stops there
 function resetWorld() {
   endDusk(); era++; haltArmies(world); world.setBeam(true); bubbles.clear();
-  const v0 = world.dawn || 0, flag = world.city.userData.flag, r0 = flag.rotation.z;
-  if (instant || (v0 === 0 && r0 === 0 && !hasArmies())) { world.setDawn(0); resetCityFlag(world); clearArmies(world); return; }
+  const v0 = world.dawn || 0, flag = world.city.userData.flag, r0 = flag.rotation.z, f0 = world.city.userData.fall;
+  if (instant || (v0 === 0 && r0 === 0 && f0 === 0 && !hasArmies())) { world.setDawn(0); resetCityFlag(world); clearArmies(world); return; }
   let k = 0; gaze(0);
   dusk = dt => {
     k = Math.min(1, k + dt / DUSK); const e = 1 - Math.pow(1 - k, 2);
-    world.setDawn(v0 * (1 - e)); flag.rotation.z = r0 * (1 - e); fadeArmies(1 - e); gaze(e);
+    world.setDawn(v0 * (1 - e)); if (flag.visible) flag.rotation.z = r0 * (1 - e); world.setFall(f0 * (1 - e)); fadeArmies(1 - e); gaze(e);
     if (k >= 1) endDusk();
   };
   tickers.add(dusk);
@@ -111,6 +111,7 @@ function gaze(k) { const c = world.city.userData; c.beam.material.opacity = .11 
 // Sunrise (or, after a forged order, midnight) and the armies that act on it.
 async function dawn(k) {
   endDusk(); const outcome = sim.dawn(k), mine = era;
+  resetCityFlag(world);   // a replay on the same step starts with the flag up and the spire standing
   bubbles.clear(); rig.setOrbit(0);
   rig.fly('both', 2);
   if (outcome !== 'forged') {

@@ -231,13 +231,15 @@ function buildCity() {
   }
   houses.castShadow = houses.receiveShadow = roofs.castShadow = true; g.add(houses, roofs);
   // the watchtower: two black horns, and between them the Eye
-  const wt = tower(2.6, 22, 0x2a0d12, { roof: false, windows: 4, ...EVIL }); g.add(wt);
+  // all of it in one group, the spire, which crumbles into the ground when the city falls (r71)
+  const spire = new THREE.Group(); g.add(spire);
+  const wt = tower(2.6, 22, 0x2a0d12, { roof: false, windows: 4, ...EVIL }); spire.add(wt);
   for (const s of [-1, 1]) {
     const horn = new THREE.Mesh(new THREE.ConeGeometry(.75, 7.5, 6), M.evilTrim);
-    horn.position.set(s * 2.1, 26, 0); horn.rotation.z = s * -.32; horn.castShadow = true; g.add(horn);
+    horn.position.set(s * 2.1, 26, 0); horn.rotation.z = s * -.32; horn.castShadow = true; spire.add(horn);
   }
-  const eye = buildEye(); eye.position.y = BEAM.eyeY; g.add(eye);
-  const fireLight = new THREE.PointLight(0xff4422, 60, 70, 1.6); fireLight.position.y = BEAM.eyeY; g.add(fireLight);
+  const eye = buildEye(); eye.position.y = BEAM.eyeY; spire.add(eye);
+  const fireLight = new THREE.PointLight(0xff4422, 60, 70, 1.6); fireLight.position.y = BEAM.eyeY; spire.add(fireLight);
   // the Eye's gaze: a cone from the pupil down to the ground, and the lit patch where it lands.
   // pivot.rotation.y is the sweep angle; update() aims the cone and lays the patch on the terrain.
   const beamGeo = new THREE.ConeGeometry(1, 1, 32, 1, true); beamGeo.translate(0, -.5, 0); beamGeo.rotateX(-Math.PI / 2);   // apex at 0, base at z = 1
@@ -249,7 +251,7 @@ function buildCity() {
   // on the needle of the west gate tower (h 7.5, needle tip at 7.5 + 1.25 + 7.5 * 1.1), flying over the gate
   const f = flag(COLORS.e, 5, 3); f.position.set(-2.6, 16.6, R); g.add(f);
   g.position.copy(CITY);
-  g.userData = { eye, fireLight, pivot, beam, spot, flag: f, target: new THREE.Vector3() };
+  g.userData = { eye, fireLight, pivot, beam, spot, flag: f, spire, fall: 0, target: new THREE.Vector3() };
   return g;
 }
 
@@ -395,6 +397,7 @@ export function buildWorld(scene) {
   const world = { scene, sky, hemi, moonLight, road, castleA, castleB, city, time: 0, dawn: 0 };
   world.update = (dt, t) => update(world, dt, t);
   world.setDawn = v => setDawn(world, v);
+  world.setFall = k => { city.userData.fall = k; };   // 0 standing, 1 the spire is gone (r71)
   world.inBeam = p => inBeam(world, p);
   world.setBeam = on => { city.userData.pivot.visible = city.userData.spot.visible = on; };
   world.aimBeam = a => aimBeam(city.userData, a);
@@ -433,7 +436,11 @@ function update(w, dt, t) {
   }
   const c = w.city.userData;
   aimBeam(c, gaze(t));
-  c.fireLight.intensity = 55 + Math.sin(t * 11) * 8 + Math.sin(t * 17.3) * 6;
+  c.fireLight.intensity = (55 + Math.sin(t * 11) * 8 + Math.sin(t * 17.3) * 6) * (1 - c.fall);
+  // the spire crumbling: it shakes, leans and sinks into the ground, the Eye going out
+  const fk = c.fall, sink = fk * fk;
+  c.spire.position.set(fk > 0 && fk < 1 ? Math.sin(t * 53) * .35 : 0, -30 * sink, fk > 0 && fk < 1 ? Math.sin(t * 47) * .35 : 0);
+  c.spire.rotation.z = .3 * sink; c.spire.visible = fk < 1;
   c.eye.userData.halo.material.rotation = Math.sin(t * 2) * .1;
   c.eye.userData.halo.scale.set(9 + Math.sin(t * 9) * .6, 11 + Math.sin(t * 7.3) * .8, 1);
 }
