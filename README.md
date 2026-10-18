@@ -20,7 +20,7 @@ dans cryptographie r66.
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
 | 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | publié |
 | 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | publié |
-| 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | bientôt |
+| 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | publié |
 | 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | bientôt |
 
 Dans un épisode, `#story=N` est l'**étape** N de son histoire (pas un numéro d'épisode),
@@ -110,6 +110,25 @@ ou sans HMAC), un quiz de 7 questions. `pingouin/js/aes.js` est un vrai AES-128 
 `tests/pingouin_values.mjs` le compare aux diapos et au vecteur de FIPS-197
 (`node tests/pingouin_values.mjs`), `tests/pingouin_story.py` clique chaque bouton de l'histoire et
 du bac à sable et vérifie les caisses, le tableau et le verdict de Bob.
+
+## Épisode 7 — Le sel (et la lenteur de bcrypt)
+
+Stocker un mot de passe, avec les valeurs de la carte « Mots de passe - Le sel » du cours :
+Alice et Bob s'inscrivent avec password, MD5 donne 5f4dcc3b aux deux, la base fuit et Eve
+retrouve password dans sa table précalculée (celle de « Mots de passe - Dictionnaire » :
+password, 123456, admin…). Avec un sel tiré pour chacun, x7k2m et r3n8q, collé au bout du mot de
+passe (la diapo écrit password+x7k2m, MD5 reçoit passwordx7k2m) : cffbee8f et 648c5237, et la
+table ne sert plus. Eve essaie alors un par un, à plus de dix milliards par seconde (six heures
+pour tous les mots de 8 caractères alphanumériques, « SHA-256 est trop rapide ») ; bcrypt
+rounds=12 (0,24 s par hachage sur la machine de Simon, « bcrypt - La lenteur ») la ramène à
+quelques milliers par seconde, plus de mille ans, mais password tombe encore : il est en tête de
+sa liste. 13 étapes en 6 chapitres, un bac à sable (deux mots de passe, MD5 sans sel, avec sel ou
+bcrypt, Eve vole la base et estime son temps ; « Mesurer » chronomètre un vrai bcrypt et MD5 dans
+le navigateur), un quiz de 7 questions. `sel/js/hash.js` est un vrai MD5 et un vrai bcrypt (les
+tables de Blowfish sont calculées depuis les décimales de pi) ; le bac à sable lance bcrypt dans
+un worker (`sel/js/worker.js`). `tests/sel_values.mjs` les compare aux diapos, à la RFC 1321 et à
+la bibliothèque bcrypt de Python (`node tests/sel_values.mjs`), `tests/sel_story.py` clique chaque
+bouton de l'histoire et du bac à sable et vérifie la base, la copie d'Eve et son compteur.
 
 ## Lancer
 

@@ -19,7 +19,7 @@ const EPISODES = [
   { n: 4, slug: 'scytale', icon: '📜', live: true },
   { n: 5, slug: 'enigma', icon: '⚙️', live: true },
   { n: 6, slug: 'pingouin', icon: '🐧', live: true },
-  { n: 7, slug: 'sel', icon: '🧂' },
+  { n: 7, slug: 'sel', icon: '🧂', live: true },
   { n: 8, slug: 'garde', icon: '⏱️' },
 ];
 
