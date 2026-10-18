@@ -167,7 +167,7 @@ export class Stage {
     sfx.reject();
     await this.tween(.8, t => { lockObj.rotation.z = Math.sin(t * 40) * .35 * (1 - t); if (held) held.rotation.z = Math.sin(t * 40 + 1) * .3 * (1 - t); });
     if (!this.live(tok)) return;
-    icon(this.hasp().add(v(0, 1.4, .6)), '✖', '#ff4d5e', { size: 1.8, rise: 1.5 });
+    icon(this.hasp().add(v(0, .9, .8)), '✖', '#ff4d5e', { size: 1.2, rise: .6 });   // low, so it stays in the close shot
     if (held) await this.arc(held, home, { dur: .7, height: .6 });
     if (this.live(tok)) await this.arm(k, 0);
   }
@@ -186,7 +186,10 @@ export class Stage {
     if (!await this.tween(.3, t => lockObj.userData.setOpen(t))) return;
     this.st.locked = false;
     keyObj.visible = false;
-    await this.tween(.4, t => { lockObj.position.y = this.chest.userData.hasp.y - t * .05; });
+    // the open padlock comes off the hasp and drops on the ground beside the table (the table's
+    // free corner may hold Eve's own padlock): nothing holds the lid now
+    if (!await this.arc(lockObj, v(2.45, HANG - TABLE_TOP, 1.25), { dur: .8, height: 1.2, spin: -.6 })) return;
+    sfx.click();
     if (!await this.tween(.8, t => this.chest.userData.setLid(ease(t)))) return;
     this.st.lid = 1;
     burst(this.chest.position.clone().add(v(0, 1.4, 0)), 0xffe08a, { count: 90, speed: 5, life: 1.2, size: .3, up: 4, gravity: 5 });

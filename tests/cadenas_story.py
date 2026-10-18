@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Le cadenas de Bob (r35): clicks every story button and checks where the chest ends up and
-whether it is open, then runs the sandbox's cases (Eve without and with the stolen key).
-Shoots each outcome to out/cadenas-<case>.png. Serve the repo first (python3 -m http.server
+whether it is open, then runs the sandbox's cases (Eve without and with the stolen key, Bob). An opened box must
+have its padlock off the hasp (r46).
+Shoots each outcome to out/cadenas-<case>[-en].png. Serve the repo first (python3 -m http.server
 8793), or pass a base URL. Exit 1 on any failure."""
 import sys
 from playwright.sync_api import sync_playwright
@@ -33,7 +34,10 @@ with sync_playwright() as p:
         bad = {k: (st.get(k), v) for k, v in want.items() if st.get(k) != v}
         print("ok  " if not bad else "FAIL", name, "" if not bad else f"(got, want): {bad}")
         bad and fails.append(name)
-        pg.screenshot(path=f"out/cadenas-{name}.png")
+        if want.get("lid") == 1 and st.get("lock"):    # opened: the padlock is off the hasp (r46)
+            far = pg.evaluate("(() => { const s = demo.stage, l = s.st.lock === 'bob' ? s.bobLock : s.aliceLock; return l.position.distanceTo(s.chest.userData.hasp); })()")
+            if far < 1: print("FAIL", name, f"padlock still on the hasp ({far:.2f})"); fails.append(name + " hasp")
+        pg.screenshot(path=f"out/cadenas-{name}{'' if lang == 'fr' else '-' + lang}.png")
 
     for step, k, want in CASES:
         pg.goto("about:blank")                         # a hash-only change would not reload the page
@@ -47,15 +51,17 @@ with sync_playwright() as p:
         pg.wait_for_timeout(800)
         check(f"s{step}-{k}", want)
 
-    for stolen, who, want in [(False, "e", {"box": "e", "lid": 0}), (True, "e", {"box": "e", "lid": 1})]:
+    for stolen, who, want in [(False, "e", {"box": "e", "lid": 0}), (True, "e", {"box": "e", "lid": 1}),
+                              (False, "b", {"box": "b", "locked": False, "lid": 1})]:
         pg.goto("about:blank")
         pg.goto(f"{base}?instant=1&lang={lang}#sandbox", wait_until="load")
         pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
         if stolen: pg.check("#sb-stolen")
+        if who == "b": pg.uncheck("#sb-intercept")
         for btn in ["#sb-lock", "#sb-send", f"#sb-try-{who}"]:
             pg.wait_for_function(idle, timeout=60000); pg.click(btn); pg.wait_for_timeout(300)
         pg.wait_for_function(idle, timeout=60000); pg.wait_for_timeout(800)
-        check(f"sandbox-{'stolen' if stolen else 'eve'}", want)
+        check(f"sandbox-{'bob' if who == 'b' else 'stolen' if stolen else 'eve'}", want)
     print("errors:", errors or "none")
     errors and fails.append("page errors")
     b.close()

@@ -22,7 +22,8 @@ function roundedBlock(w, h, d, r) {
 }
 
 // Padlock, about 1.3 tall. Its origin is the top of the body, where the shackle enters,
-// so it hangs from a hasp. setOpen(0..1): 0 = snapped shut, 1 = lifted and swung open.
+// so it hangs from a hasp. setOpen(0..1): 0 = snapped shut, 1 = lifted and swung half a turn,
+// its free leg out beside the body, so it reads as open from the front.
 export function padlock(color = COLORS.b) {
   const g = new THREE.Group();
   const body = new THREE.Mesh(roundedBlock(1, .82, .38, .14), brass(color));
@@ -38,7 +39,7 @@ export function padlock(color = COLORS.b) {
     const l = new THREE.Mesh(new THREE.CylinderGeometry(tube, tube, leg + .12, 10), steel);
     l.position.set(x, leg / 2 - .06, 0); pivot.add(l);
   }
-  g.userData.setOpen = v => { pivot.position.y = .28 * Math.min(1, v * 2); pivot.rotation.y = Math.max(0, v * 2 - 1) * 1.9; g.userData.open = v; };
+  g.userData.setOpen = v => { pivot.position.y = .28 * Math.min(1, v * 2); pivot.rotation.y = Math.max(0, v * 2 - 1) * Math.PI; g.userData.open = v; };
   g.userData.setOpen(1);
   g.userData.body = body;
   return g;
