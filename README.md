@@ -97,12 +97,13 @@ du bac à sable et vérifie positions, lampes et lignes du tableau.
 Les modes d'opération avec les valeurs des cartes du cours (« Modes - L'exemple suivi »,
 « ECB - Un exemple », « CBC - Un exemple », « CBC - L'IV - Un exemple », « Bit-flip - Un exemple »,
 autour de « Modes d'opération - ECB - Le pingouin ») : clé `cle-de-16-octets`, le message de 53
-octets GUARDIASECURITY! | montant=00100EUR | GUARDIASECURITY! | Alice en 4 caisses sur un tapis
-roulant. En ECB, chaque caisse passe seule dans la presse AES et C1 = C3 (97 a7 33 44…) ; le
+octets VIREMENT URGENT! | montant=00100EUR | VIREMENT URGENT! | Alice (un en-tête générique là où
+les diapos ont le nom de l'école, r78) en 4 caisses sur un tapis
+roulant. En ECB, chaque caisse passe seule dans la presse AES et C1 = C3 (ac b5 67 95…) ; le
 pingouin de la diapo, chiffré pour de vrai (un octet par pixel, un bloc = 16 pixels d'une ligne),
 garde sa silhouette en ECB et devient du bruit en CBC. En CBC, chaque caisse passe d'abord dans un
 anneau XOR avec le bloc chiffré précédent (l'IV 7e fa 5a… pour le premier) ; un autre IV
-(1a 2f 1c…) donne un tout autre chiffré. Eve retourne les bits 09 de l'octet 8 de C1 (ea → e3) :
+(1a 2f 1c…) donne un tout autre chiffré. Eve retourne les bits 09 de l'octet 8 de C1 (ff → f6) :
 Bob lit P1 détruit et montant=90100EUR. La parade : un HMAC sur l'IV et le chiffré, vérifié par Bob
 avant de déchiffrer. La diapo ne donne pas de clé HMAC : l'épisode prend `cle-hmac-secrete`.
 13 étapes en 6 chapitres, un bac à sable (votre message, ECB ou CBC, le bit qu'Eve retourne, avec

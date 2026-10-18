@@ -103,7 +103,9 @@ export const concat = list => { const out = new Uint8Array(list.reduce((n, b) =>
 
 // ---------- the slides' values ----------
 export const KEY = bytes('cle-de-16-octets');
-export const MSG = 'GUARDIASECURITY!montant=00100EURGUARDIASECURITY!Alice';
+// the slides' header block is the school's name: a generic one instead, so C1, C3 and the CBC
+// chain differ from the slides (r78)
+export const MSG = 'VIREMENT URGENT!montant=00100EURVIREMENT URGENT!Alice';
 export const IV1 = fromHex('7efa5a79fcd38aca0c1f9f070f9c63ce');   // drawn once for the slides (cryptographie r57)
 export const IV2 = fromHex('1a2f1c3cc6a8e4b5adddf8ab667602a3');
 // the slides give no HMAC key: a second secret of Alice and Bob, its value only for the episode

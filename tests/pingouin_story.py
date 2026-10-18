@@ -2,7 +2,8 @@
 """Le pingouin et la chaîne (r39): clicks every story button and checks what the hall shows after
 it (each crate's label and first bytes, where the crates stand, the card's table, the screens, Bob's
 verdict), then runs the sandbox (CBC + Eve's flip, then the same with an HMAC, then ECB). Shoots
-each outcome to out/pg-<lang>-<case>.png. The values are the slides' (cryptographie r57); the
+each outcome to out/pg-<lang>-<case>.png. The values are the slides' (cryptographie r57), but for the
+header block, VIREMENT URGENT! instead of the school's name (r78); the
 arithmetic is checked apart by tests/pingouin_values.mjs. Serve the repo first
 (python3 -m http.server 8793), or pass a base URL. Exit 1 on any failure.
 
@@ -14,20 +15,20 @@ from playwright.sync_api import sync_playwright
 base = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/") + "pingouin/"
 lang = sys.argv[2] if len(sys.argv) > 2 else "fr"
 # crates: label -> first 4 bytes of what it shows (hex), in the order of the belt
-E = {"C1": "97a73344", "C2": "0c5df969", "C3": "97a73344", "C4": "308422c2"}
-CBC = {"IV": "7efa5a79", "C1": "6affea7c", "C2": "ff1becf8", "C3": "f9558ac1", "C4": "7531188e"}
-CBC2 = {"IV₂": "1a2f1c3c", "C1": "aa8a94c6", "C4": "07799dae"}
+E = {"C1": "acb56795", "C2": "0c5df969", "C3": "acb56795", "C4": "308422c2"}
+CBC = {"IV": "7efa5a79", "C1": "01a1da22", "C2": "b41496c5", "C3": "17b93f60", "C4": "f8e2ce0c"}
+CBC2 = {"IV₂": "1a2f1c3c", "C1": "2002b8b5", "C4": "e861d4ab"}
 CASES = [
-    (2, 0, {"crates": {"P1": "47554152", "P2": "6d6f6e74", "P3": "47554152", "P4": "416c6963"}, "rows": 4}),
+    (2, 0, {"crates": {"P1": "56495245", "P2": "6d6f6e74", "P3": "56495245", "P4": "416c6963"}, "rows": 4}),
     (3, 0, {"crates": E, "rows": 4, "same": ["P1", "P1", "C1", "C1"] and None}),
     (4, 0, {"crates": E, "marked": ["C1", "C3"]}),
     (5, 0, {"wall": {"plain": 1, "ecb": 1, "cbc": 0}, "distinct": True}),
-    (6, 0, {"crates": CBC, "rows": 5, "cells": ["39 af 1b 2b b8 9a ..", "b8 4e ad aa 57 77 .."]}),
+    (6, 0, {"crates": CBC, "rows": 5, "cells": ["28 b3 08 3c b1 96 ..", "e2 5d c4 80 0a b4 .."]}),
     (7, 0, {"wall": {"plain": 1, "ecb": 1, "cbc": 1}}),
     (8, 0, {"crates": CBC2}),
-    (9, 0, {"crates": {"C1": "6affea7c"}, "byte8": "e3", "x": {"C1": 0}, "cells": ["ea → e3", "⊕ 09"]}),
-    (10, 0, {"crates": {"P3": "47554152"}, "read": "montant=90100EUR", "bad": ["P1"], "cells": ["montant=90100EUR"]}),
-    (11, 0, {"verdict": "bad", "cells": ["0a 79 67 b7 db f4 ..", "0f 30 ce dd c7 ad .."]}),
+    (9, 0, {"crates": {"C1": "01a1da22"}, "byte8": "f6", "x": {"C1": 0}, "cells": ["ff → f6", "⊕ 09"]}),
+    (10, 0, {"crates": {"P3": "56495245"}, "read": "montant=90100EUR", "bad": ["P1"], "cells": ["montant=90100EUR"]}),
+    (11, 0, {"verdict": "bad", "cells": ["c1 58 3b 57 e2 c9 ..", "40 b7 d9 f6 81 68 .."]}),
 ]
 fails = []
 with sync_playwright() as p:
@@ -93,9 +94,9 @@ with sync_playwright() as p:
         s = pg.evaluate("(() => { const r = demo.sandbox.state().result; return r.refused ? 'refused' : r.read.map(b => new TextDecoder().decode(b).replace(/[^ -~]/g, '?')).join('|'); })()")
         ok = want(s)
         report(name, {} if ok else {"read": s})
-    sandbox("sb-cbc", "cbc", False, lambda s: s.split("|")[1] == "montant=10100EUR" and s.split("|")[2] == "GUARDIASECURITY!" and s.split("|")[0] != "GUARDIASECURITY!")
+    sandbox("sb-cbc", "cbc", False, lambda s: s.split("|")[1] == "montant=10100EUR" and s.split("|")[2] == "VIREMENT URGENT!" and s.split("|")[0] != "VIREMENT URGENT!")
     sandbox("sb-hmac", "cbc", True, lambda s: s == "refused")
-    sandbox("sb-ecb", "ecb", False, lambda s: s.split("|")[1:3] == ["montant=00100EUR", "GUARDIASECURITY!"] and s.split("|")[0] != "GUARDIASECURITY!")
+    sandbox("sb-ecb", "ecb", False, lambda s: s.split("|")[1:3] == ["montant=00100EUR", "VIREMENT URGENT!"] and s.split("|")[0] != "VIREMENT URGENT!")
     if errors:
         print("FAIL page errors:", *errors[:5], sep="\n  "); fails.append("errors")
     b.close()

@@ -275,7 +275,7 @@ export class Stage {
     return this.slide(leg(SLOT.inB[0] - this.crate('P1').x), pace);
   }
 
-  // Eve lifts C1, flips the two bits of the mask in its byte 8 (ea becomes e3), puts it back.
+  // Eve lifts C1, flips the two bits of the mask in its byte 8 (ff becomes f6), puts it back.
   // fresh: the card starts a new table (in the parade it goes on under the HMAC).
   async flip(f = A.FLIP, pace = 1, fresh = true) {
     const c = this.crate('P' + (f.block + 1)), m = this.meshes.get(c.id), y0 = m.position.y, z0 = m.position.z;
