@@ -40,7 +40,12 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1200, "height": 720})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
-    idle = "() => [...document.querySelectorAll('#step-actions button, #sb-run')].every(b => !b.disabled)"
+    idle = "() => [...document.querySelectorAll('#play, #step-actions button, #sb-run')].every(b => !b.disabled)"
+
+    def step_button(k):                            # k: 0 = the step's go, 1 = its go2
+        # go sits in the nav as #play (r62), except on the last step; go2 stays in #step-actions
+        if pg.locator("#play").count(): return pg.locator("#play") if k == 0 else pg.locator("#step-actions button").nth(k - 1)
+        return pg.locator("#step-actions button").nth(k)
 
     def report(name, bad):
         print("ok  " if not bad else "FAIL", name, "" if not bad else f"(got, want): {bad}")
@@ -56,7 +61,7 @@ with sync_playwright() as p:
         open_page(f"#story={step}")
         pg.wait_for_timeout(1500)                      # auto steps start once the camera lands
         pg.wait_for_function(idle, timeout=60000)
-        pg.locator("#step-actions button").nth(k).click()
+        step_button(k).click()
         pg.wait_for_timeout(300)
         pg.wait_for_function(idle, timeout=120000)
         pg.wait_for_timeout(800)

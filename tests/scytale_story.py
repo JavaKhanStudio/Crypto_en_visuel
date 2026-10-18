@@ -38,7 +38,12 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1200, "height": 720})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
-    idle = "() => [...document.querySelectorAll('#step-actions button, #sb-run')].every(b => !b.disabled)"
+    idle = "() => [...document.querySelectorAll('#play, #step-actions button, #sb-run')].every(b => !b.disabled)"
+
+    def step_button(k):                            # k: 0 = the step's go, 1 = its go2
+        # go sits in the nav as #play (r62), except on the last step; go2 stays in #step-actions
+        if pg.locator("#play").count(): return pg.locator("#play") if k == 0 else pg.locator("#step-actions button").nth(k - 1)
+        return pg.locator("#step-actions button").nth(k)
     where = """() => { const s = demo.stage, st = s.st, on = st.strip.on;
       return { where: on ? ['stick', on] : ['flat', st.strip.at], lines: on ? s.linesOn(on).map(l => l.join('')) : null,
                strip: s.lay.strip.join(''), front: on ? s.front(on) : null }; }"""
@@ -62,7 +67,7 @@ with sync_playwright() as p:
         open_page(f"#story={step}")
         pg.wait_for_timeout(1500)                      # auto steps start once the camera lands
         pg.wait_for_function(idle, timeout=60000)
-        pg.locator("#step-actions button").nth(k).click()
+        step_button(k).click()
         settle()
         got = pg.evaluate(where)
         bad = {}
@@ -71,9 +76,9 @@ with sync_playwright() as p:
         if got["strip"] != LINES["strip"]: bad["strip"] = (got["strip"], LINES["strip"])
         report(f"s{step}-{k}", bad)
         # the second button turns the stick by one line
-        if lines and pg.locator("#step-actions button").count() > 1:
+        if lines and pg.locator("#play, #step-actions button").count() > 1:
             f0 = got["front"]
-            pg.locator("#step-actions button").nth(1).click(); settle()
+            step_button(1).click(); settle()
             f1 = pg.evaluate(where)["front"]
             want = (f0 + 1) % len(lines)
             report(f"s{step}-turn", {} if f1 == want else {"front": (f1, want)})

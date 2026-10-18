@@ -35,7 +35,12 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 860})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
-    idle = "() => [...document.querySelectorAll('#step-actions button')].every(b => !b.disabled)"
+    idle = "() => [...document.querySelectorAll('#play, #step-actions button')].every(b => !b.disabled)"
+
+    def step_button(k):                            # k: 0 = the step's go, 1 = its go2
+        # go sits in the nav as #play (r62), except on the last step; go2 stays in #step-actions
+        if pg.locator("#play").count(): return pg.locator("#play") if k == 0 else pg.locator("#step-actions button").nth(k - 1)
+        return pg.locator("#step-actions button").nth(k)
     state = """m => { const s = demo.stage, st = s.st, rows = st.rows.map(r => [`${r.rec.key} ${r.rec.from} ${r.rec.path.join('')}`, r.n]);
       const last = st.rows.at(-1);
       return { apart: st.apart[m] ?? 0, pos: st.pos[m], down: st.down[m] || null, lit: st.lit[m] || null, rows,
@@ -64,7 +69,7 @@ with sync_playwright() as p:
         open_page(f"#story={step}")
         pg.wait_for_timeout(1500)                      # auto steps start once the camera lands
         pg.wait_for_function(idle, timeout=120000)
-        pg.locator("#step-actions button").nth(k).click()
+        step_button(k).click()
         settle()
         m = want.get("m", "a")
         got = pg.evaluate(state, m)

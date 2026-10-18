@@ -30,7 +30,7 @@ with sync_playwright() as p:
             pg.evaluate(f"demo.step({dt})")
             f = f"{out}-{len(frames):02d}.png"; pg.screenshot(path=f); frames.append(f)
     if how == "button":
-        pg.click("#step-actions button.primary"); shoot(12)
+        pg.click("#play"); shoot(12)
         pg.click("#next"); shoot(8)
     else:
         pg.click("#next"); shoot(12)

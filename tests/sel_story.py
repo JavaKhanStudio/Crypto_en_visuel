@@ -35,7 +35,12 @@ with sync_playwright() as p:
     pg = b.new_page(viewport={"width": 1440, "height": 860})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
-    idle = "() => [...document.querySelectorAll('#step-actions button')].every(b => !b.disabled)"
+    idle = "() => [...document.querySelectorAll('#play, #step-actions button')].every(b => !b.disabled)"
+
+    def step_button(k):                            # k: 0 = the step's go, 1 = its go2
+        # go sits in the nav as #play (r62), except on the last step; go2 stays in #step-actions
+        if pg.locator("#play").count(): return pg.locator("#play") if k == 0 else pg.locator("#step-actions button").nth(k - 1)
+        return pg.locator("#step-actions button").nth(k)
     state = """() => { const st = demo.stage.st;
       return { base: st.base.rows.map(r => [r.u, r.salt, r.hash]), same: st.base.rows.filter(r => r.mark === 'same').length,
                copy: st.copy ? st.copy.rows.map(r => [r.u, r.hash, r.found ?? null]) : null, book: st.book.hi, miss: st.book.miss,
@@ -68,7 +73,7 @@ with sync_playwright() as p:
         open_page(f"#story={step}")
         pg.wait_for_timeout(1200)
         pg.wait_for_function(idle, timeout=120000)
-        pg.locator("#step-actions button").nth(k).click()
+        step_button(k).click()
         pg.wait_for_timeout(300); pg.wait_for_function(idle, timeout=240000); pg.wait_for_timeout(800)
         report(f"s{step}", check(pg.evaluate(state), want))
 

@@ -20,16 +20,16 @@ with sync_playwright() as p:
         seen, shot = [], False
         for k in range(16):
             pg.wait_for_timeout(int(k * 1700) % 7000)   # vary the launch time against the sweep
-            pg.click("#step-actions .primary")
+            pg.click("#play")
             pg.wait_for_function("window.__ev.length > %d" % len(seen), timeout=60000)
             ev, u = pg.evaluate("window.__ev[window.__ev.length - 1]")
             seen.append(ev); print(f"step {step} try {k + 1}: {ev} at u={u:.2f}")
             if ev == "captured" and not shot:
-                pg.wait_for_selector("#step-actions .primary:not([disabled])", timeout=60000)
+                pg.wait_for_selector("#play:not([disabled])", timeout=60000)
                 pg.wait_for_timeout(1500)
                 pg.screenshot(path=f"out/beam-s{step}.png"); shot = True
             else:
-                pg.wait_for_selector("#step-actions .primary:not([disabled])", timeout=60000)
+                pg.wait_for_selector("#play:not([disabled])", timeout=60000)
             if "captured" in seen and "delivered" in seen: break
         print(f"step {step}: {seen}, errors: {errors or 'none'}")
         ok &= "captured" in seen and "delivered" in seen and not errors

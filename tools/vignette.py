@@ -3,7 +3,7 @@
 hidden), 640×360, saved as <slug>/vignette.jpg. Serve the repo root first
 (python3 -m http.server 8793), or pass --base.
 
-    tools/vignette.py garde --hash '#story=2' --click '#step-actions button' \
+    tools/vignette.py garde --hash '#story=2' --click '#play' \
         --pos 2,42,78 --target 2,30,-14 --wait 7000
 
 --pos / --target place the camera (a named shot name also works via --shot); --click presses a

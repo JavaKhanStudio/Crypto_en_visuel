@@ -77,7 +77,7 @@ export class Story {
 
   go(i) {
     i = Math.max(0, Math.min(STEPS.length - 1, i));
-    this.i = i; const tok = ++this.token, step = STEPS[i], c = this.ctx;
+    this.i = i; this.seen = false; const tok = ++this.token, step = STEPS[i], c = this.ctx;
     location.hash = 'story=' + (i + 1);
     c.bubbles.clear(); c.resetWorld();
     if (step.noBeam) c.world.setBeam(false);   // dawn: Étienne's searchlight is off
@@ -119,21 +119,34 @@ export class Story {
       this.el.chapters.appendChild(b);
     });
     // action buttons
-    this.el.actions.innerHTML = '';
+    // a step's animation takes Suivant's place at the right; Suivant waits beside it, grey, until
+    // the animation has played (it works all along). The last step's buttons are not animations.
+    this.el.actions.innerHTML = ''; this.el.play?.remove(); this.el.play = null;
+    const anim = step.go && this.i < STEPS.length - 1;
     for (const key of ['go', 'go2']) {
       if (!step[key]) continue;
-      const b = document.createElement('button'); b.className = key === 'go' ? 'primary' : '';
+      const b = document.createElement('button'); b.className = key === 'go' && !(anim && this.seen) ? 'primary' : '';
       b.textContent = s[key];
       b.onclick = () => this.run(step[key], b);
-      this.el.actions.appendChild(b);
+      if (anim && key === 'go') { b.id = 'play'; this.el.next.after(b); this.el.play = b; } else this.el.actions.appendChild(b);
     }
+    this.el.next.classList.toggle('primary', !anim || this.seen);
+    if (!this.seen) this.el.next.classList.remove('shine');
     if (langOnly) for (const s2 of step.say || []) this.say(...[].concat(s2));
+  }
+
+  // the step's animation has played: Suivant takes the gold back and shines once to call the eye
+  lit() {
+    if (this.seen || !this.el.play) return;
+    this.seen = true; this.el.play.classList.remove('primary');
+    const n = this.el.next; n.classList.add('primary', 'shine');
+    n.addEventListener('animationend', () => n.classList.remove('shine'), { once: true });
   }
 
   async run(fn, btn) {
     const tok = this.token, c = this.ctx;
     const live = () => tok === this.token;
-    const buttons = [...this.el.actions.querySelectorAll('button')];
+    const buttons = [...this.el.actions.children, this.el.play].filter(Boolean);
     buttons.forEach(b => b.disabled = true);
     c.bubbles.clear(); c.rig.setOrbit(0);
     const x = {
@@ -148,6 +161,6 @@ export class Story {
       caught: async () => { if (!live()) return; await c.rig.fly('both'); x.say('e', 'caught'); },
       mode: m => c.setMode(m),
     };
-    try { await fn(x); } finally { if (live()) buttons.forEach(b => b.disabled = false); }
+    try { await fn(x); } finally { if (live()) { buttons.forEach(b => b.disabled = false); this.lit(); } }
   }
 }
