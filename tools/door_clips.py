@@ -8,6 +8,7 @@ panels hidden as in tools/vignette.py; it stays in this episode's folder. Needs 
 (python3 -m http.server 8793), or pass --base.
 
     tools/door_clips.py deux-generaux --next eve-lit-tout --next-hash '#story=2' [--only next]
+    tools/door_clips.py enigma --next enigma-reglage --next-hash '#story=5' --sandbox-keys OUI --box sandbox=300,100,1100,550
 """
 import argparse, base64, os, subprocess, tempfile, time
 from playwright.sync_api import sync_playwright
@@ -18,7 +19,10 @@ ap.add_argument("--next", required=True, help="the next episode's folder")
 ap.add_argument("--next-hash", default="#story=2", help="a story step whose #play makes a good clip")
 ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--only", default="", help="comma list of sandbox,quiz,home,next")
+ap.add_argument("--sandbox-keys", default="", help="type these letters on #sb-keys instead of clicking #sb-burst (enigma: OUI)")
+ap.add_argument("--box", action="append", default=[], help="name=x0,y0,x1,y1: crop that door elsewhere (16:9), as tools/door_thumbs.py")
 a = ap.parse_args()
+BOX = {n: tuple(int(v) for v in xy.split(",")) for n, xy in (b.split("=") for b in a.box)}
 W, H, SEC = 1280, 720, 4
 hide = "for(const s of ['#topbar','#story','#sandbox','#quiz','#card','#bubbles','#toast','#loading'])" \
        "{const e=document.querySelector(s); if(e) e.style.display='none';}"
@@ -28,8 +32,13 @@ ready = "window.demo && window.demo.ready"
 def sandbox(pg):
     pg.goto(f"{a.base}{a.slug}/?instant=1#sandbox"); pg.wait_for_function(ready, timeout=60000)
     pg.wait_for_timeout(1500); t = time.time()
-    pg.click("#sb-burst"); pg.wait_for_timeout(SEC * 1000 + 500)
-    return t, (0, 90, 640, 450)
+    if a.sandbox_keys:
+        for c in a.sandbox_keys:
+            pg.locator("#sb-keys button", has_text=c).first.click(); pg.wait_for_timeout(SEC * 1000 // len(a.sandbox_keys))
+        pg.wait_for_timeout(500)
+    else:
+        pg.click("#sb-burst"); pg.wait_for_timeout(SEC * 1000 + 500)
+    return t, BOX.get("sandbox", (0, 90, 640, 450))
 
 
 def quiz(pg):
@@ -37,7 +46,7 @@ def quiz(pg):
     pg.wait_for_timeout(1500); t = time.time()
     pg.wait_for_timeout(600); pg.locator("#quiz-options li").nth(2).click()
     pg.wait_for_timeout(900); pg.click("#quiz-check"); pg.wait_for_timeout(SEC * 1000)
-    return t, (280, 130, 1000, 535)
+    return t, BOX.get("quiz", (280, 130, 1000, 535))
 
 
 def home(pg):

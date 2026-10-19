@@ -57,12 +57,12 @@ export const STEPS = [
       x.stage.st.msg = MSG_B; x.stage.relabel(); x.say('b'); x.celebrate();
     } },
   { id: 's12', ch: 5, shot: 'wide', state: READ, say: ['a', 'e'] },
-  // r105/r121: the last step is the doors out, each with its picture; the next episode is last, at the right
+  // r105/r121/r134: the last step is the doors out, each with its picture; the next episode is last, at the right
   { id: 's13', ch: 5, shot: 'wide', orbit: .02, state: READ, doors: [
-      { k: 'sandbox', img: 'img/door-sandbox.jpg', go: x => x.mode('sandbox') },
-      { k: 'quiz', img: 'img/door-quiz.jpg', go: x => x.mode('quiz') },
-      { k: 'home', img: 'img/door-home.jpg', href: '../' },
-      { k: 'next', img: '../enigma-reglage/vignette.jpg', href: '../enigma-reglage/' }] },
+      { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
+      { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
+      { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'next', img: '../enigma-reglage/vignette.jpg', clip: 'img/door-next.mp4', href: '../enigma-reglage/' }] },
 ];
 
 export class Story {
@@ -129,6 +129,15 @@ export class Story {
       const [name, what] = s.doors[d.k], a = document.createElement('a');
       a.className = 'door' + (d.k === 'next' ? ' next' : '');
       a.innerHTML = `<span class="pic"><img src="${d.img}" alt=""></span><b>${name}</b><span>${what}</span>`;
+      // r105 (Simon): on hover, a 4 s clip of where the door leads loops; it stops where it is when the
+      // pointer leaves and goes on from there. A phone has no hover: it keeps the picture.
+      if (d.clip && matchMedia('(hover: hover)').matches) {
+        const v = document.createElement('video');
+        Object.assign(v, { src: d.clip, muted: true, loop: true, playsInline: true, preload: 'none' });
+        v.addEventListener('playing', () => v.classList.add('on'), { once: true });
+        a.firstChild.appendChild(v);
+        a.onmouseenter = () => v.play().catch(() => {}); a.onmouseleave = () => v.pause();
+      }
       if (d.href) a.href = d.href + '?lang=' + lang; else { a.href = '#'; a.onclick = e => { e.preventDefault(); d.go({ mode: m => this.ctx.setMode(m) }); }; }
       this.el.actions.appendChild(a);
     }
