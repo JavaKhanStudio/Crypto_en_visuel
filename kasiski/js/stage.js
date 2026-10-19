@@ -111,7 +111,7 @@ export class Stage {
     if (st.lane && st.barsNear) { e.position.copy(BARS_NEAR).add(v(6.2, 0, .4)); e.rotation.y = -.7; }   // beside her bars
     else if (st.lane) { e.position.set(st.eve ? tileX(st.key ? 3 : 46) : tileX(30), 0, LANE_Z - 1.7); e.rotation.y = st.key ? -.4 : 0; }
     // with the bars up she stands to their right, in the bar shot rather than in front of its lens
-    else if (st.bars) { e.position.copy(BARS_AT).add(v(6.4, 0, 1)); e.rotation.y = -.7; }
+    else if (st.bars) { e.position.copy(BARS_AT).add(v(5.4, 0, -.4)); e.rotation.y = -.6; }
     else if (st.card === 'trace' || st.card === 'count') { e.position.set(4, 0, 3.1); e.rotation.y = 0; }   // measuring: mid-road
     else { e.position.set(START_X + 9, 0, 3.1); e.rotation.y = -.3; }
     this.focus.position.set(START_X, 0, 0);
@@ -166,7 +166,7 @@ export class Stage {
   drawBars(k) {
     this.barsG.clear();
     if (!this.st.bars) return;
-    const { cs, n, name, win } = this.barData(), w = .9, gap = .45, x0 = -(cs.length - 1) * (w + gap) / 2, H = 3.2;
+    const { cs, n, name, win } = this.barData(), w = .9, gap = .45, x0 = -(cs.length - 1) * (w + gap) / 2, road = this.st.bars === 'wheel', H = road ? 4.2 : 3.2, big = road ? 1.35 : 1;   // the road's six bars are step 6's subject: taller, bigger tags
     const base = new THREE.Mesh(new THREE.BoxGeometry(cs.length * (w + gap) + .6, .12, 1.4), new THREE.MeshStandardMaterial({ color: 0x3a3d46, roughness: .8 }));
     base.position.copy(this.barsAt).setY(.06); base.receiveShadow = true; this.barsG.add(base);
     cs.forEach((c, i) => {
@@ -174,10 +174,10 @@ export class Stage {
       const bar = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), new THREE.MeshStandardMaterial({ color: isWin && k >= 1 ? 0xf2c24f : 0x6f8fb8, roughness: .5,
         emissive: isWin && k >= 1 ? 0x6a4a08 : 0x000000 }));
       bar.position.set(this.barsAt.x + x0 + i * (w + gap), .12 + h / 2, this.barsAt.z); bar.castShadow = true; this.barsG.add(bar);
-      const under = label(); under.visible = true; setLabel(under, name(c), '#b9b2a3', .32);
+      const under = label(); under.visible = true; setLabel(under, name(c), '#b9b2a3', .32 * big);
       under.position.set(bar.position.x, .35, this.barsAt.z + .9); this.barsG.add(under);
-      if (k > .05) { const top = label(); top.visible = true; setLabel(top, String(Math.round(c.n * Math.min(1, k * 1.05))), isWin && k >= 1 ? '#f2c24f' : '#9fc0ff', .34);
-        top.position.set(bar.position.x, .12 + h + .32, this.barsAt.z); this.barsG.add(top); }
+      if (k > .05) { const top = label(); top.visible = true; setLabel(top, String(Math.round(c.n * Math.min(1, k * 1.05))), isWin && k >= 1 ? '#f2c24f' : '#9fc0ff', .34 * big);
+        top.position.set(bar.position.x, .12 + h + .32 * big, this.barsAt.z); this.barsG.add(top); }
     });
   }
 

@@ -17,7 +17,9 @@ export const SHOTS = {
   track:    { pos: v(3, 38, 40), target: v(3, 0, -1) },
   near:     { pos: v(X0 + 12, 6, 10), target: v(X0 + 12, 0, 0) },
   mid:      { pos: v(5, 19, 30), target: v(5, 0, -.5) },
-  bars:     { pos: v(BARS_AT.x, 5.8, BARS_AT.z + 11.5), target: v(BARS_AT.x, 1.5, BARS_AT.z) },
+  // step 6: the bar chart is the subject, close, left of the corner card and above the panel
+  bars:     { pos: v(BARS_AT.x + 2.8, 4.8, BARS_AT.z + 11.4), target: v(BARS_AT.x + 2.8, 1.1, BARS_AT.z) },
+  barsPhone: { pos: v(BARS_AT.x + .8, 7, BARS_AT.z + 16.5), target: v(BARS_AT.x + .8, -2.6, BARS_AT.z) },
   lane:     { pos: v(-44, 4.2, LZ + 6.5), target: v(-43, .3, LZ) },
   lane2:    { pos: v(-38, 7, LZ + 11), target: v(-38, .3, LZ) },
   // on a phone the lane's letters stay close; at 51 and 81 the tags, drawn bigger, carry the twelve letters
