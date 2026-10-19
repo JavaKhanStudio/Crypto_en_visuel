@@ -2,7 +2,8 @@
 // rsa.js). One view per step: Alice's two keys, what Eve copies when they travel in the clear, what
 // she does with them, RSA by hand, Bob's public key, OAEP, two seeds, Bob opening the padlock, who
 // carries what, two sends of the same order, the whole packet. The sandbox shows its own send.
-import { t, raw } from './i18n.js';
+import { t, raw, lang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import * as A from './aes.js';
 import * as R from './rsa.js';
 import * as P from './packet.js';
@@ -93,5 +94,5 @@ export function renderCard(st) {
         + lbl(C.eveGets) + `<p class="note">${gets}</p>` + lbl(C.bobGets) + bob;
     },
   }[st.view];
-  el.innerHTML = v();
+  el.innerHTML = v(); linkify(el, lang);
 }

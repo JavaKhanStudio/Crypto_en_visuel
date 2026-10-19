@@ -3,7 +3,8 @@
 // makes of it, why the seal says nothing of who, Alice's signature and Bob's check, Eve's own
 // signature, the replay, the number, AES-GCM, the final packet, the attack-defense questions.
 // The sandbox shows its own send.
-import { t, raw } from './i18n.js';
+import { t, raw, lang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import * as A from './aes.js';
 import * as S from './sign.js';
 import * as P from './packet.js';
@@ -128,6 +129,6 @@ export function renderCard(st) {
         + (r.rejected ? verdict(false, C.verdict.reject) : verdict(!st.evil, st.evil ? C.verdict.fooled : C.verdict.ok));
     },
   }[st.view];
-  el.innerHTML = v();
+  el.innerHTML = v(); linkify(el, lang);
 }
 const bobSaysTitle = st => [st.checks.sig && raw('card.sbSig'), st.checks.last !== null && raw('card.sbNum')].filter(Boolean).join(' · ') || raw('card.sbNone');

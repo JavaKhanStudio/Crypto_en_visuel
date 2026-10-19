@@ -3,6 +3,7 @@
 // Bob's three, Eve's byte, a byte in each brick, the order of Bob's moves, the four files, main.py's
 // output, the choices the README justifies. The sandbox shows its own send.
 import { t, raw, lang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import * as A from './aes.js';
 import * as P from './packet.js';
 
@@ -90,5 +91,5 @@ export function renderCard(st) {
         + bar(P.BRICKS, e.eve?.brick) + shown + lbl(bob) + `<ol class="ops">${steps.join('')}</ol>` + out;
     },
   }[st.view];
-  el.innerHTML = v();
+  el.innerHTML = v(); linkify(el, lang);
 }

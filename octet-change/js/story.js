@@ -4,6 +4,7 @@
 // of the IV, lets him go, and Bob decrypts the changed order, or rejects the packet on its seal.
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import * as A from './aes.js';
 
@@ -29,7 +30,7 @@ export const bobSays = (r, check) => r.rejected ? t('m.bobReject') : !r.padGood 
   : t(check ? 'm.bobRead' : 'm.bobNoCheck', { m: A.printable(r.back) });
 
 export const STEPS = [
-  { id: 'intro', ch: 0, shot: 'city', orbit: .04, view: 'sent', say: ['e'] },
+  { id: 'intro', refs: { '1.2': 8 }, ch: 0, shot: 'city', orbit: .04, view: 'sent', say: ['e'] },
   { id: 'flip', ch: 0, shot: 'city', view: 'flip', say: ['e'] },
   { id: 'ride', ch: 0, shot: 'both', view: 'flip', go: async x => { await x.ride({ how: 'iv', check: false }); x.say('n', t('m.alone')); } },
   { id: 'why', ch: 0, shot: 'valley', view: 'ctflip', say: ['n'] },
@@ -40,8 +41,8 @@ export const STEPS = [
   { id: 'forged', ch: 1, shot: 'city', view: 'forged', go: async x => { await x.ride({ how: 'forge', check: true }); } },
   { id: 'first', ch: 2, shot: 'castleB', view: 'ops', say: ['b'] },
   { id: 'compare', ch: 2, shot: 'castleB', view: 'compare', say: ['b'] },
-  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', say: ['e'], link: ['../cle-vallee/'] },
-  { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'packet', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: ['../garde/', '../pingouin/'] },
+  { id: 'packet', refs: { '1.6': 8 }, ch: 3, shot: 'city', orbit: .03, view: 'packet', say: ['e'], link: ['../cle-vallee/'] },
+  { id: 'end', refs: { '6': 9 }, ch: 3, shot: 'overview', orbit: .06, view: 'packet', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: ['../garde/', '../pingouin/'] },
 ];
 
 export class Story {
@@ -79,7 +80,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; this.el.text.textContent = s.p; linkify(this.el.text, lang, step.refs);   // « épisode 1.4 » links to its step (r119)
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';

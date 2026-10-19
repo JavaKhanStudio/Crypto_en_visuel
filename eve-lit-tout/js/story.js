@@ -4,6 +4,7 @@
 // (the order, or the IV and ciphertext), lets him go, and Bob reads it on arrival.
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import * as A from './aes.js';
 
@@ -31,10 +32,10 @@ export const STEPS = [
   { id: 'cipher', ch: 1, shot: 'both', view: 'cipher', go: async x => { await x.ride({ cipher: true }); } },
   { id: 'again', ch: 2, shot: 'city', view: 'book', book: () => [day(1, 1)],
     go: async x => { await x.ride({ cipher: true, seen: true, log: day(2, 1, { seen: true, tag: 'same' }) }); x.say('e'); } },
-  { id: 'fresh', ch: 2, shot: 'city', view: 'book', book: () => [day(1, 1), day(2, 1, { seen: true, tag: 'same' })], key: 2,
+  { id: 'fresh', refs: { '1.4': 9 }, ch: 2, shot: 'city', view: 'book', book: () => [day(1, 1), day(2, 1, { seen: true, tag: 'same' })], key: 2,
     go: async x => { await x.ride({ cipher: true, log: day(3, 2, { tag: 'other' }) }); x.say('e'); } },
-  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', key: 2, say: ['e'], link: '../octet-change/' },
-  { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'packet', key: 2, go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: '../pingouin/' },
+  { id: 'packet', refs: { '1.3': 2 }, ch: 3, shot: 'city', orbit: .03, view: 'packet', key: 2, say: ['e'], link: '../octet-change/' },
+  { id: 'end', refs: { '6': 3 }, ch: 3, shot: 'overview', orbit: .06, view: 'packet', key: 2, go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: '../pingouin/' },
 ];
 
 export class Story {
@@ -89,7 +90,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; this.el.text.textContent = s.p; linkify(this.el.text, lang, step.refs);   // « épisode 1.4 » links to its step (r119)
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';

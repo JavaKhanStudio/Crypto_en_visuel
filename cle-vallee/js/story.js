@@ -5,6 +5,7 @@
 // cannot open and Bob can.
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import * as A from './aes.js';
 import * as R from './rsa.js';
@@ -33,7 +34,7 @@ export const bobSays = (pkt, r) => r.rejected ? t('m.bobReject') : t(pkt.how ===
 export const STEPS = [
   { id: 'intro', ch: 0, shot: 'castleA', view: 'keys', say: ['a'] },
   { id: 'clear', ch: 0, shot: 'both', view: 'clear', go: async x => { await x.ride('clear'); } },
-  { id: 'fall', ch: 0, shot: 'city', orbit: .04, view: 'fall', say: ['e'] },
+  { id: 'fall', refs: { '1.3': 8 }, ch: 0, shot: 'city', orbit: .04, view: 'fall', say: ['e'] },
   { id: 'padlock', ch: 1, shot: 'castleB', view: 'toy', say: ['b'] },
   { id: 'rsa2048', ch: 1, shot: 'castleB', view: 'pubkey', say: ['b'] },
   { id: 'deliver', ch: 1, shot: 'both', view: 'pubkey', go: async x => { await x.ride('padlock'); } },
@@ -42,7 +43,7 @@ export const STEPS = [
   { id: 'ride', ch: 1, shot: 'both', view: 'open', go: async x => { await x.ride('locked'); } },
   { id: 'hybrid', ch: 2, shot: 'valley', view: 'hybrid', say: ['n'] },
   { id: 'fresh', ch: 2, shot: 'castleA', view: 'fresh', say: ['a'] },
-  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', say: ['e'], link: ['../paquet-complet/'] },
+  { id: 'packet', refs: { '1.6': 2 }, ch: 3, shot: 'city', orbit: .03, view: 'packet', say: ['e'], link: ['../paquet-complet/'] },
   { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'packet', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: ['../cadenas/', '../diffie-hellman/'] },
 ];
 
@@ -81,7 +82,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; this.el.text.textContent = s.p; linkify(this.el.text, lang, step.refs);   // « épisode 1.4 » links to its step (r119)
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';

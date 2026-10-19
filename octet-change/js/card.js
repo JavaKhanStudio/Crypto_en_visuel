@@ -2,7 +2,8 @@
 // step: what travels, the byte Eve changes in the IV and what Bob decrypts, a byte of the ciphertext,
 // the HMAC key, the seal, Alice's seal against Bob's, Bob's order of work, the comparison, Eve's
 // forged packet, the project's packet. The sandbox shows its own send, what Eve did, and Bob's verdict.
-import { t, raw } from './i18n.js';
+import { t, raw, lang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import * as A from './aes.js';
 import { hmac } from './hmac.js';
 
@@ -85,5 +86,5 @@ export function renderCard(st) {
       return `<h3>${did}</h3>${what}${sent(shown)}${lbl(C.tag)}${seal(pkt.tag)}` + bob(pkt, s, st.check, pkt.where ? landsOn(pkt) : new Set());
     },
   }[st.view];
-  el.innerHTML = v();
+  el.innerHTML = v(); linkify(el, lang);
 }

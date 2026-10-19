@@ -1,7 +1,8 @@
 // The corner card: what the step is about, drawn from the real bytes (aes.js). One view per step:
 // the order in the clear, the key, AES on one block, the blocks and their padding, the CBC chain,
 // what travels, Eve's notebook, the project's packet. The sandbox shows its own send and the notebook.
-import { t, raw } from './i18n.js';
+import { t, raw, lang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import * as A from './aes.js';
 
 const el = document.getElementById('card');
@@ -50,5 +51,5 @@ export function renderCard(st) {
       + (st.how === 'plain' ? `<div class="order">${esc(s.order)}</div>` : lbl(C.keyShort) + lines(s.key, 'key') + blocksView(s) + cipherView(s))
       + (st.book.length ? lbl(C.notebook) + book(st.book.slice(-4)) : ''),
   }[st.view];
-  el.innerHTML = v();
+  el.innerHTML = v(); linkify(el, lang);
 }

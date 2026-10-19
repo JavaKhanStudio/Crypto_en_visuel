@@ -6,6 +6,7 @@
 // does it, and main.py's scene played out by two riders.
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
+import { linkify } from '../../xref.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import * as A from './aes.js';
 import * as P from './packet.js';
@@ -29,11 +30,11 @@ export const bobSays = r => r.rejected === 'keys' ? t('m.bobNoKeys') : r.rejecte
 
 const ALL = P.BRICKS;
 export const STEPS = [
-  { id: 'intro', ch: 0, shot: 'castleA', view: 'whole', show: ['a', ALL], say: ['a'] },
+  { id: 'intro', refs: { '1.4': 7 }, ch: 0, shot: 'castleA', view: 'whole', show: ['a', ALL], say: ['a'] },
   { id: 'draw', ch: 0, shot: 'castleA', view: 'draw', show: ['a', ['iv']], say: ['a'] },
   { id: 'encrypt', ch: 0, shot: 'castleA', view: 'encrypt', show: ['a', ['iv', 'ct']], say: ['a'] },
   { id: 'seal', ch: 0, shot: 'castleA', view: 'seal', show: ['a', ['iv', 'ct', 'tag']], say: ['a'] },
-  { id: 'lock', ch: 0, shot: 'castleA', view: 'lock', show: ['a', ALL], say: ['a'] },
+  { id: 'lock', refs: { '1.4': 7 }, ch: 0, shot: 'castleA', view: 'lock', show: ['a', ALL], say: ['a'] },
   { id: 'ride', ch: 1, shot: 'both', view: 'whole', go: async x => { await x.ride('s'); } },
   { id: 'open', ch: 1, shot: 'castleB', view: 'bob', show: ['b', ALL], say: ['b'] },
   { id: 'eve', ch: 2, shot: 'both', view: 'evil', go: async x => { await x.ride('evil'); } },
@@ -42,7 +43,7 @@ export const STEPS = [
   { id: 'files', ch: 3, shot: 'valley', view: 'files', say: ['n'] },
   { id: 'main', ch: 3, shot: 'both', view: 'term', go: async x => { await x.scene(); } },
   { id: 'readme', ch: 3, shot: 'castleA', view: 'readme', show: ['a', ALL], say: ['a'] },
-  { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'whole', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'),
+  { id: 'end', refs: { '1.6': 2 }, ch: 3, shot: 'overview', orbit: .06, view: 'whole', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'),
     link: ['../eve-lit-tout/', '../octet-change/', '../cle-vallee/', '../encore-des-tours/'] },
 ];
 
@@ -82,7 +83,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; this.el.text.textContent = s.p; linkify(this.el.text, lang, step.refs);   // « épisode 1.4 » links to its step (r119)
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';
