@@ -104,6 +104,8 @@ export class Stage {
     e.visible = true;
     // on the lane Eve stands behind it, facing us; on the road, on the verge, at the first marks
     if (st.lane) { e.position.set(st.eve ? tileX(st.key ? 3 : 46) : tileX(30), 0, LANE_Z - 1.7); e.rotation.y = st.key ? -.4 : 0; }
+    // with the bars up she stands to their right, in the bar shot rather than in front of its lens
+    else if (st.bars) { e.position.copy(BARS_AT).add(v(6.4, 0, 1)); e.rotation.y = -.7; }
     else if (st.card === 'trace' || st.card === 'count') { e.position.set(4, 0, 3.1); e.rotation.y = 0; }   // measuring: mid-road
     else { e.position.set(START_X + 9, 0, 3.1); e.rotation.y = -.3; }
     this.focus.position.set(START_X, 0, 0);
@@ -130,6 +132,7 @@ export class Stage {
   // Eve's tape: an arc from each mark to the next, the first `tape` of them, with its length.
   drawTape() {
     this.tapes.clear();
+    this.tapes.visible = !this.st.bars;   // the arcs run under the bar shot's lens: they blur across its foot
     const gs = this.gapList.slice(0, this.st.tape), best = this.st.road.C;
     for (const [k, g] of gs.entries()) {
       const bad = this.st.red && g.d % best !== 0;
