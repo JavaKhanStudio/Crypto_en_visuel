@@ -24,6 +24,8 @@ export const SHOTS = {
   lane2Phone: { pos: v(-34.5, 5.5, LZ + 10), target: v(-34.5, -1.6, LZ) },
   repeatPhone: { pos: v(24, 30, LZ + 86), target: v(24, -15, LZ) },
   laneAllPhone: { pos: v(24, 30, LZ + 86), target: v(24, -15, LZ) },
+  // step 12: the whole lane on a desktop; on a phone the LEMON wheel and Eve, as in step 11 (laneAll from that far is grass)
+  finale:   { pos: v(20, 17, LZ + 27), target: v(20, 1, LZ) },
   repeat:   { pos: v(24, 17, LZ + 25), target: v(24, 0, LZ) },
   laneAll:  { pos: v(20, 17, LZ + 27), target: v(20, 1, LZ) },
   // step 10: the bars on the near verge, the lane and its repeats behind and above them
@@ -47,6 +49,8 @@ const pick = shot => {
   if (!portrait()) return s;
   return (typeof shot === 'string' && SHOTS[shot + 'Phone']) || forPhone(s);
 };
+
+SHOTS.finalePhone = forPhone(SHOTS.wheelKey);
 
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 

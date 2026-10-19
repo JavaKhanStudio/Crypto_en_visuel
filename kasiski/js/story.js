@@ -55,7 +55,7 @@ export const STEPS = [
   { id: 's11', ch: 4, shot: 'wheelKey', state: { ...EVE, kw: 0, key: '?????', card: 'cols' }, go: async x => {
       x.apply(); await x.stage.findKey('LEMON'); x.say('e');
     } },
-  { id: 's12', ch: 4, shot: 'laneAll', orbit: .02, state: { ...EVE, kw: 0, key: 'LEMON', lit: [1, 1, 1, 1, 1], card: 'cols' },
+  { id: 's12', ch: 4, shot: 'finale', orbit: .02, state: { ...EVE, kw: 0, key: 'LEMON', lit: [1, 1, 1, 1, 1], card: 'cols' },
     go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
 ];
 
