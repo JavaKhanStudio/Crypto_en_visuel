@@ -6,7 +6,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B, CITY } from './world.js';
+import { buildWorld, CASTLE_A, CASTLE_B } from './world.js';
 import { CameraRig } from './camera.js';
 import { initFx, updateFx, fireworks } from './fx.js';
 import { Sim, wait } from './sim.js';
@@ -65,27 +65,22 @@ const sim = new Sim(world, {
   onFlag: () => sandbox?.clearFlag(),
   onFollow: m => rig.chase(m.obj),
   onMessenger: (m, ev) => {
-    const to = m.from === 'a' || m.from === 'city' ? 'b' : 'a';
-    if (ev === 'sent') {
-      sfx.send();
-      if (m.forged) bubbles.show('eve-forge', 'e', t('m.forgedE'), new THREE.Vector3(CITY.x, 26, CITY.z), { ttl: 3500 });
-    } else if (ev === 'captured') {
+    const to = m.from === 'a' ? 'b' : 'a';
+    if (ev === 'sent') sfx.send();
+    else if (ev === 'captured') {
       sfx.capture();
       bubbles.show('caught', 'e', t('m.capturedE'), m.position.clone().add(new THREE.Vector3(0, 7, 0)), { ttl: 3500 });
     } else if (ev === 'delivered') {
       sfx.arrive();
-      const text = m.forged ? t('m.forgedAccepted') : m.seq <= sim.L[to] ? t('m.duplicate', { n: m.seq })
+      const text = m.seq <= sim.L[to] ? t('m.duplicate', { n: m.seq })
         : m.seq === 1 ? t('m.deliveredPlan') : t('m.deliveredAck', { n: m.seq });
       bubbles.show('recv-' + to, to, text, castleTop[to], { ttl: 3800 });
-    } else if (ev === 'rejected') {
-      sfx.reject();
-      bubbles.show('recv-b', 'b', t('m.forgedRejected'), castleTop.b, { ttl: 4000 });
     }
   },
 });
 
 // Leaving a sunrise, night falls back as the camera flies to the next shot while the camped armies fade, Eve's
-// spire rises again (his flag, which fell off it, is back at the end) and his gaze comes back (r69): snapping day to night in one frame was a flash. ?instant=1 still snaps.
+// spire rises again (her flag, which fell off it, is back at the end) and her gaze comes back (r69): snapping day to night in one frame was a flash. ?instant=1 still snaps.
 const DUSK = 2.2;   // the length of the camera's flight to the next shot
 let dusk = null, era = 0;   // era: a sunrise still rising when the world is reset stops there
 function resetWorld() {
@@ -108,16 +103,14 @@ function endDusk() {
 // the Eye's gaze lit to k of its full strength (the cone .11, the patch .45, as world.js builds them)
 function gaze(k) { const c = world.city.userData; c.beam.material.opacity = .11 * k; c.spot.material.opacity = .45 * k; }
 
-// Sunrise (or, after a forged order, midnight) and the armies that act on it.
+// Sunrise and the armies that act on it.
 async function dawn(k) {
   endDusk(); const outcome = sim.dawn(k), mine = era;
   resetCityFlag(world);   // a replay on the same step starts with the flag up and the spire standing
   bubbles.clear(); rig.setOrbit(0);
   rig.fly('both', 2);
-  if (outcome !== 'forged') {
-    await new Promise(res => { let v = 0; const tick = dt => { if (era !== mine) return tickers.delete(tick); v = Math.min(1, v + dt / 2.4); world.setDawn(v); if (v >= 1) { tickers.delete(tick); res(); } }; tickers.add(tick); });
-  } else await wait(800);
-  const teams = { both: ['a', 'b'], a: ['a'], b: ['b'], forged: ['b'], none: [] }[outcome];
+  await new Promise(res => { let v = 0; const tick = dt => { if (era !== mine) return tickers.delete(tick); v = Math.min(1, v + dt / 2.4); world.setDawn(v); if (v >= 1) { tickers.delete(tick); res(); } }; tickers.add(tick); });
+  const teams = { both: ['a', 'b'], a: ['a'], b: ['b'], none: [] }[outcome];
   const verdict = () => { toast(t('dawn.' + outcome), 5000); (outcome === 'both' ? sfx.win : outcome === 'none' ? () => {} : sfx.lose)(); };
   if (teams.length) await march(world, teams, outcome === 'both', { onHit: verdict }); else verdict();
   return outcome;

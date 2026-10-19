@@ -33,7 +33,8 @@ même lien.
 Démo interactive : deux armées, Alice et Bob,
 doivent attaquer la ville d'Eve au même moment, et ne peuvent se parler que par des messagers
 qu'Eve peut capturer. La démo montre pourquoi aucun nombre fini d'accusés de réception ne donne
-la certitude, ce que fait TCP à la place, et ce que la cryptographie (HMAC) règle ou ne règle pas.
+la certitude et ce que fait TCP à la place. Il se termine sur les quatre autres ruses d'Eve (lire,
+modifier, se faire passer pour Alice, rejouer), qu'affrontent les épisodes 1.2 à 1.6 de la série.
 
 Interactive demo of the Two Generals' Problem, French first, English with `?lang=en`.
 
@@ -165,9 +166,9 @@ puis http://localhost:8793/ (l'accueil) ou http://localhost:8793/deux-generaux/.
 
 | Mode | Contenu |
 |---|---|
-| **Histoire** | 17 étapes en 6 chapitres : le problème, un messager, l'accusé, la régression infinie (avec la preuve par l'absurde), le monde réel (rafales, TCP, l'aube), et la crypto (faux messager d'Eve, HMAC, ce que le HMAC ne fait pas). Flèches ou télécommande de présentation pour avancer. |
-| **Bac à sable** | Envoyer des messagers dans les deux sens, protocole automatique, rafale de 10, probabilité de capture, « le prochain est capturé », faux messager, HMAC, règle de l'aube. |
-| **Quiz** | 8 questions (FR/EN) avec explication de chaque réponse. |
+| **Histoire** | 14 étapes en 6 chapitres : le problème, un messager, l'accusé, la régression infinie (avec la preuve par l'absurde), le monde réel (rafales, TCP, l'aube), et la suite (les quatre ruses d'Eve que la cryptographie arrête, épisodes 1.2 à 1.6). Flèches ou télécommande de présentation pour avancer. |
+| **Bac à sable** | Envoyer des messagers dans les deux sens, protocole automatique, rafale de 10, probabilité de capture, « le prochain est capturé », règle de l'aube. |
+| **Quiz** | 6 questions (FR/EN) avec explication de chaque réponse. |
 
 Le panneau **Qui sait quoi ?** tient l'échelle de connaissance (« Alice sait que Bob sait que… ») ;
 au-dessus des châteaux, une colonne de blocs lumineux la double en 3D, et un « ? » flotte là où
@@ -188,7 +189,7 @@ deux-generaux/      l'épisode 1 :
   js/main.js          rendu, bloom, boucle, modes
   js/world.js         terrain, châteaux, ville d'Eve, route, ciel, aube
   js/camera.js        plans nommés, vols, poursuite d'un messager
-  js/messenger.js     un cavalier : livré, capturé, ou refusé (HMAC)
+  js/messenger.js     un cavalier : livré ou capturé (le faux cavalier refusé au HMAC y reste pour l'épisode 1.3)
   js/sim.js           le protocole : numéros de message, qui sait quoi, l'aube
   js/ladder.js        l'échelle de connaissance (texte + 3D)
   js/bubbles.js       bulles de dialogue accrochées à la scène

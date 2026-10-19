@@ -52,21 +52,6 @@ export const QUIZ = [
     },
   },
   {
-    correct: [1],
-    fr: {
-      q: "Deux bases militaires partagent une clé secrète convenue à l'avance et scellent chaque ordre d'un HMAC calculé avec elle. Un ennemi guette les messagers sur la route. Contre quoi le HMAC les protège-t-il ?",
-      o: ['Contre la perte des ordres en chemin', "Contre un faux ordre fabriqué par l'ennemi", "Contre la lecture des ordres par l'ennemi", 'Contre le retard des messagers sur la route', "Contre un vieil ordre renvoyé plus tard par l'ennemi"],
-      ok: "Correct! Sans la clé, l'ennemi ne peut pas produire un sceau valide : son faux ordre est rejeté. Le HMAC ne chiffre rien (l'ordre reste lisible), ne ramène pas un messager capturé, et un vrai ordre renvoyé plus tard passerait encore : contre le rejeu, il faut un numéro ou une date.",
-      ko: "Erreur. Le HMAC prouve l'intégrité et l'origine (quelqu'un qui a la clé) : il bloque le faux ordre. Il ne chiffre pas, ne garantit pas la livraison, et seul il n'empêche pas le rejeu d'un vrai ordre capturé.",
-    },
-    en: {
-      q: 'Two military bases share a secret key agreed in advance and seal every order with an HMAC computed with it. An enemy lies in wait for messengers on the road. What does the HMAC protect them against?',
-      o: ['Orders being lost on the way', 'A fake order made by the enemy', 'The enemy reading the orders', 'Messengers being delayed on the road', 'An old order re-sent later by the enemy'],
-      ok: 'Correct! Without the key, the enemy cannot produce a valid seal: the forgery is rejected. HMAC encrypts nothing (the order stays readable), does not bring back a captured messenger, and a real order re-sent later would still pass: replay needs a number or a date.',
-      ko: 'Wrong. HMAC proves integrity and origin (someone holding the key): it stops the forged order. It does not encrypt, does not guarantee delivery, and on its own does not stop the replay of a real captured order.',
-    },
-  },
-  {
     correct: [4],
     fr: {
       q: "Un ingénieur affirme : « Mon protocole garantit que deux machines s'accordent même si le réseau perd des messages : il suffit d'enchaîner huit accusés de réception. » Quel argument le réfute ?",
@@ -79,21 +64,6 @@ export const QUIZ = [
       o: ['Eight is not enough, it would take at least sixteen acks', 'Acknowledgements only work inside TCP', 'The network can also alter messages on the way', 'An ack cannot confirm another ack', 'The eighth can be lost without its sender knowing'],
       ok: 'Correct! If the eighth ack is lost, its sender does not know. If agreement holds without it anyway, it was useless, and the argument starts again with seven. No chain length escapes it.',
       ko: 'Wrong. The count changes nothing: the last ack can always be lost without its sender knowing. Sixteen acks would leave the same doubt about the sixteenth.',
-    },
-  },
-  {
-    correct: [0, 3],
-    fr: {
-      q: "Un service de paiement envoie « débiter 50 € » à une banque, par un réseau qui peut perdre des messages et sur lequel un attaquant peut écrire. Quelles mesures répondent à un problème que ce scénario pose réellement ?",
-      o: ["Renvoyer l'ordre numéroté tant qu'aucun accusé ne revient", "Chiffrer l'ordre pour qu'il arrive plus sûrement", 'Supprimer les accusés, pour gagner du temps à chaque envoi', "Sceller l'ordre d'un HMAC à clé partagée", 'Allonger la clé pour que les messages se perdent moins'],
-      ok: "Correct! Deux menaces, deux réponses : la perte se traite par des renvois (numérotés, pour que la banque ignore les doublons), la falsification par un sceau HMAC. Chiffrer cacherait le montant, mais ne fait arriver aucun message et ne prouve pas l'origine.",
-      ko: "Erreur. La perte ne se règle pas par la cryptographie (chiffrer ou allonger la clé ne fait rien arriver) : elle se règle par des renvois numérotés. La falsification se règle par un HMAC. Supprimer les accusés retire le seul moyen de savoir qu'il faut renvoyer.",
-    },
-    en: {
-      q: 'A payment service sends “debit €50” to a bank over a network that can lose messages and that an attacker can write to. Which measures answer a problem this scenario really raises?',
-      o: ['Resend the numbered order until an ack comes back', 'Encrypt the order so that it is more likely to arrive', 'Drop acknowledgements to go faster', 'Seal the order with a shared-key HMAC', 'Use a longer key so fewer messages get lost'],
-      ok: 'Correct! Two threats, two answers: loss is handled by resends (numbered, so the bank ignores duplicates), forgery by an HMAC seal. Encryption would hide the amount, but makes no message arrive and proves no origin.',
-      ko: 'Wrong. Loss is not solved by cryptography (encrypting or a longer key delivers nothing): it is solved by numbered resends. Forgery is solved by an HMAC. Dropping acks removes the only way to know a resend is needed.',
     },
   },
   {

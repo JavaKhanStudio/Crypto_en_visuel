@@ -1,4 +1,4 @@
-// The guided story: 16 steps in 6 chapters. Each step sets the protocol to the
+// The guided story: 14 steps in 6 chapters. Each step sets the protocol to the
 // state the story has reached (so Back, Next and the chapter chips always land
 // somewhere consistent), flies the camera, pins its bubbles, and offers buttons.
 import * as THREE from 'three';
@@ -54,13 +54,7 @@ export const STEPS = [
       if (!x.live()) return;
       await x.fly('both'); await x.dawn(1);
     } },
-  { id: 's14', ch: 5, shot: 'valley', state: S(0, 1, { hmac: false }), go: async (x) => {
-      x.apply(); await x.forge(); await x.fly('castleB');
-    } },
-  { id: 's15', ch: 5, shot: 'valley', state: S(0, 1, { hmac: true }), go: async (x) => {
-      x.apply(); await x.forge(); await x.fly('castleB');
-    } },
-  { id: 's16', ch: 5, shot: 'castleB', state: S(0, 1, { hmac: true }), say: ['b'] },
+  { id: 'tricks', ch: 5, shot: 'city', orbit: .04, state: S(0, 0), say: ['e'] },
   { id: 's17', ch: 5, shot: 'overview', orbit: .06, state: S(0, 0), say: ['n'], go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
 ];
 
@@ -69,7 +63,7 @@ export class Story {
     this.ctx = ctx; this.i = 0; this.token = 0;
     this.el = { title: document.getElementById('step-title'), text: document.getElementById('step-text'),
       actions: document.getElementById('step-actions'), count: document.getElementById('step-count'),
-      chapters: document.getElementById('chapters'), prev: document.getElementById('prev'), next: document.getElementById('next') };
+      chapters: document.getElementById('chapters'), tiles: document.getElementById('step-tiles'), prev: document.getElementById('prev'), next: document.getElementById('next') };
     this.el.prev.onclick = () => this.go(this.i - 1);
     this.el.next.onclick = () => this.go(this.i + 1);
     onLang(() => this.render(true));
@@ -92,8 +86,8 @@ export class Story {
   applyState(st) {
     const sim = this.ctx.sim;
     sim.reset();
-    sim.L = { ...st.L }; sim.got = { ...st.got }; sim.forgedBelief = false;
-    sim.p = st.p ?? .4; sim.hmac = !!st.hmac; sim.lastFrom = null;
+    sim.L = { ...st.L }; sim.got = { ...st.got };
+    sim.p = st.p ?? .4; sim.lastFrom = null;
     sim.changed();
   }
 
@@ -108,6 +102,9 @@ export class Story {
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
     this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    // a step may lay its points out as tiles under the text (r93: Eve's four tricks, each with the episode that stops it)
+    this.el.tiles.innerHTML = (s.tiles || []).map(([icon, name, what, ep]) =>
+      `<div class="tile"><span class="icon">${icon}</span><b>${name}</b><span>${what}</span><em>${ep}</em></div>`).join('');
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     // chapter chips
@@ -155,7 +152,6 @@ export class Story {
       fly: shot => live() ? c.rig.fly(shot) : null,
       say: (who, text) => live() && this.say(who, null, text),
       ride: async (from, opts) => { const m = c.sim.send(from, opts); c.rig.chase(m.obj); const r = await m.done; await wait(600); return r; },
-      forge: async () => { const m = c.sim.forge(); c.rig.chase(m.obj); const r = await m.done; await wait(900); return r; },
       dawn: k => c.dawn(k),
       // the searchlight took the rider: show the valley, let Eve gloat, and the button sends again
       caught: async () => { if (!live()) return; await c.rig.fly('both'); x.say('e', 'caught'); },

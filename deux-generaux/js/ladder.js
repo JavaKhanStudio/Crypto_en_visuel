@@ -28,7 +28,6 @@ export function renderLadder(sim) {
   unk.textContent = t('ladder.unknown', { n: n + 1 }); rungsEl.appendChild(unk);
   // whoever sent the last messenger is the one left in doubt
   let v = n ? t('ladder.verdict', { who: raw('who')[sim.lastFrom || (n % 2 ? 'a' : 'b')] }) : t('ladder.verdict0');
-  if (sim.forgedBelief) v += ' ' + t('ladder.forged');
   verdictEl.textContent = v;
   towers.set(n);
 }

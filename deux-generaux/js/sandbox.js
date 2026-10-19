@@ -24,8 +24,6 @@ export function initSandbox(ctx) {
   };
   $('sb-p').oninput = e => { sim.p = e.target.value / 100; render(); };
   $('sb-next-caught').onchange = e => sim.nextCaught = e.target.checked;
-  $('sb-forge').onclick = () => sendAndMaybeFollow(sim.forge());
-  $('sb-hmac').onchange = e => sim.hmac = e.target.checked;
   $('sb-dawn').onclick = async () => { $('sb-dawn').disabled = true; await ctx.dawn(+$('sb-rule').value); $('sb-dawn').disabled = false; };
   $('sb-reset').onclick = () => { ctx.resetWorld(); sim.reset(); rig.fly('overview'); };
   $('sb-follow').onclick = () => { follow = !follow; $('sb-follow').classList.toggle('active', follow); if (!follow) rig.stopFollow(); };
@@ -40,7 +38,7 @@ export function initSandbox(ctx) {
   return {
     enter() {
       ctx.resetWorld(); sim.reset();
-      sim.p = $('sb-p').value / 100; sim.hmac = $('sb-hmac').checked; sim.nextCaught = $('sb-next-caught').checked;
+      sim.p = $('sb-p').value / 100; sim.nextCaught = $('sb-next-caught').checked;
       rig.setOrbit(0); rig.fly('overview'); render();
     },
     render,

@@ -9,7 +9,7 @@ export class Sim {
   constructor(world, hooks) {
     this.world = world; this.hooks = hooks;   // hooks: onChange, onMessenger(m, event)
     this.messengers = new Set();
-    this.p = .4; this.nextCaught = false; this.hmac = false; this.speed = 26;
+    this.p = .4; this.nextCaught = false; this.speed = 26;
     this.reset();
   }
 
@@ -19,7 +19,6 @@ export class Sim {
     this.L = { a: 0, b: 0 };         // highest message number each general has received
     this.got = { a: 0, b: 0 };       // distinct messages received, for the dawn rule
     this.stats = { sent: 0, ok: 0, lost: 0 };
-    this.forgedBelief = false;
     this.changed();
   }
 
@@ -59,16 +58,6 @@ export class Sim {
     return m;
   }
 
-  // Eve's rider in Alice's colours, with a false order for Bob.
-  forge({ speed } = {}) {
-    const m = new Messenger(this.world, { from: 'city', forged: true, fate: this.hmac ? 'reject' : 'deliver', speed: speed ?? this.speed,
-      onEvent: (ev, mm) => this.hooks.onMessenger?.(mm, ev) });
-    m.seq = 0; this.messengers.add(m);
-    m.done.then(r => { this.messengers.delete(m); if (r === 'delivered') this.forgedBelief = true; this.changed(); });
-    this.hooks.onMessenger?.(m, 'sent');
-    return m;
-  }
-
   // n copies of the same message, staggered. Resolves when all are done.
   async burst(from, n = 10, gap = 280) {
     const seq = this.nextSeq(from);
@@ -96,7 +85,6 @@ export class Sim {
   // Each general attacks if it received at least `k` distinct messages.
   dawn(k) {
     const a = this.got.a >= k, b = this.got.b >= k;
-    if (this.forgedBelief) return 'forged';
     return a && b ? 'both' : a ? 'a' : b ? 'b' : 'none';
   }
 
