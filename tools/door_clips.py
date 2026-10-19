@@ -9,6 +9,8 @@ panels hidden as in tools/vignette.py; it stays in this episode's folder. Needs 
 
     tools/door_clips.py deux-generaux --next eve-lit-tout --next-hash '#story=2' [--only next]
     tools/door_clips.py enigma --next enigma-reglage --next-hash '#story=5' --sandbox-keys OUI --box sandbox=300,100,1100,550
+    tools/door_clips.py eve-lit-tout --next octet-change --next-hash '#story=3' --sandbox-pre 'input[value=plain]' --sandbox-click '#sb-send' --box sandbox=0,0,1280,720
+    tools/door_clips.py cadenas --next diffie-hellman --next-hash '#story=4' --sandbox-click '#sb-lock,#sb-send'
 """
 import argparse, base64, os, subprocess, tempfile, time
 from playwright.sync_api import sync_playwright
@@ -20,6 +22,8 @@ ap.add_argument("--next-hash", default="#story=2", help="a story step whose #pla
 ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--only", default="", help="comma list of sandbox,quiz,home,next")
 ap.add_argument("--sandbox-keys", default="", help="type these letters on #sb-keys instead of clicking #sb-burst (enigma: OUI)")
+ap.add_argument("--sandbox-pre", default="", help="a comma list clicked before the clip starts (eve-lit-tout: « en clair », so Eve reads the order)")
+ap.add_argument("--sandbox-click", default="#sb-burst", help="the sandbox buttons the clip presses, a comma list clicked in turn over the 4 s (eve-lit-tout: #sb-send; cadenas: #sb-lock,#sb-send)")
 ap.add_argument("--box", action="append", default=[], help="name=x0,y0,x1,y1: crop that door elsewhere (16:9), as tools/door_thumbs.py")
 a = ap.parse_args()
 BOX = {n: tuple(int(v) for v in xy.split(",")) for n, xy in (b.split("=") for b in a.box)}
@@ -31,13 +35,16 @@ ready = "window.demo && window.demo.ready"
 
 def sandbox(pg):
     pg.goto(f"{a.base}{a.slug}/?instant=1#sandbox"); pg.wait_for_function(ready, timeout=60000)
+    for c in filter(None, a.sandbox_pre.split(",")): pg.click(c)
     pg.wait_for_timeout(1500); t = time.time()
     if a.sandbox_keys:
         for c in a.sandbox_keys:
             pg.locator("#sb-keys button", has_text=c).first.click(); pg.wait_for_timeout(SEC * 1000 // len(a.sandbox_keys))
-        pg.wait_for_timeout(500)
     else:
-        pg.click("#sb-burst"); pg.wait_for_timeout(SEC * 1000 + 500)
+        sel = a.sandbox_click.split(",")
+        for c in sel:
+            pg.click(c); pg.wait_for_timeout(SEC * 1000 // len(sel))
+    pg.wait_for_timeout(500)
     return t, BOX.get("sandbox", (0, 90, 640, 450))
 
 

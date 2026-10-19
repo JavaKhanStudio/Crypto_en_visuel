@@ -134,7 +134,9 @@ des cadenas ouverts et les distribue partout (sa clé publique), il garde la seu
 privée) ; Alice ferme sa boîte, Eve l'intercepte avec le même cadenas en main et ne peut pas
 l'ouvrir, seul Bob l'ouvre. 10 étapes en 5 chapitres, un bac à sable (Eve intercepte ou non,
 Eve a volé la clé ou non, qui essaie d'ouvrir), un quiz de 6 questions. Même structure que
-`deux-generaux/` (`cadenas/js/stage.js` tient les accessoires et leurs animations).
+`deux-generaux/` (`cadenas/js/stage.js` tient les accessoires et leurs animations). La dernière
+étape ouvre quatre portes en image (bac à sable, quiz, tous les épisodes, puis l'épisode 3 en or à
+droite), chacune avec un extrait de 4 s au survol (`tests/last_doors.py cadenas 10 diffie-hellman`).
 `tests/cadenas_story.py` clique chaque bouton de l'histoire et vérifie où finit la boîte.
 
 ## Épisode 3 — Les couleurs de Diffie-Hellman

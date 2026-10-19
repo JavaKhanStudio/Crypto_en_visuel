@@ -43,8 +43,9 @@ const fr = {
       p: "Eve ne peut rien tirer de la boîte et la laisse repartir. (Elle pourrait aussi la garder : Bob ne recevrait rien, mais Eve ne lirait rien non plus.) Seul Bob, à la réception, peut ouvrir la boîte d'Alice, avec la seule clé qui ouvre ses cadenas.",
       go: 'La boîte repart vers Bob', b: 'Mon cadenas, ma clé : la boîte s’ouvre.' },
     s10: { t: 'Clé publique, clé privée',
-      p: "La clé publique, c'est le cadenas ouvert : Bob la donne à tout le monde, et elle sert à fermer une boîte pour lui. La clé privée, c'est la clé : Bob ne la donne à personne, et elle seule ouvre ce que ses cadenas ont fermé.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz' },
+      p: "La clé publique, c'est le cadenas ouvert : Bob la donne à tout le monde, et elle sert à fermer une boîte pour lui. La clé privée, c'est la clé : Bob ne la donne à personne, et elle seule ouvre ce que ses cadenas ont fermé. Puis la suite : Alice et Bob fabriquent un secret commun en mélangeant des couleurs en public, sous les yeux d'Eve.",
+      doors: { sandbox: ['Bac à sable', 'Fermez, envoyez, laissez Eve essayer'], quiz: ['Quiz', 'Six questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 3 · Les couleurs de Diffie-Hellman ▶', 'Un secret commun mélangé en public'] } },
   },
   sb: {
     title: 'Bac à sable',
@@ -112,8 +113,9 @@ const en = {
       p: 'Eve gets nothing out of the box and lets it go on. (She could also keep it: Bob would receive nothing, but Eve would read nothing either.) Only Bob, on arrival, can open Alice’s box, with the one key that opens his padlocks.',
       go: 'The box goes on to Bob', b: 'My padlock, my key: the box opens.' },
     s10: { t: 'Public key, private key',
-      p: 'The public key is the open padlock: Bob gives it to everyone, and it is used to lock a box for him. The private key is the key: Bob gives it to no one, and it alone opens what his padlocks have locked.',
-      go: 'Try it in the sandbox', go2: 'Take the quiz' },
+      p: 'The public key is the open padlock: Bob gives it to everyone, and it is used to lock a box for him. The private key is the key: Bob gives it to no one, and it alone opens what his padlocks have locked. Then what comes next: Alice and Bob make a shared secret by mixing colours in public, right under Eve’s eyes.',
+      doors: { sandbox: ['Sandbox', 'Lock, send, let Eve try'], quiz: ['Quiz', 'Six questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 3 · Diffie-Hellman’s Colours ▶', 'A shared secret mixed in public'] } },
   },
   sb: {
     title: 'Sandbox',
