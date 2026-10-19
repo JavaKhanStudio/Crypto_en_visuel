@@ -40,7 +40,7 @@ export const STEPS = [
   { id: 'forged', ch: 1, shot: 'city', view: 'forged', go: async x => { await x.ride({ how: 'forge', check: true }); } },
   { id: 'first', ch: 2, shot: 'castleB', view: 'ops', say: ['b'] },
   { id: 'compare', ch: 2, shot: 'castleB', view: 'compare', say: ['b'] },
-  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', say: ['e'] },
+  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', say: ['e'], link: ['../cle-vallee/'] },
   { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'packet', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: ['../garde/', '../pingouin/'] },
 ];
 

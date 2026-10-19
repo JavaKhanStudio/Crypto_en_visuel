@@ -19,7 +19,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 1.1 | Le problème des deux généraux | https://javakhanstudio.github.io/Crypto_en_visuel/deux-generaux/ | publié |
 | 1.2 | Eve lit tout (AES-256-CBC) | https://javakhanstudio.github.io/Crypto_en_visuel/eve-lit-tout/ | publié |
 | 1.3 | L'octet changé (HMAC-SHA256) | https://javakhanstudio.github.io/Crypto_en_visuel/octet-change/ | publié |
-| 1.4 | La clé qui traverse la vallée (RSA-OAEP, chiffrement hybride) | https://javakhanstudio.github.io/Crypto_en_visuel/cle-vallee/ | bientôt |
+| 1.4 | La clé qui traverse la vallée (RSA-OAEP, chiffrement hybride) | https://javakhanstudio.github.io/Crypto_en_visuel/cle-vallee/ | publié |
 | 1.5 | Le paquet complet | https://javakhanstudio.github.io/Crypto_en_visuel/paquet-complet/ | bientôt |
 | 1.6 | Eve a encore des tours (signature, rejeu, AES-GCM) | https://javakhanstudio.github.io/Crypto_en_visuel/encore-des-tours/ | bientôt |
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
@@ -70,6 +70,22 @@ ou non), un quiz de 7 questions. Tout est calculé dans la page (`octet-change/j
 `octet-change/js/hmac.js`) et vérifié par `node tests/octet_values.mjs` contre FIPS-197, RFC 4231,
 openssl, le module `hmac` de Python et WebCrypto ; `tests/octet_story.py` joue chaque chevauchée et
 le bac à sable.
+
+## Épisode 1.4 — La clé qui traverse la vallée
+
+Les deux clés, AES et HMAC, doivent arriver chez Bob, et Alice et Bob ne se sont jamais vus.
+Envoyées en clair, Eve les recopie à sa porte, déchiffre l'ordre, écrit 9H et refait un sceau
+valide : tout ce qui précède tombe. Bob envoie alors son cadenas ouvert, sa clé publique RSA-2048
+(RSA à la main d'abord : 5 × 11 = 55, e = 3, d = 27, 7 → 13 → 7) ; Eve le recopie en route, il
+ferme et n'ouvre pas. Alice ferme ses 64 octets de clés en RSA-OAEP (SHA-256, graine de 32 octets :
+mêmes clés, deux graines, deux blocs sans rapport), Bob les rouvre avec sa clé privée. Puis le
+chiffrement hybride (190 octets au plus par bloc, RSA lent), des clés neuves à chaque ordre, et le
+paquet complet ; la fin renvoie aux épisodes 2 (le cadenas) et 3 (Diffie-Hellman). 13 étapes en 4
+chapitres, un bac à sable (votre ordre ; les clés en clair ou fermées ; Eve lit ou change l'ordre),
+un quiz de 7 questions. RSA et OAEP sont calculés dans la page sur BigInt (`cle-vallee/js/rsa.js`,
+la paire de Bob tirée une fois avec openssl, des graines fixes pour l'histoire) et vérifiés par
+`node tests/cle_values.mjs` contre openssl (`pkeyutl`, OAEP SHA-256), WebCrypto et `pow` de
+Python ; `tests/cle_story.py` joue chaque chevauchée et le bac à sable.
 
 ## Épisode 2 — Le cadenas de Bob
 

@@ -17,7 +17,7 @@ const EPISODES = [
   { n: '1.1', slug: 'deux-generaux', icon: '🏰', live: true, saga: 1 },
   { n: '1.2', slug: 'eve-lit-tout', icon: '👁️', live: true, saga: 1 },
   { n: '1.3', slug: 'octet-change', icon: '✏️', live: true, saga: 1 },
-  { n: '1.4', slug: 'cle-vallee', icon: '🔑', saga: 1 },
+  { n: '1.4', slug: 'cle-vallee', icon: '🔑', live: true, saga: 1 },
   { n: '1.5', slug: 'paquet-complet', icon: '📦', saga: 1 },
   { n: '1.6', slug: 'encore-des-tours', icon: '🎭', saga: 1 },
   { n: 2, slug: 'cadenas', icon: '🔒', live: true },
