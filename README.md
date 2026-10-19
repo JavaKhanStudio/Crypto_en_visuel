@@ -42,6 +42,8 @@ doivent attaquer la ville d'Eve au même moment, et ne peuvent se parler que par
 qu'Eve peut capturer. La démo montre pourquoi aucun nombre fini d'accusés de réception ne donne
 la certitude et ce que fait TCP à la place. Il se termine sur les quatre autres ruses d'Eve (lire,
 modifier, se faire passer pour Alice, rejouer), qu'affrontent les épisodes 1.2 à 1.6 de la série.
+Sa dernière étape ouvre quatre portes, une image chacune : bac à sable, quiz, tous les épisodes,
+et l'épisode 1.2 en dernier, à droite (`tests/last_doors.py`, images par `tools/door_thumbs.py`).
 
 Interactive demo of the Two Generals' Problem, French first, English with `?lang=en`.
 

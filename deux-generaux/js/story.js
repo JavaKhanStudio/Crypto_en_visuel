@@ -55,7 +55,12 @@ export const STEPS = [
       await x.fly('both'); await x.dawn(1);
     } },
   { id: 'tricks', ch: 5, shot: 'city', orbit: .04, state: S(2, 1), say: ['e'] },
-  { id: 's17', ch: 5, shot: 'overview', orbit: .06, state: S(2, 1), say: ['n'], go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
+  // r105: the last step is the doors out, each with its picture; the next episode is last, at the right
+  { id: 's17', ch: 5, shot: 'overview', orbit: .06, state: S(2, 1), say: ['n'], doors: [
+      { k: 'sandbox', img: 'img/door-sandbox.jpg', go: x => x.mode('sandbox') },
+      { k: 'quiz', img: 'img/door-quiz.jpg', go: x => x.mode('quiz') },
+      { k: 'home', img: 'img/door-home.jpg', href: '../' },
+      { k: 'next', img: '../eve-lit-tout/vignette.jpg', href: '../eve-lit-tout/' }] },
 ];
 
 export class Story {
@@ -103,9 +108,9 @@ export class Story {
     const step = STEPS[this.i], s = raw('steps')[step.id];
     this.el.title.textContent = s.t; this.el.text.textContent = s.p;
     // a step may lay its points out as tiles under the text (r93: Eve's four tricks, each with the episode that stops it)
-    // a tile whose episode is published links to it (its folder, 5th field), in the same language
-    this.el.tiles.innerHTML = (s.tiles || []).map(([icon, name, what, ep, href]) =>
-      `<div class="tile"><span class="icon">${icon}</span><b>${name}</b><span>${what}</span><em>${href ? `<a href="${href}?lang=${lang}">${ep} ▶</a>` : ep}</em></div>`).join('');
+    // (r105: the links to the episodes moved to the last step's doors)
+    this.el.tiles.innerHTML = (s.tiles || []).map(([icon, name, what, ep]) =>
+      `<div class="tile"><span class="icon">${icon}</span><b>${name}</b><span>${what}</span><em>${ep}</em></div>`).join('');
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     // chapter chips
@@ -120,6 +125,14 @@ export class Story {
     // a step's animation takes Suivant's place at the right; Suivant waits beside it, grey, until
     // the animation has played (it works all along). The last step's buttons are not animations.
     this.el.actions.innerHTML = ''; this.el.play?.remove(); this.el.play = null;
+    this.el.actions.classList.toggle('doors', !!step.doors);
+    for (const d of step.doors || []) {
+      const [name, what] = s.doors[d.k], a = document.createElement('a');
+      a.className = 'door' + (d.k === 'next' ? ' next' : '');
+      a.innerHTML = `<img src="${d.img}" alt=""><b>${name}</b><span>${what}</span>`;
+      if (d.href) a.href = d.href + '?lang=' + lang; else { a.href = '#'; a.onclick = e => { e.preventDefault(); d.go({ mode: m => this.ctx.setMode(m) }); }; }
+      this.el.actions.appendChild(a);
+    }
     const anim = step.go && this.i < STEPS.length - 1;
     for (const key of ['go', 'go2']) {
       if (!step[key]) continue;
