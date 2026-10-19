@@ -39,6 +39,10 @@ class Poly extends THREE.Curve {
 }
 const bez = (p0, p1, p2, p3, n = 24) => new THREE.CubicBezierCurve3(p0, p1, p2, p3).getPoints(n);
 
+// where a guess's tag sits beside each letter of the story's loop, as [first, middle, last] offsets:
+// clear of the link numbers round E (11 on E-H, 19 on T-E) and of 9 on T-R
+const TRACE_AT = { E: [[-2.5, 1.3], [1.9, 1], [-0.2, -1.5]], T: [[-1.9, 1.2], [2.1, -0.85], [-1.9, -1.2]] };
+
 export class Stage {
   constructor(world, tickers) {
     this.world = world; this.scene = world.scene; this.tickers = tickers; this.speed = 1; this.token = 0;
@@ -562,11 +566,14 @@ export class Stage {
     const mn = this.st.menu;
     if (mn) {
       const pos = this.menuLayout(mn.links), n = mn.n ?? mn.links.length, L = sl?.cipher.length ?? 23;
-      const pairs = {};
+      // two links between the same letters (E-B 8 and B-E 13) bow apart, one each side, so their numbers part
+      const key = l => [l.a, l.b].sort().join(''), count = {}, pairs = {};
+      for (const l of mn.links) count[key(l)] = (count[key(l)] ?? 0) + 1;
       mn.links.slice(0, n).forEach((l, li) => {
-        const key = [l.a, l.b].sort().join(''), twin = pairs[key] = (pairs[key] ?? -1) + 1;
+        const twin = pairs[key(l)] = (pairs[key(l)] ?? -1) + 1, [p, q] = [l.a, l.b].sort();
         const a = this.slateAt(...pos[l.a]), b = this.slateAt(...pos[l.b]), mid = a.clone().lerp(b, .5);
-        const off = new THREE.Vector3(-(b.y - a.y), b.x - a.x, 0).normalize().multiplyScalar(twin ? 1.1 : 0);
+        const pa = this.slateAt(...pos[p]), pb = this.slateAt(...pos[q]);
+        const off = new THREE.Vector3(-(pb.y - pa.y), pb.x - pa.x, 0).normalize().multiplyScalar(count[key(l)] > 1 ? (twin ? -1.3 : 1.3) : 0);
         const ctrl = mid.clone().add(off), hot = mn.loop?.includes(li);
         const curve = new THREE.QuadraticBezierCurve3(a, ctrl, b);
         const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, hot ? .12 : .07, 6, false), new THREE.MeshBasicMaterial({ color: hot ? 0xffd84d : 0x9fb4c8, toneMapped: false }));
@@ -582,7 +589,7 @@ export class Stage {
       const tr = mn.trace;
       if (tr) tr.letters.slice(0, tr.upto).forEach((c, j) => {
         const last = j === tr.letters.length - 1, bad = last && tr.vals[j] !== tr.vals[0];
-        const off = j === 0 ? v(-1.9, 1.2, .2) : last ? v(-1.9, -1.2, .2) : v(1.9, 1, .2);
+        const off = j === 0 ? v(...(TRACE_AT[c]?.[0] ?? [-1.9, 1.2]), .2) : last ? v(...(TRACE_AT[c]?.[2] ?? [-1.9, -1.2]), .2) : v(...(TRACE_AT[c]?.[1] ?? [1.9, 1]), .2);
         g.add(this.tag(this.slateAt(...pos[c]).add(off), `${c}→${tr.vals[j]}${last ? (bad ? ' ✗' : ' ✓') : ''}`, last ? (bad ? '#ff4d5e' : '#5fe39a') : '#ffd84d', .72));
       });
     }
