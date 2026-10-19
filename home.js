@@ -13,7 +13,7 @@ addEventListener('hashchange', forwardOldLink);
 
 // n = episode number, fixed for good; live = published. Order and picks: cryptographie r66.
 // saga: 1 = the Two Generals saga (r89, Simon's layout A): numbered 1.1 to 1.6, shown as one group.
-// saga: 5 = Enigma (r117): 5.1 one key press, 5.2 the real setting. A saga's title is sagas[n] below.
+// saga: 5 = Enigma (r117, r118): 5.1 one key press, 5.2 the real setting, 5.3 the break. A saga's title is sagas[n] below.
 const EPISODES = [
   { n: '1.1', slug: 'deux-generaux', icon: '🏰', live: true, saga: 1 },
   { n: '1.2', slug: 'eve-lit-tout', icon: '👁️', live: true, saga: 1 },
@@ -26,6 +26,7 @@ const EPISODES = [
   { n: 4, slug: 'scytale', icon: '📜', live: true },
   { n: '5.1', slug: 'enigma', icon: '⚙️', live: true, saga: 5 },
   { n: '5.2', slug: 'enigma-reglage', icon: '🔌', live: true, saga: 5 },
+  { n: '5.3', slug: 'enigma-casse', icon: '🐝', live: true, saga: 5 },
   { n: 6, slug: 'pingouin', icon: '🐧', live: true },
   { n: 7, slug: 'sel', icon: '🧂', live: true },
   { n: 8, slug: 'garde', icon: '⏱️', live: true },
@@ -42,7 +43,7 @@ const fr = {
   course: 'Pour le cours Cryptographie de Simon Bédard.',
   sagas: {
     1: ['La saga des deux généraux', 'Six épisodes, une brique chacun : le message qu’Eve ne pourra ni lire, ni changer, ni usurper.'],
-    5: ['Enigma', 'La machine pas à pas : une touche d’abord, puis tout le réglage du jour.'],
+    5: ['Enigma', 'La machine pas à pas : une touche d’abord, puis tout le réglage du jour, puis la casse.'],
   },
   ep: {
     'deux-generaux': ['Le problème des deux généraux', 'Peut-on se mettre d’accord quand chaque message peut se perdre ?'],
@@ -56,6 +57,7 @@ const fr = {
     scytale: ['La scytale', 'Un ruban enroulé sur un bâton : le diamètre du bâton est la clé.'],
     enigma: ['Enigma, une touche', 'On appuie sur une touche : les rotors tournent et le courant fait l’aller-retour jusqu’à une lampe.'],
     'enigma-reglage': ['Enigma, le vrai réglage', 'Les câbles, les bagues, l’encoche et le double pas, cinq rotors : tout le réglage du jour, et combien il y en a.'],
+    'enigma-casse': ['Enigma, la casse', 'Une lettre n’est jamais chiffrée en elle-même, un mot deviné glisse sous le chiffré, et la bombe de Turing trouve le réglage.'],
     pingouin: ['Le pingouin et la chaîne', 'ECB laisse voir les motifs, CBC enchaîne les blocs, et un bit retourné change le message.'],
     sel: ['Le sel', 'Même mot de passe, même empreinte… sauf avec du sel. Et bcrypt prend son temps exprès.'],
     garde: ['Le garde trop pressé', 'Un garde qui compare un badge lettre par lettre trahit le HMAC par son chronomètre.'],
@@ -72,7 +74,7 @@ const en = {
   course: 'For Simon Bédard’s Cryptography course.',
   sagas: {
     1: ['The Two Generals Saga', 'Six episodes, one brick each: the message Eve can neither read, change nor forge.'],
-    5: ['Enigma', 'The machine step by step: one key press first, then the whole setting of the day.'],
+    5: ['Enigma', 'The machine step by step: one key press first, then the whole setting of the day, then the break.'],
   },
   ep: {
     'deux-generaux': ['The Two Generals’ Problem', 'Can two parties agree when any message may be lost?'],
@@ -86,6 +88,7 @@ const en = {
     scytale: ['The Scytale', 'A strip wound around a stick: the stick’s diameter is the key.'],
     enigma: ['Enigma, One Key Press', 'Press one key: the rotors step and the current runs there and back to a lamp.'],
     'enigma-reglage': ['Enigma, the Real Setting', 'Cables, rings, the notch and the double step, five rotors: the whole setting of the day, and how many there are.'],
+    'enigma-casse': ['Enigma, the Break', 'A letter never encrypts to itself, a guessed word moves along under the cipher, and Turing’s bombe finds the setting.'],
     pingouin: ['The Penguin and the Chain', 'ECB shows the patterns, CBC chains the blocks, and one flipped bit changes the message.'],
     sel: ['Salt', 'Same password, same hash… unless it is salted. And bcrypt is slow on purpose.'],
     garde: ['The Hasty Guard', 'A guard who checks a badge letter by letter gives the HMAC away to a stopwatch.'],

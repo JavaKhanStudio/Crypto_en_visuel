@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright
 from PIL import Image
 
 BASE = "http://localhost:8793/"
-EPISODES = sys.argv[1:] or ["enigma", "enigma-reglage", "garde", "pingouin", "scytale", "sel", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours"]
+EPISODES = sys.argv[1:] or ["enigma", "enigma-reglage", "enigma-casse", "garde", "pingouin", "scytale", "sel", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours"]
 MEASURE = """() => {
   const r = id => { const e = document.getElementById(id); return e && !e.classList.contains('hidden') && e.offsetHeight ? e.getBoundingClientRect() : null; };
   const card = r('card'), panel = r('story') || r('sandbox');

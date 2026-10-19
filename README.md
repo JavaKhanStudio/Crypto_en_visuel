@@ -27,6 +27,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
 | 5.1 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | publié |
 | 5.2 | Enigma, le vrai réglage (câbles, bagues, encoche, double pas, nombre de réglages) | https://javakhanstudio.github.io/Crypto_en_visuel/enigma-reglage/ | publié |
+| 5.3 | Enigma, la casse (jamais elle-même, le mot probable, le menu, la bombe de Turing) | https://javakhanstudio.github.io/Crypto_en_visuel/enigma-casse/ | publié |
 | 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | publié |
 | 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | publié |
 | 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | publié |
@@ -199,6 +200,22 @@ un quiz de 8 questions. L'arithmétique est seule dans `enigma-reglage/js/enigma
 `node tests/enigma-reglage_values.mjs` la compare d'abord à des vecteurs publiés (AAAAA → BDZGO,
 le message Barbarossa de 1941), puis aux valeurs et chiffres écrits dans l'histoire ;
 `tests/enigma-reglage_story.py` clique chaque bouton.
+
+## Épisode 5.3 — Enigma, la casse
+
+Le réglage de 5.2 (rotors I, II, III, bague B à droite, les dix mêmes câbles), départ IXX : Alice
+chiffre le bulletin météo HEUTEXWETTERBERICHTXEIS en EBOWTASBRMHCEFBMMXEFFPA. Eve part de la faille
+de 5.2, aucune lettre ne devient elle-même, et du mot probable WETTERBERICHT : glissé sous le
+chiffré, il tombe sur une lettre identique aux places 1, 2, 3, 4, 6 ; il en reste cinq. Le menu de
+la place 7 (13 liens, 12 lettres, la boucle E–B–R–T–E), puis une vraie course de la bombe sur un
+seul ordre de rotors (I II III, bagues A, lettre test E) : les 5 menus × 17 576 positions =
+87 880 essais donnent 9 arrêts ; le contrôle du commis sur la machine en écarte huit. Reste IXW
+avec les câbles B–S, C–Z, E–R, F–I, H–O, K–W, L–M ; la première lecture HEGTEX… donne le dernier câble
+G–U, et le message se lit. 16 étapes en 7 chapitres, un bac à sable, un quiz de 8 questions.
+L'arithmétique est seule dans `enigma-casse/js/enigma.js` ; `node tests/enigma-casse_values.mjs` la
+compare à des vecteurs publiés, refait la casse depuis zéro (places, menus, arrêts, contrôle,
+lecture) et vérifie les chiffres écrits dans l'histoire ; `tests/enigma-casse_story.py` clique
+chaque bouton.
 
 ## Épisode 6 — Le pingouin et la chaîne
 
