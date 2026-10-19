@@ -4,7 +4,7 @@ in, the veil, and the room, cut from a video (a screenshot stalls SwiftShader fo
 so shooting one every N ms misses the flight). Also keeps the video (.webm). Needs ffmpeg.
 Serve the repo first (python3 -m http.server 8793).
 
-    tools/inside_frames.py out/r103/zoom --page eve-lit-tout/ --query '?inside=1' --step 5
+    tools/inside_frames.py out/r158/zoom --page eve-lit-tout/ --step 4   # the step that zooms in
 """
 import argparse, glob, shutil, subprocess, tempfile, time
 from playwright.sync_api import sync_playwright
@@ -14,17 +14,20 @@ ap = argparse.ArgumentParser()
 ap.add_argument("out")
 ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--page", default="eve-lit-tout/")
-ap.add_argument("--query", default="?inside=1")
-ap.add_argument("--step", type=int, default=5, help="the step that goes inside (1-based); the shot starts one before")
+ap.add_argument("--query", default="")
+ap.add_argument("--step", type=int, default=4, help="the step that goes inside (1-based); the shot starts one before")
 ap.add_argument("--every", type=int, default=600)
 ap.add_argument("--n", type=int, default=12)
 ap.add_argument("--lead", type=float, default=4, help="seconds of video before go() by the estimate: the estimate runs late")
 ap.add_argument("--size", default="1280x760")
+ap.add_argument("--no-gpu", dest="gpu", action="store_false", help="SwiftShader instead of the GPU")
 a = ap.parse_args()
 w, h = map(int, a.size.split("x"))
 tmp = tempfile.mkdtemp()
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    # the machine's GPU, as tools/door_clips.py: SwiftShader's few frames a second play the zoom in slow motion
+    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"] if a.gpu else
+                          ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
     ctx = b.new_context(viewport={"width": w, "height": h}, record_video_dir=tmp, record_video_size={"width": w, "height": h})
     pg = ctx.new_page(); t_rec = time.time()
     errors = []

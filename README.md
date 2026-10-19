@@ -56,7 +56,10 @@ Interactive demo of the Two Generals' Problem, French first, English with `?lang
 Eve ne capture plus les messagers : ses gardes les arrêtent sous ses murs, elle lit l'ordre et les
 laisse repartir. Alice chiffre alors l'ordre en AES-256-CBC : une clé de 32 octets, des blocs de
 16 octets, le padding PKCS7, le chaînage CBC et l'IV, puis une clé et un IV neufs à chaque envoi
-pour qu'Eve ne reconnaisse plus un ordre qui revient. 12 étapes en 4 chapitres, un bac à sable
+pour qu'Eve ne reconnaisse plus un ordre qui revient. Le chapitre AES se passe dans le donjon
+d'Alice : la caméra entre par sa fenêtre, et une machine montée sur les vrais octets grandit d'une
+étape à l'autre (la clé, AES sur P1, le padding, la chaîne CBC), puis ressort à « Eve lit… du
+bruit » (`eve-lit-tout/js/inside.js`, vérifié par `tests/eve_inside.py`). 12 étapes en 4 chapitres, un bac à sable
 (votre ordre, envoyé en clair, avec la même clé, ou avec une clé et un IV neufs ; le carnet d'Eve
 montre ce qu'elle reconnaît), un quiz de 7 questions. Même vallée et même distribution que
 `deux-generaux/`. Le chiffrement est calculé dans la page (`eve-lit-tout/js/aes.js`, vrai AES-256)

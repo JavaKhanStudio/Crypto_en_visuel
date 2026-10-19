@@ -34,13 +34,15 @@ export class CameraRig {
 
   // Fly to a shot (name or {pos,target}). The path arcs upward a little so long
   // moves read as a swoop rather than a slide. Resolves when it lands.
-  fly(shot, duration = 2.2) {
+  // opts.ease: another curve (r158: the push into a castle window speeds up, the way out slows down);
+  // opts.lift: the arc's height (0: a straight push).
+  fly(shot, duration = 2.2, opts = {}) {
     const s = typeof shot === 'string' ? SHOTS[shot] : shot;
     this.follow = null;
     return new Promise(res => {
       const from = { pos: this.camera.position.clone(), target: this.controls.target.clone() };
-      const lift = Math.min(40, from.pos.distanceTo(s.pos) * .18);
-      this.flight = { from, to: s, t: 0, duration, lift, res };
+      const lift = opts.lift ?? Math.min(40, from.pos.distanceTo(s.pos) * .18);
+      this.flight = { from, to: s, t: 0, duration, lift, res, ease: opts.ease || ease };
     });
   }
 
@@ -61,7 +63,7 @@ export class CameraRig {
     const c = this.controls;
     if (this.flight) {
       const f = this.flight; f.t = Math.min(1, f.t + dt / f.duration);
-      const k = ease(f.t);
+      const k = f.ease(f.t);
       this.camera.position.lerpVectors(f.from.pos, f.to.pos, k);
       this.camera.position.y += Math.sin(Math.PI * k) * f.lift;
       c.target.lerpVectors(f.from.target, f.to.target, k);

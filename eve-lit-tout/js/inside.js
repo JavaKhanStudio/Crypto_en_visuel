@@ -1,25 +1,47 @@
-// Inside a castle (r103): a step that explains a mechanism zooms the camera into a lit window of the
-// keep, and a second scene, a room, shows the machine at work. enter() flies to the window, veils the
-// screen, swaps what the composer draws, and dollies in; leave() does it backwards, then the story
-// flies out to its shot. One room so far: 'aes', AES on the first 16 bytes of the order (aes.js).
+// Inside a castle (r103, r158): a chapter that explains a mechanism zooms the camera through a lit
+// window of the keep, and a second scene, a room, shows the machine at work on the story's real
+// bytes. One zoom per chapter: the chapter's steps are BEATS of the same room, the machine grows a
+// step at a time, and the camera only drifts inside the room between them.
+//
+// To give another episode a room, copy this file and replace the room part (ROOMS):
+//   const inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant });   // main.js
+//   ROOMS[name] = (scene, send, portrait) => ({
+//     beats: { <step id>: { end } },     // the room's steps; end = seconds its animation lasts
+//     pose(beat, time),                   // sets EVERY part for that beat at that time, so any beat
+//                                         //   can follow any other (back as well as forward)
+//     frame(beat, time) → [Vector3, ...], // the points the camera must hold in the free band now
+//                                         //   (a phone can follow the action: P1 in, then out)
+//     anchor(beat) → Vector3 })           // optional: where the speaker's bubble points; by default
+//                                         //   the top of the frame, where the band keeps room for it
+//   portrait: the screen is upright (a phone): lay the machine out top to bottom.
+//   await inside.enter(name, beat, send, live)   flies in from where the camera is; false if cancelled
+//   inside.beat(id)          the next step in the same room: no flight, its animation from 0
+//   await inside.leave(shot) out through the window, then the valley camera flies to shot
+//   inside.rebuild(send)     same room and beat, new words or bytes (language) or a turned phone
+//   inside.update(dt)        every frame; main.js skips rig.update while inside.active
+// The free band is the screen between the top bar and the story panel, left of the open corner
+// card: each beat's frame is fitted into it (camera distance + setViewOffset), so a phone sees the
+// machine large in the strip it has, not a far view of the whole room.
 import * as THREE from 'three';
 import { t } from './i18n.js';
 import { CASTLE_A } from './world.js';
 import * as A from './aes.js';
 
-const v = (x, y, z) => new THREE.Vector3(x, y, z);
+const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
 const clamp01 = k => Math.max(0, Math.min(1, k));
 const span = (time, a, b) => ease(clamp01((time - a) / (b - a)));
+const hx = x => x.toString(16).padStart(2, '0');
 
 // the upper lit window of Alice's keep on the valley side (+z), y 9 above the plateau: the way in.
-// From the castleA shot it is a straight push, clear of the towers' roofs.
+// near: where the flight from the valley lands; deep: past the glass, where the veil has closed.
 const WINDOW = () => v(CASTLE_A.x, CASTLE_A.y + 9, 3.52);
 export const DOORS = {
   a: () => ({ near: { pos: v(CASTLE_A.x + 3, CASTLE_A.y + 12.5, 16), target: WINDOW() },
-              at: { pos: v(CASTLE_A.x + .1, CASTLE_A.y + 9.05, 4.5), target: WINDOW() } }),
+              deep: { pos: v(CASTLE_A.x + .05, CASTLE_A.y + 9.02, 3.75), target: v(CASTLE_A.x, CASTLE_A.y + 9, 0) } }),
 };
 
+// ---------- what a room is made of ----------
 // a square tile with a byte on it: a letter of the order, or two hex digits
 function tileTex(text, { fg, bg, size = 74 }) {
   const c = document.createElement('canvas'); c.width = c.height = 128;
@@ -31,172 +53,359 @@ function tileTex(text, { fg, bg, size = 74 }) {
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   return tex;
 }
+const side = new THREE.MeshStandardMaterial({ color: 0x1a120c });
+function tile(text, ink) {
+  const front = new THREE.MeshStandardMaterial({ map: tileTex(text, ink), roughness: .6 });
+  const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, .22), [side, side, side, side, front, side]);
+  m.castShadow = true; m.visible = false; return m;
+}
+// the colours of the corner card: the order cream, padding gold, key violet, IV blue, ciphertext yellow
+const INK = { p: { fg: '#fff3dc', bg: '#3a2b1a', size: 80 }, pad: { fg: '#ffd27a', bg: '#5a3c10', size: 62 },
+  key: { fg: '#e3b8ff', bg: '#2a1838', size: 62 }, iv: { fg: '#9fd3f0', bg: '#12283a', size: 62 },
+  x: { fg: '#ffb070', bg: '#3a1e0c', size: 62 }, c: { fg: '#ffd84d', bg: '#2a2008', size: 62 } };
+const byteTile = (b, ink) => tile(ink === INK.p ? (b === 32 ? '␣' : String.fromCharCode(b)) : hx(b), ink);
+
 // a word floating in the room, always facing the camera
-function label(text, color, h = 1.1) {
+function label(text, color, h = .8) {
   const c = document.createElement('canvas'), g = c.getContext('2d'), font = '600 56px system-ui, sans-serif';
   g.font = font; c.width = Math.ceil(g.measureText(text).width) + 40; c.height = 84;
   g.font = font; g.fillStyle = color; g.textBaseline = 'middle'; g.fillText(text, 20, 44);
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-  s.scale.set(h * c.width / c.height, h, 1); s.userData.text = text;
+  s.scale.set(h * c.width / c.height, h, 1); s.userData.h = h; s.visible = false;
   return s;
 }
-const hx = x => x.toString(16).padStart(2, '0');
+function relabel(s, text, color) {
+  if (s.userData.text === text) return;
+  const n = label(text, color, s.userData.h); s.material.map?.dispose(); s.material.map = n.material.map; s.scale.copy(n.scale);
+  s.userData.text = text;
+}
+const show = (o, k, opacity = 1) => { o.visible = k > .001; if (o.material?.opacity !== undefined && o.isSprite) o.material.opacity = k * opacity; };
 
-// ---------- the room ----------
-function buildRoom(scene) {
+// the stone room, lit by two torches; tall enough for a phone's upright frame
+function buildRoom(scene, portrait) {
   scene.background = new THREE.Color(0x120c08);
-  scene.fog = new THREE.Fog(0x120c08, 30, 70);
+  scene.fog = new THREE.Fog(0x120c08, 40, 90);
   scene.add(new THREE.HemisphereLight(0xffe0b0, 0x2a1a10, .9));
   const stone = new THREE.MeshStandardMaterial({ color: 0x8a7c68, roughness: .95, flatShading: true });
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 40, 30, 20), new THREE.MeshStandardMaterial({ color: 0x4a3e32, roughness: 1, flatShading: true }));
   { const p = floor.geometry.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, (Math.sin(i * 12.9898) * 43758.5453 % 1) * .08); floor.geometry.computeVertexNormals(); }
   floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-  // the back wall: stone blocks, two torches
-  const wall = new THREE.InstancedMesh(new THREE.BoxGeometry(1.95, 1.45, 1), stone, 7 * 28), m4 = new THREE.Matrix4();
-  for (let y = 0, i = 0; y < 7; y++) for (let x = -14; x < 14; x++, i++)
+  const rows = portrait ? 20 : 10;
+  const wall = new THREE.InstancedMesh(new THREE.BoxGeometry(1.95, 1.45, 1), stone, rows * 28), m4 = new THREE.Matrix4();
+  for (let y = 0, i = 0; y < rows; y++) for (let x = -14; x < 14; x++, i++)
     wall.setMatrixAt(i, m4.makeTranslation(x * 2 + (y % 2), y * 1.5 + .75, -9 - Math.abs(Math.sin(x * 7 + y)) * .15));
   wall.receiveShadow = true; scene.add(wall);
-  for (const x of [-22, 22]) {
-    const light = new THREE.PointLight(0xffa040, 60, 30, 1.6); light.position.set(x, 6.5, -7.6); scene.add(light);
+  const tx = portrait ? 9 : 22, ty = portrait ? 16 : 6.5;
+  for (const x of [-tx, tx]) {
+    const light = new THREE.PointLight(0xffa040, 60, 34, 1.6); light.position.set(x, ty, -7.6); scene.add(light);
     const flame = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffc070 }));
     flame.position.copy(light.position); scene.add(flame);
     const holder = new THREE.Mesh(new THREE.CylinderGeometry(.1, .16, 1, 6), new THREE.MeshStandardMaterial({ color: 0x2a1c12 }));
-    holder.position.set(x, 5.8, -8); scene.add(holder);
+    holder.position.set(x, ty - .7, -8); scene.add(holder);
     scene.userData.flames = [...(scene.userData.flames || []), { light, flame }];
   }
-  const over = new THREE.PointLight(0xffb060, 80, 40, 1.4); over.position.set(0, 13, 6); scene.add(over);
-  const key = new THREE.DirectionalLight(0xfff0dd, 1.2); key.position.set(6, 14, 12); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -16, right: 16, top: 12, bottom: -6 }); scene.add(key);
+  const over = new THREE.PointLight(0xffb060, 80, 50, 1.4); over.position.set(0, portrait ? 22 : 13, 8); scene.add(over);
+  const key = new THREE.DirectionalLight(0xfff0dd, 1.2); key.position.set(6, 24, 14); key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -18, right: 18, top: 28, bottom: -6 }); scene.add(key);
 }
 
-// AES as a machine: the block P1 goes in, the key sits in the lock on top, 14 lamps count the rounds,
-// the block C1 comes out. The bytes are the story's own (aes.js), so the tiles are what the card prints.
-function buildAes(scene, send) {
-  const g = new THREE.Group(); scene.add(g);
+// ---------- the AES room of episode 1.2: four beats, key → aes → pad → cbc ----------
+// The machine is laid out along a flow axis u (the order goes in at -u, the ciphertext comes out at
+// +u) and a cross axis w (+w: where the key and the IV come from). Landscape: u runs left to right.
+// Portrait: u runs top to bottom, so the blocks sit above and below the box. P() places a (u, w)
+// point; blocks of 4 × 4 tiles always read left to right, top to bottom, like the card's rows.
+function aesRoom(scene, send, portrait) {
+  buildRoom(scene, portrait);
+  const Y0 = portrait ? 12.2 : 4.9, bs = portrait ? .8 : 1, colU = portrait ? 8.2 : 10.5, gateU = portrait ? 4.6 : 6;
+  const P = (u, w, z = 0) => portrait ? v(-w, Y0 - u, z) : v(u, Y0 + w, z);
+  const cell = (c, i, s = 1.12) => v(c.x + (i % 4 - 1.5) * s, c.y - (Math.floor(i / 4) - 1.5) * s, c.z);
+  const at = { P1: P(-colU, 2.4), P2: P(-colU, -2.4), C1: P(colU, 2.4), C2: P(colU, -2.4), gate: P(-gateU, 0),
+    inn: P(-3.5 * bs, 0), out: P(3.5 * bs, 0), IV: P(-gateU, 6.1), over: P(0, 4.6) };
+  const top = c => v(c.x, c.y + 2.75, c.z);   // a block's label, above it
+
+  // the key: 32 bytes on a rack (16 × 2, a phone 8 × 4), and the key itself, violet like the card's
+  const cols = portrait ? 8 : 16, rackC = portrait ? P(-colU, 0) : P(0, 6.1);
+  const rackAt = i => v(rackC.x + (i % cols - (cols - 1) / 2) * .8, rackC.y - (Math.floor(i / cols) - (32 / cols - 1) / 2) * .8, 0);
+  const R = [...send.key].map(b => byteTile(b, INK.key)); R.forEach(m => scene.add(m));
+  const violet = new THREE.MeshStandardMaterial({ color: 0xb77ff0, emissive: 0xb77ff0, emissiveIntensity: .6, metalness: .5, roughness: .3 });
+  const keyObj = new THREE.Group(), keyTurn = new THREE.Group(); keyObj.add(keyTurn);
+  const bow = new THREE.Mesh(new THREE.TorusGeometry(.75, .2, 10, 24), violet); bow.position.y = 2.1; keyTurn.add(bow);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.14, .14, 2.6, 8), violet); shaft.position.y = .25; keyTurn.add(shaft);
+  for (const [y, w] of [[-.5, .55], [-.85, .4]]) { const tooth = new THREE.Mesh(new THREE.BoxGeometry(w, .2, .2), violet); tooth.position.set(w / 2, y, 0); keyTurn.add(tooth); }
+  keyObj.rotation.z = portrait ? Math.PI / 2 : 0; scene.add(keyObj);
+  const keyHome = portrait ? v(rackC.x, rackC.y + 3.4) : v(rackC.x - 8.6, rackC.y - 1);
+  const lockOut = P(0, 2.7 * bs + 2.8), lockIn = P(0, 2.7 * bs + 1.25);
+  const keyLbl = label(t('in.key'), '#e3b8ff'); scene.add(keyLbl);
+
+  // the box: AES-256 with its lock and 14 lamps, one per round; built along u/w, then placed
+  const boxRoot = new THREE.Group(), riser = new THREE.Group(); boxRoot.add(riser); scene.add(boxRoot);
+  boxRoot.matrixAutoUpdate = false;
+  boxRoot.matrix.makeTranslation(P(0, 0).x, P(0, 0).y, 0).multiply(portrait ? new THREE.Matrix4().set(0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) : new THREE.Matrix4())
+    .multiply(new THREE.Matrix4().makeScale(bs, bs, 1));
   const metal = new THREE.MeshStandardMaterial({ color: 0x24202a, roughness: .45, metalness: .6 });
-  const box = new THREE.Mesh(new THREE.BoxGeometry(7, 5.4, 4.4), metal); box.position.y = 2.9; box.castShadow = box.receiveShadow = true; g.add(box);
+  const box = new THREE.Mesh(new THREE.BoxGeometry(7, 5.4, 4.4), metal); box.castShadow = box.receiveShadow = true; riser.add(box);
   const gold = new THREE.LineBasicMaterial({ color: 0xffc24d });
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), gold); edges.position.copy(box.position); g.add(edges);
-  // the two mouths, where the block goes in and comes out
-  for (const x of [-3.52, 3.52]) {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ color: 0x050307 }));
-    m.position.set(x, 2.9, 0); m.rotation.y = x < 0 ? -Math.PI / 2 : Math.PI / 2; g.add(m);
-  }
-  const name = label('AES-256', '#ffd27a', 1.25); name.position.set(0, 4.6, 2.3); g.add(name);
-  // 14 lamps on the front: one per round of AES-256
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), gold); riser.add(edges);
+  const lock = new THREE.Mesh(new THREE.CylinderGeometry(.5, .6, .3, 16), new THREE.MeshStandardMaterial({ color: 0x0a0a10, metalness: .8 }));
+  lock.position.y = 2.85; riser.add(lock);
   const lamps = [];
   for (let i = 0; i < 14; i++) {
     const l = new THREE.Mesh(new THREE.SphereGeometry(.17, 10, 8), new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffc24d, emissiveIntensity: .05 }));
-    l.position.set(-2.92 + i * .45, 1.2, 2.24); g.add(l); lamps.push(l);
+    l.position.set(-2.92 + i * .45, -2.05, 2.24); riser.add(l); lamps.push(l);
   }
-  const round = label(t('in.round', { n: 0 }), '#ffd27a', .7); round.position.set(0, .55, 2.6); g.add(round);
-  // the key: Alice's, blue, 32 bytes; it comes down into the lock on top
-  const blue = new THREE.MeshStandardMaterial({ color: 0x4da3ff, emissive: 0x4da3ff, emissiveIntensity: .6, metalness: .5, roughness: .3 });
-  const keyObj = new THREE.Group();
-  const bow = new THREE.Mesh(new THREE.TorusGeometry(.75, .2, 10, 24), blue); bow.position.y = 2.1; keyObj.add(bow);
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.14, .14, 2.6, 8), blue); shaft.position.y = .25; keyObj.add(shaft);
-  for (const [y, w] of [[-.5, .55], [-.85, .4]]) { const tooth = new THREE.Mesh(new THREE.BoxGeometry(w, .2, .2), blue); tooth.position.set(w / 2, y, 0); keyObj.add(tooth); }
-  g.add(keyObj);
-  const lock = new THREE.Mesh(new THREE.CylinderGeometry(.5, .6, .3, 16), new THREE.MeshStandardMaterial({ color: 0x0a0a10, metalness: .8 }));
-  lock.position.y = 5.75; g.add(lock);
-  const keyLbl = label(t('in.key'), '#9fd3f0', .75); g.add(keyLbl);
-  // the two blocks, 4 x 4 tiles read row by row like the card's row of 16
-  const ink = { fg: '#fff3dc', bg: '#3a2b1a' }, cink = { fg: '#ffd84d', bg: '#2a2008' };
-  const c1 = A.encryptBlock(send.key, send.P[0]);
-  const tile = (tex) => { const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, .22), [0, 0, 0, 0, 1, 0].map(k => k ? new THREE.MeshStandardMaterial({ map: tex, roughness: .6 }) : new THREE.MeshStandardMaterial({ color: 0x1a120c }))); m.castShadow = true; return m; };
-  const P = [...send.P[0]].map(b => tile(tileTex(b === 32 ? '␣' : String.fromCharCode(b), { ...ink, size: 80 })));
-  const C = [...c1].map(b => tile(tileTex(hx(b), { ...cink, size: 62 })));
-  for (const m of [...P, ...C]) g.add(m);
-  const pLbl = label(t('in.p1'), '#fff3dc', .8), cLbl = label(t('in.c1'), '#ffd84d', .8); g.add(pLbl, cLbl);
-  const cell = (i, x0) => v(x0 + (i % 4 - 1.5) * 1.12, 4.6 - Math.floor(i / 4) * 1.12, 0);
+  const name = label('AES-256', '#ffd27a', portrait ? .85 : 1.25); name.position.copy(P(0, portrait ? .4 : 1.1, 2.4)); scene.add(name);
+  const round = label(t('in.round', { n: 0 }), '#ffd27a', .7); round.position.copy(P(0, -2.7 * bs - (portrait ? 1.7 : .75), 2.6)); scene.add(round);
 
-  // the timeline, in seconds; it plays once from enter() and holds the end, play() restarts it
-  const T = { key: [0, 1.4], in: [1.4, 3.2], rounds: [3.2, 6.0], out: [6.0, 7.6] };
-  const pose = time => {
-    const k = span(time, ...T.key);
-    keyObj.position.set(0, 9.5 - 3.25 * k, 0); keyObj.rotation.y = (1 - k) * Math.PI * 1.5;
-    keyLbl.position.set(2.6, keyObj.position.y + 2.2, 0);
-    P.forEach((m, i) => {
-      const at = cell(i, -9.5), kk = span(time, T.in[0] + (i % 4) * .08 + Math.floor(i / 4) * .12, T.in[1] - .5 + (i % 4) * .08 + Math.floor(i / 4) * .12);
-      m.position.lerpVectors(at, v(-1, 2.9 + (at.y - 2.9) * .3, at.z), kk);
-      m.visible = kk < .999; m.scale.setScalar(1 - .35 * kk);
-    });
-    pLbl.position.set(-9.5, 6.25, 0); pLbl.material.opacity = 1 - span(time, T.in[0], T.in[1]) * .6;
-    const lit = Math.floor(clamp01((time - T.rounds[0]) / (T.rounds[1] - T.rounds[0])) * 14 + 1e-6);
+  // the gate where CBC mixes a block with the one before (⊕, XOR)
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(.95, .11, 10, 32), new THREE.MeshStandardMaterial({ color: 0xffc24d, emissive: 0xffc24d, emissiveIntensity: .4, metalness: .6, roughness: .3 }));
+  ring.position.copy(at.gate); scene.add(ring);
+  const xorLbl = label('⊕', '#ffd27a', 1.3); xorLbl.position.copy(at.gate); scene.add(xorLbl);
+
+  // the blocks: the order (P1, P2 with its padding), what AES makes of P1 alone, the IV, the mixed
+  // blocks (P1 ⊕ IV, P2 ⊕ C1), the ciphertext C1, C2 and the copy of C1 carried back to the gate
+  const pn = 16 - send.padN, c1Alone = A.encryptBlock(send.key, send.P[0]);
+  const blk = (bytes, ink) => { const list = [...bytes].map(b => byteTile(b, ink)); list.forEach(m => scene.add(m)); return list; };
+  const T = { P1: blk(send.P[0], INK.p), P2: [...send.P[1]].map((b, i) => byteTile(b, i < pn ? INK.p : INK.pad)), OUT: blk(c1Alone, INK.c),
+    IV: blk(send.iv, INK.iv), P1m: blk(send.P[0], INK.p), IVm: blk(send.iv, INK.iv), X1: blk(send.X[0], INK.x), X2: blk(send.X[1], INK.x), C1: blk(send.C[0], INK.c), C2: blk(send.C[1], INK.c), back: blk(send.C[0], INK.c) };
+  T.P2m = [...send.P[1]].map((b, i) => byteTile(b, i < pn ? INK.p : INK.pad));
+  for (const m of [...T.P2, ...T.P2m]) scene.add(m);
+  const L = { P1: label('P1', '#fff3dc'), P2: label('P2', '#fff3dc'), OUT: label(t('in.out'), '#ffd84d'), IV: label(t('in.iv'), '#9fd3f0'),
+    C1: label('C1', '#ffd84d'), C2: label('C2', '#ffd84d') };
+  // labels above a block; in landscape P1/P2 and C1/C2 are stacked, so theirs go beside, outward
+  const beside = { P1: -1, P2: -1, C1: 1, C2: 1 };
+  for (const [k, s] of Object.entries(L)) { s.position.copy(!portrait && beside[k] ? v(at[k].x + beside[k] * 3.3, at[k].y) : top(k === 'OUT' ? at.C1 : at[k])); scene.add(s); }
+
+  // tiles: k 0 → 1 from a to b, shrinking into a mouth or growing out of one
+  const move = (list, a, b, k, { s0 = 1, s1 = 1, flip = 0, arc = 0 } = {}) => list.forEach((m, i) => {
+    const pa = a.isVector3 ? a : cell(a.c, i, a.s), pb = b.isVector3 ? b : cell(b.c, i, b.s);
+    m.position.lerpVectors(pa, pb, k); m.position.y += Math.sin(Math.PI * k) * arc;
+    m.scale.setScalar((s0 + (s1 - s0) * k) * (a.scale || 1)); m.rotation.x = flip * (1 - k) * Math.PI; m.visible = m.scale.x > .02;
+  });
+  const sit = (list, c, s = 1.12, scale = Math.min(1, s / 1.12)) => move(list, { c, s, scale }, { c, s, scale }, 1);
+  const hide = list => list.forEach(m => { m.visible = false; });
+  // a block pops up where it sits, tile after tile, from time a
+  const pop = (list, c, time, a, gap = .03, s = 1) => list.forEach((m, i) => {
+    const k = span(time, a + i * gap, a + i * gap + .45); m.position.copy(cell(c, i, s)); m.scale.setScalar(k * Math.min(1, s / 1.12)); m.rotation.x = 0; m.visible = k > .02;
+  });
+  // a block goes in a stream into a point (a mouth or the gate): row by row, shrinking
+  const into = (list, c, p, time, a, b, { s = 1.12, s0 = Math.min(1, s / 1.12), s1 = .35 } = {}) => list.forEach((m, i) => {
+    const d = (i % 4) * .06 + Math.floor(i / 4) * .1, k = span(time, a + d, b - .4 + d);
+    m.position.lerpVectors(cell(c, i, s), p, k); m.scale.setScalar(s0 + (s1 - s0) * k); m.rotation.x = 0; m.visible = k < .999;
+  });
+  const outOf = (list, p, c, time, a, b) => list.forEach((m, i) => {
+    const d = (i % 4) * .06 + Math.floor(i / 4) * .1, k = span(time, a + d, b - .4 + d);
+    m.position.lerpVectors(p, cell(c, i), k); m.scale.setScalar(.35 + .65 * k); m.rotation.x = (1 - k) * Math.PI; m.visible = k > .001;
+  });
+  const lampsAt = (lit, busy, time) => {
     lamps.forEach((l, i) => { l.material.emissiveIntensity = i < lit ? 1.5 : .05; });
-    const busy = time > T.rounds[0] && time < T.rounds[1];
-    box.position.x = busy ? Math.sin(time * 60) * .025 : 0; edges.position.x = box.position.x;
-    gold.color.setHex(busy ? 0xffe9a8 : 0xffc24d);
-    const n = Math.min(14, lit);
-    if (round.userData.n !== n) { round.userData.n = n; const s = label(t('in.round', { n }), '#ffd27a', .7); round.material.map.dispose(); round.material.map = s.material.map; round.scale.copy(s.scale); }
-    C.forEach((m, i) => {
-      const at = cell(i, 9.5), kk = span(time, T.out[0] + (i % 4) * .06 + Math.floor(i / 4) * .1, T.out[1] - .4 + (i % 4) * .06 + Math.floor(i / 4) * .1);
-      m.position.lerpVectors(v(1, 2.9 + (at.y - 2.9) * .3, at.z), at, kk);
-      m.visible = kk > .001; m.scale.setScalar(.65 + .35 * kk); m.rotation.x = (1 - kk) * Math.PI;
-    });
-    cLbl.position.set(9.5, 6.25, 0); cLbl.material.opacity = span(time, T.out[0], T.out[1]);
+    riser.position.x = busy ? Math.sin(time * 60) * .025 : 0; gold.color.setHex(busy ? 0xffe9a8 : 0xffc24d);
+    relabel(round, t('in.round', { n: Math.min(14, lit) }), '#ffd27a');
   };
-  return { pose, end: T.out[1], anchor: v(-9.5, 6.6, 0), shot: { from: v(0, 7.5, 32), to: v(0, 5.2, 24), target: v(0, 1.6, 0) } };
+  const rounds = (time, a, b) => Math.floor(clamp01((time - a) / (b - a)) * 14 + 1e-6);
+  const B = { key: 0, aes: 1, pad: 2, cbc: 3 };
+
+  function pose(beat, time) {
+    const b = B[beat];
+    for (const list of Object.values(T)) hide(list);
+    // the key: drawn byte by byte on its rack, the key forms; then the bytes stream into it and it turns in the lock
+    R.forEach((m, i) => {
+      if (b === 0) { const k = span(time, .3 + i * .05, .8 + i * .05); m.position.copy(rackAt(i)); m.scale.setScalar(.7 * k); m.rotation.x = (1 - k) * Math.PI * 3; m.visible = k > .02; }
+      else if (b === 1) { const k = span(time, .5 + i * .025, 1.3 + i * .025); m.position.lerpVectors(rackAt(i), keyHome, k); m.scale.setScalar(.7 * (1 - k)); m.rotation.x = 0; m.visible = k < .98; }
+      else m.visible = false;
+    });
+    const kf = b === 0 ? span(time, 2.0, 2.6) : 1;
+    keyObj.scale.setScalar(kf); keyObj.visible = kf > .01;
+    const kMove = b === 0 ? 0 : b === 1 ? span(time, 2.0, 2.7) : 1, kIn = b === 0 ? 0 : b === 1 ? span(time, 2.7, 3.2) : 1, kTurn = b === 1 ? span(time, 3.2, 3.6) : b > 1 ? 1 : 0;
+    keyObj.position.lerpVectors(keyHome, lockOut, kMove).lerp(lockIn, kIn);
+    keyTurn.rotation.y = (b === 0 ? (1 - kf) * Math.PI : 0) + kTurn * Math.PI / 2;
+    violet.emissiveIntensity = b === 1 && time > .5 && time < 1.9 ? 1.4 : .6;
+    keyLbl.position.copy(keyObj.position).add(portrait ? v(0, 1.4) : v(0, 3.1)); show(keyLbl, b === 0 ? kf : b === 1 ? 1 - kMove : 0);
+
+    const rise = b === 0 ? 0 : b === 1 ? span(time, 0, .9) : 1;
+    boxRoot.visible = rise > .01; riser.scale.setScalar(Math.max(.001, rise)); show(name, rise); show(round, b === 1 ? span(time, 4.4, 4.8) : b > 1 ? 1 : 0);
+    show(ring, b === 3 ? span(time, .3, .9) : 0); show(xorLbl, b === 3 ? span(time, .3, .9) : 0);
+    ring.material.emissiveIntensity = b === 3 && ((time > 2.1 && time < 2.8) || (time > 7.6 && time < 8.3)) ? 2 : .4;
+    for (const k of Object.keys(L)) show(L[k], 0);
+
+    if (b === 1) {
+      // P1 in, 14 rounds, 16 unreadable bytes out
+      pop(T.P1, at.P1, time, .3); show(L.P1, span(time, .3, .9));
+      if (time > 3.8) into(T.P1m, at.P1, at.inn, time, 3.8, 5.2);   // the block stays, a copy goes in
+      const lit = rounds(time, 5.2, 7.2); lampsAt(lit, time > 5.2 && time < 7.2, time);
+      outOf(T.OUT, at.out, at.C1, time, 7.2, 8.6); show(L.OUT, span(time, 7.2, 8.6));
+    } else if (b === 2) {
+      // the whole order: P1 again, P2's letters, then nine bytes of 09 drop into its empty cells
+      lampsAt(14, false, time);
+      sit(T.P1, at.P1); show(L.P1, 1);
+      T.OUT.forEach((m, i) => { const k = span(time, 0, .5); m.position.copy(cell(at.C1, i)); m.scale.setScalar(1 - k); m.visible = k < .98; }); show(L.OUT, 1 - span(time, 0, .5));
+      T.P2.forEach((m, i) => {
+        const a = i < pn ? .6 + i * .12 : 1.9 + (i - pn) * .22, k = span(time, a, a + .45), c = cell(at.P2, i);
+        m.position.set(c.x, c.y + (i < pn ? 0 : (1 - k) * 3), c.z); m.scale.setScalar(i < pn ? k : Math.min(1, k * 1.5)); m.rotation.x = 0; m.visible = k > .02;
+      });
+      show(L.P2, span(time, .6, 1));
+    } else if (b === 3) {
+      // CBC: P1 ⊕ IV → AES → C1; C1 is carried back to the gate, P2 ⊕ C1 → AES → C2
+      show(L.P1, 1); show(L.P2, 1); show(L.IV, span(time, 0, .7));
+      pop(T.IV, at.IV, time, 0, .02, .9);
+      // the blocks stay where they are; a copy of each goes to the gate
+      sit(T.P1, at.P1); sit(T.P2, at.P2); if (time > .9) sit(T.IV, at.IV, .9);
+      if (time > 1.2) { into(T.P1m, at.P1, at.gate, time, 1.2, 2.6); into(T.IVm, at.IV, at.gate, time, 1.2, 2.6, { s: .9 }); }
+      // at the gate the two blocks become one, P1 ⊕ IV, small in the ring, then it goes into AES
+      if (time > 2.4 && time < 3.4) pop(T.X1, at.gate, time, 2.4, 0, .5); else if (time >= 3.4) into(T.X1, at.gate, at.inn, time, 3.4, 4.4, { s: .5, s1: .3 });
+      const pass2 = time > 7.0, lit = pass2 ? rounds(time, 8.9, 10.5) : rounds(time, 4.4, 6.0);
+      lampsAt(lit, (time > 4.4 && time < 6.0) || (time > 8.9 && time < 10.5), time);
+      outOf(T.C1, at.out, at.C1, time, 6.0, 7.0); show(L.C1, span(time, 6.0, 7.0));
+      // the copy of C1 arcs over the box to the gate, where P2 is waiting
+      if (time > 7.0 && time < 8.3) T.back.forEach((m, i) => { const k = span(time, 7.0, 8.1); m.position.lerpVectors(cell(at.C1, i), at.gate, k); m.position.y += Math.sin(Math.PI * k) * (portrait ? 0 : 4); if (portrait) m.position.x -= Math.sin(Math.PI * k) * 5; m.scale.setScalar(1 - .65 * k); m.rotation.x = 0; m.visible = true; });
+      if (time > 7.0) into(T.P2m, at.P2, at.gate, time, 7.0, 8.3);
+      if (time > 8.1 && time < 8.9) pop(T.X2, at.gate, time, 8.1, 0, .5); else if (time >= 8.9) into(T.X2, at.gate, at.inn, time, 8.9, 9.9, { s: .5, s1: .3 });
+      outOf(T.C2, at.out, at.C2, time, 10.5, 11.5); show(L.C2, span(time, 10.5, 11.5));
+    } else lampsAt(0, false, time);
+  }
+
+  // what the camera holds at each beat: the rack; then the flow from P1 to the output; the order's
+  // two blocks and the box; everything, the IV included. A phone holds less at a time and follows
+  // the action: the key into the lock, P1 into the box, the output; the gate, the box, C1, C2.
+  const corners = (c, h = 2.3, up = 3.2) => [v(c.x - h - (portrait ? 0 : .9), c.y - h), v(c.x + h + (portrait ? 0 : .9), c.y + up)];
+  const boxC = [P(-3.5 * bs, -2.7 * bs - (portrait ? 0 : 1.2)), P(3.5 * bs, 2.7 * bs)];
+  const mouth = [P(3.5 * bs - 1, -2.7 * bs), P(3.5 * bs - 1, 2.7 * bs)];   // the box's way out, where a phone watches the output
+  const rackF = [rackAt(0), rackAt(31), keyHome, v(keyHome.x, keyHome.y + 3.4), v(keyHome.x - (portrait ? 2 : 3), keyHome.y + 3.4)];
+  const frames = {
+    key: () => rackF,
+    aes: time => !portrait ? [...corners(at.P1), ...corners(at.C1), ...boxC, rackAt(0), rackAt(31)]
+      : time < 3.6 ? [...rackF, ...boxC] : time < 7.2 ? [...corners(at.P1), ...boxC] : [...mouth, ...corners(at.C1)],
+    pad: () => [...corners(at.P1), ...corners(at.P2), ...(portrait ? [] : boxC)],
+    cbc: time => !portrait ? [...corners(at.P1), ...corners(at.P2), ...corners(at.C1), ...corners(at.C2), ...corners(at.IV, 2.1, 2.9), ...boxC]
+      : time < 4.4 ? [...corners(at.P1), ...corners(at.P2), ...corners(at.IV, 2.1, 2.9), at.gate, P(-3.5 * bs, 0)]
+      : time < 4.4 || (time > 7.0 && time < 8.9) ? [...corners(at.P2), ...corners(at.C1), ...boxC] : [...mouth, ...corners(at.C1), ...corners(at.C2)],
+  };
+  return { beats: { key: { end: 3.0 }, aes: { end: 8.6 }, pad: { end: 4.3 }, cbc: { end: 11.5 } }, pose, frame: (k, time) => frames[k](time) };
 }
+const ROOMS = { aes: aesRoom };
 
 // ---------- the switch between the valley and a room ----------
+const SMOOTH = .04, BUBBLE = 84;   // the room camera closes 96% of the way to its framing every second
 export class Inside {
   constructor({ renderer, renderPass, camera, rig, bubbles, instant }) {
     Object.assign(this, { renderer, renderPass, outer: { scene: renderPass.scene, camera }, rig, bubbles, instant });
-    this.camera = new THREE.PerspectiveCamera(45, 1, .3, 200);
+    this.camera = new THREE.PerspectiveCamera(45, 1, .3, 300);
     this.veil = document.getElementById('veil');
-    this.room = null; this.time = 0; this.token = 0;
+    this.room = null; this.time = 0; this.token = 0; this.log = [];
+    this.view = { center: v(0, 5, 0), d: 30 };
   }
   get active() { return !!this.room; }
-  resize(aspect, fov) { this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
-  // the screen goes to the window's warm light and back; resolves once it is covered
-  cover(on) {
-    const ms = this.instant ? 0 : 380;
+  get portrait() { return innerWidth < innerHeight; }
+  resize(aspect, fov) {
+    this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix();
+    if (this.room && this.room.portrait !== this.portrait) this.rebuild();
+  }
+  // the screen goes to the window's warm light and back; resolves once it is covered (or clear)
+  cover(on, ms = 380) {
+    ms = this.instant ? 0 : ms;
     this.veil.style.transitionDuration = ms + 'ms'; this.veil.classList.toggle('on', on);
     return new Promise(r => setTimeout(r, ms));
   }
-  async enter(name, send, live = () => true) {
+  build(name, send) {
+    const scene = new THREE.Scene(), machine = ROOMS[name](scene, send, this.portrait);
+    return { name, send, scene, machine, portrait: this.portrait };
+  }
+  swap(room) {
+    const old = this.room; this.room = room;
+    const s = room ? room.scene : this.outer.scene, c = room ? this.camera : this.outer.camera;
+    this.renderPass.scene = s; this.renderPass.camera = c; this.bubbles.camera = c;
+    if (old && old !== room) old.scene.traverse(o => { o.geometry?.dispose(); [o.material].flat().forEach(m => { m?.map?.dispose(); m?.dispose?.(); }); });
+  }
+  async enter(name, beat, send, live = () => true) {
     const tok = ++this.token, door = DOORS.a(), fast = this.instant ? .001 : 1;
     // the room is built and its shaders compiled during the flight, so the swap does not stall
-    const scene = new THREE.Scene(); buildRoom(scene);
-    const machine = { aes: buildAes }[name](scene, send); machine.pose(0);
-    const ready = this.renderer.compileAsync(scene, this.camera).catch(() => {});
-    await this.rig.fly(door.near, 1.1 * fast);
+    const room = this.build(name, send); room.machine.pose(beat, 0);
+    const ready = this.renderer.compileAsync(room.scene, this.camera).catch(() => {});
+    // r158 (Simon: « keep zooming as you fade with the warm veil »): the flight to the window does
+    // not stop there; it hands its speed to a push through the glass that keeps gathering speed,
+    // and the veil rises on the push's second half, the camera still moving
+    const d1 = this.outer.camera.position.distanceTo(door.near.pos), d2 = door.near.pos.distanceTo(door.deep.pos);
+    const T1 = 1.8, T2 = 1.1, r = d1 > 1 ? Math.min(2, .5 * d2 * T1 / (d1 * T2)) : 0;
+    if (d1 > 1) await this.rig.fly(door.near, T1 * fast, { ease: k => k * k * (3 - 2 * k) + r * (k * k * k - k * k) });
     if (tok !== this.token || !live()) return false;
-    const push = this.rig.fly(door.at, .8 * fast);
-    await new Promise(r => setTimeout(r, this.instant ? 0 : 420));
-    await this.cover(true); await push; await ready;
+    const push = this.rig.fly(door.deep, T2 * fast, { ease: k => (k + k * k) / 2, lift: 0 });
+    await new Promise(r => setTimeout(r, this.instant ? 0 : 380));
+    await this.cover(true, 650); await push; await ready;
     if (tok !== this.token || !live()) { this.cover(false); return false; }
-    this.room = { name, scene, machine }; this.log?.push(['in', performance.now()]);
-    this.time = this.instant ? machine.end : 0; this.dolly = this.instant ? 1 : 0;
-    this.renderPass.scene = scene; this.renderPass.camera = this.camera; this.bubbles.camera = this.camera;
+    this.swap(room); this.log.push(['in', performance.now()]);
+    this.beat(beat);
+    // the room camera arrives from further back and is still closing in as the veil lifts
+    this.fit(true); if (!this.instant) this.view.d *= 1.8;
     this.update(0);
-    await this.cover(false);
+    await this.cover(false, 600);
     return true;
   }
-  async leave() {
+  beat(id) { if (!this.room) return; this.room.beat = id; this.time = this.instant ? this.room.machine.beats[id].end : 0; }
+  // out the way it came: the camera backs off as the veil rises, the valley comes back at the window
+  // and the camera flies on to shot, fast first
+  async leave(shot) {
     if (!this.room) return;
-    this.token++;
-    await this.cover(true);
-    this.room.scene.traverse(o => { o.geometry?.dispose(); [o.material].flat().forEach(m => { m?.map?.dispose(); m?.dispose?.(); }); });
-    this.room = null;
-    this.renderPass.scene = this.outer.scene; this.renderPass.camera = this.outer.camera; this.bubbles.camera = this.outer.camera;
-    this.rig.jump(DOORS.a().at);
-    this.cover(false);
+    const tok = ++this.token;
+    if (!shot) { this.swap(null); this.veil.classList.remove('on'); this.rig.jump(DOORS.a().near); return; }   // a mode switch: a cut
+    this.leaving = true;
+    await this.cover(true, 500);
+    this.leaving = false;
+    if (tok !== this.token) return;
+    this.swap(null); this.log.push(['out', performance.now()]);
+    this.rig.jump(DOORS.a().deep);
+    this.cover(false, 600);
+    return this.rig.fly(shot, this.instant ? .001 : 2.8, { ease: k => 1 - (1 - k) * (1 - k) });
+  }
+  rebuild(send = this.room?.send) {
+    if (!this.room) return;
+    const room = this.build(this.room.name, send), beat = this.room.beat;
+    room.beat = beat; this.swap(room); this.room.machine.pose(beat, this.time); this.fit(true);
   }
   play() { if (this.room) this.time = 0; }
-  anchor() { return this.room?.machine.anchor; }
+  // the speaker's bubble: the room's anchor, or the top of what the camera holds, a third in
+  anchor() {
+    if (!this.room) return;
+    const own = this.room.machine.anchor?.(this.room.beat), b = this.want?.box;
+    return own || (b ? v(b.min.x + (b.max.x - b.min.x) * .3, b.max.y + .3) : v(0, 8));
+  }
+
+  // the free band: below the top bar, above the story panel, left of an open corner card
+  band() {
+    const W = innerWidth, H = innerHeight, r = id => document.getElementById(id)?.getBoundingClientRect();
+    const bar = [r('topbar'), r('modes'), r('lang')].filter(b => b && b.height).reduce((m, b) => Math.max(m, b.bottom), 0);
+    const story = r('story'), card = document.getElementById('card'), cr = r('card');
+    let top = bar + 8, bottom = story && story.height ? story.top - 8 : H, left = 0, right = W;
+    if (cr && cr.height && !card.classList.contains('hidden')) {
+      if (card.classList.contains('folded') && W < 900) bottom = Math.min(bottom, cr.top - 4);   // a phone's card is folded to a line (r84)
+      else if (cr.left > W * .55) right = cr.left - 8;
+    }
+    if (bottom - top < H * .2) { top = 0; bottom = H; }
+    return { W, H, left, top, w: right - left, h: bottom - top };
+  }
+  // where the camera should be to hold the beat's frame in the band
+  fit(now = false) {
+    const pts = this.room.machine.frame(this.room.beat, this.time), box = new THREE.Box3().setFromPoints(pts);
+    const c = box.getCenter(v(0, 0)), size = box.getSize(v(0, 0)), b = this.band();
+    // the top of the band is kept for the speaker's bubble, which points at the top of the frame
+    const room = Math.min(BUBBLE, b.h * .25); b.top += room; b.h -= room;
+    const tan = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * 2, m = .9;
+    const d = Math.max(size.y * b.H / (m * b.h), size.x * b.H / (m * b.w)) / tan + 2.2;
+    this.want = { center: c, d, b, box };
+    if (now) { this.view.center.copy(c); this.view.d = d; }
+  }
   update(dt) {
     if (!this.room) return;
-    this.time += dt; this.dolly = Math.min(1, this.dolly + dt / 2.4);
-    const m = this.room.machine, s = m.shot, k = ease(this.dolly);
-    m.pose(this.time);
-    this.camera.position.lerpVectors(s.from, s.to, k);
-    // a phone held upright sees a narrow slice: step back until both blocks are in frame
-    if (this.camera.aspect < 1) this.camera.position.sub(s.target).multiplyScalar(1 / this.camera.aspect * .75).add(s.target);
-    this.camera.position.x += Math.sin(this.time * .25) * .6 * k;
-    this.camera.lookAt(s.target);
+    this.time += dt;
+    const m = this.room.machine;
+    m.pose(this.room.beat, this.time);
+    this.fit();
+    const k = this.instant ? 1 : 1 - Math.pow(SMOOTH, dt), w = this.want;
+    this.view.center.lerp(w.center, k); this.view.d += ((this.leaving ? w.d * 2.4 : w.d) - this.view.d) * (this.leaving ? 1 - Math.pow(.001, dt) : k);
+    const c = this.view.center, d = this.view.d;
+    this.camera.position.set(c.x + Math.sin(this.time * .25) * .02 * d, c.y + d * .14, c.z + d);
+    this.camera.lookAt(c);
+    // the look-at point lands in the middle of the free band, not of the screen
+    const b = w.b; this.camera.setViewOffset(b.W, b.H, b.W / 2 - (b.left + b.w / 2), b.H / 2 - (b.top + b.h / 2), b.W, b.H);
     for (const f of this.room.scene.userData.flames || []) f.light.intensity = 55 + Math.sin(this.time * 13 + f.light.position.x) * 6 + Math.sin(this.time * 7.3) * 4;
   }
 }

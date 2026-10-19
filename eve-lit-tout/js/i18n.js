@@ -36,7 +36,7 @@ const fr = {
   },
 
   // inside Alice's keep: the AES machine (inside.js)
-  'in.p1': 'P1 · les 16 premiers octets de l’ordre', 'in.c1': 'C1 · 16 octets chiffrés', 'in.key': 'clé · 32 octets', 'in.round': 'tour {n} / 14',
+  'in.key': 'clé · 32 octets', 'in.round': 'tour {n} / 14', 'in.out': '16 octets illisibles', 'in.iv': 'IV · au hasard, en clair',
 
   // story
   ch: ['Eve lit', 'AES', 'Neuf à chaque envoi', 'Le paquet'],
@@ -115,7 +115,7 @@ const en = {
     plain: 'in the clear', withKey: 'with the key', keyShort: 'The key',
   },
 
-  'in.p1': 'P1 · the first 16 bytes of the order', 'in.c1': 'C1 · 16 encrypted bytes', 'in.key': 'key · 32 bytes', 'in.round': 'round {n} / 14',
+  'in.key': 'key · 32 bytes', 'in.round': 'round {n} / 14', 'in.out': '16 unreadable bytes', 'in.iv': 'IV · random, in the clear',
   ch: ['Eve reads', 'AES', 'Fresh every time', 'The packet'],
   steps: {
     intro: { t: 'Eve changes tactics', p: 'In episode 1.1, Eve captured the messengers. But a messenger who never comes back, Alice ends up noticing, and she sends another. Eve has found better: stop the messenger, read the order, and let him go on. Nobody will know she read it.',
