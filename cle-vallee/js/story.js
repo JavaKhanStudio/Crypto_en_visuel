@@ -42,7 +42,7 @@ export const STEPS = [
   { id: 'ride', ch: 1, shot: 'both', view: 'open', go: async x => { await x.ride('locked'); } },
   { id: 'hybrid', ch: 2, shot: 'valley', view: 'hybrid', say: ['n'] },
   { id: 'fresh', ch: 2, shot: 'castleA', view: 'fresh', say: ['a'] },
-  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', say: ['e'] },
+  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', say: ['e'], link: ['../paquet-complet/'] },
   { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'packet', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: ['../cadenas/', '../diffie-hellman/'] },
 ];
 

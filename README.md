@@ -20,7 +20,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 1.2 | Eve lit tout (AES-256-CBC) | https://javakhanstudio.github.io/Crypto_en_visuel/eve-lit-tout/ | publié |
 | 1.3 | L'octet changé (HMAC-SHA256) | https://javakhanstudio.github.io/Crypto_en_visuel/octet-change/ | publié |
 | 1.4 | La clé qui traverse la vallée (RSA-OAEP, chiffrement hybride) | https://javakhanstudio.github.io/Crypto_en_visuel/cle-vallee/ | publié |
-| 1.5 | Le paquet complet | https://javakhanstudio.github.io/Crypto_en_visuel/paquet-complet/ | bientôt |
+| 1.5 | Le paquet complet (l'ordre des opérations, un fichier par rôle) | https://javakhanstudio.github.io/Crypto_en_visuel/paquet-complet/ | publié |
 | 1.6 | Eve a encore des tours (signature, rejeu, AES-GCM) | https://javakhanstudio.github.io/Crypto_en_visuel/encore-des-tours/ | bientôt |
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
@@ -86,6 +86,25 @@ un quiz de 7 questions. RSA et OAEP sont calculés dans la page sur BigInt (`cle
 la paire de Bob tirée une fois avec openssl, des graines fixes pour l'histoire) et vérifiés par
 `node tests/cle_values.mjs` contre openssl (`pkeyutl`, OAEP SHA-256), WebCrypto et `pow` de
 Python ; `tests/cle_story.py` joue chaque chevauchée et le bac à sable.
+
+## Épisode 1.5 — Le paquet complet
+
+Les quatre briques dans l'ordre, et ce que les étudiants construisent. Côté Alice, quatre gestes, et
+le paquet se monte brique par brique devant son château : trois tirages neufs (`os.urandom`),
+chiffrer l'ordre (PKCS7 souligné, AES-256-CBC), sceller IV ‖ chiffré (HMAC-SHA256), fermer clé AES ‖
+clé HMAC au cadenas de Bob (RSA-2048-OAEP). Le paquet traverse (336 octets, Eve n'ouvre rien) ; côté
+Bob, trois gestes : ouvrir les clés, vérifier le sceau, seulement alors déchiffrer. Eve change le 1er
+octet du chiffré : rejeté sans être déchiffré ; un octet changé dans chacune des quatre briques,
+rejeté chaque fois ; pourquoi vérifier avant de déchiffrer (ce que Bob aurait déchiffré, l'oracle de
+padding, `compare_digest`). Puis le code : les quatre fichiers et leurs fonctions, la scène de
+`main.py` rejouée par deux cavaliers dans un terminal (« Bonjour Bob ! », puis « ALERTE : HMAC
+invalide »), les choix que le README justifie ; la fin renvoie aux épisodes 1.2, 1.3 et 1.4. 14
+étapes en 4 chapitres, un bac à sable (votre ordre ; Eve laisse passer ou change l'octet de votre
+choix dans la brique de votre choix ; Bob vérifie d'abord ou déchiffre d'abord), un quiz de 7
+questions. Le moteur et les valeurs sont ceux de 1.4 (`paquet-complet/js/packet.js` assemble) ;
+`node tests/paquet_values.mjs` rejoue `receive_message` hors de la page (openssl `enc` et `pkeyutl`,
+`hmac.compare_digest` de Python) et contre WebCrypto ; `tests/paquet_story.py` joue chaque
+chevauchée, la scène de `main.py` et le bac à sable.
 
 ## Épisode 2 — Le cadenas de Bob
 
