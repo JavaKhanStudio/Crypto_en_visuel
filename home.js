@@ -30,6 +30,7 @@ const EPISODES = [
   { n: 6, slug: 'pingouin', icon: '🐧', live: true },
   { n: 7, slug: 'sel', icon: '🧂', live: true },
   { n: 8, slug: 'garde', icon: '⏱️', live: true },
+  { n: 9, slug: 'kasiski', icon: '🛞', live: true },
 ];
 
 const fr = {
@@ -60,6 +61,7 @@ const fr = {
     'enigma-casse': ['Enigma, la casse', 'Une lettre n’est jamais chiffrée en elle-même, un mot deviné glisse sous le chiffré, et la bombe de Turing trouve le réglage.'],
     pingouin: ['Le pingouin et la chaîne', 'ECB laisse voir les motifs, CBC enchaîne les blocs, et un bit retourné change le message.'],
     sel: ['Le sel', 'Même mot de passe, même empreinte… sauf avec du sel. Et bcrypt prend son temps exprès.'],
+    kasiski: ['La roue et le caillou', 'La clé de Vigenère tourne comme une roue, et ses traces trahissent sa longueur.'],
     garde: ['Le garde trop pressé', 'Un garde qui compare un badge lettre par lettre trahit le HMAC par son chronomètre.'],
   },
 };
@@ -91,6 +93,7 @@ const en = {
     'enigma-casse': ['Enigma, the Break', 'A letter never encrypts to itself, a guessed word moves along under the cipher, and Turing’s bombe finds the setting.'],
     pingouin: ['The Penguin and the Chain', 'ECB shows the patterns, CBC chains the blocks, and one flipped bit changes the message.'],
     sel: ['Salt', 'Same password, same hash… unless it is salted. And bcrypt is slow on purpose.'],
+    kasiski: ['The Wheel and the Stone', 'The Vigenère key turns like a wheel, and its tracks give its length away.'],
     garde: ['The Hasty Guard', 'A guard who checks a badge letter by letter gives the HMAC away to a stopwatch.'],
   },
 };

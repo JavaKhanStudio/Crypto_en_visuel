@@ -10,9 +10,11 @@ export const EPISODES = {
   '1.5': ['paquet-complet', 1],   // the whole packet
   '1.6': ['encore-des-tours', 1], // Eve has more tricks
   '2': ['cadenas', 1], '3': ['diffie-hellman', 1], '4': ['scytale', 1], '5': ['enigma', 1],
+  '5.1': ['enigma', 1], '5.2': ['enigma-reglage', 1], '5.3': ['enigma-casse', 1],
   '6': ['pingouin', 5],           // the penguin: ECB lets the picture show
   '7': ['sel', 1],
   '8': ['garde', 4],              // the guard in a hurry, timed
+  '9': ['kasiski', 1],
 };
 const RX = /([ÉéEe]pisode) (\d+(?:\.\d+)?)(?![\d])/g;
 
