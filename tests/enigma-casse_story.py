@@ -97,6 +97,9 @@ with sync_playwright() as p:
     s2 = sb()
     left = " ".join(str(int(k) + 1) for k, v in sorted(s2["marks"].items(), key=lambda kv: int(kv[0])) if v == "ok")
     report("sb-slide", {} if (s2["k"], left) == (10, LEFT) else {"slide": ((s2["k"], left), (10, LEFT))})
+    # r149: the place counter between the arrows stays on one line ('place 11 / 11', its longest)
+    lines = pg.evaluate("() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('#sb-place')); return new Set([...r.getClientRects()].map(c => Math.round(c.top))).size; }")
+    report("sb-place-line", {} if lines == 1 else {"lines": (lines, 1)})
     # the bombe on place 7: one stop holds, at IXW; on Eve's machine it reads HEGTE…
     pg.evaluate(f"demo.sandbox.configure('{CIPHER}', 'WETTERBERICHT', 6)"); pg.wait_for_timeout(300)
     pg.locator("#sb-bombe").click(); pg.wait_for_timeout(300); pg.wait_for_function(busy, timeout=120000)
