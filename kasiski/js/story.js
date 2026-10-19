@@ -5,6 +5,7 @@
 // the camera has landed (its button replays it).
 import * as THREE from 'three';
 import { t, raw, onLang } from './i18n.js';
+import { render as md } from './md.js';
 import { START_X, LANE_N } from './stage.js';
 
 const END = 86;                                   // the car at the end of the road: its stone wheel at x = 46
@@ -100,7 +101,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; md(this.el.text, s.p);
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';

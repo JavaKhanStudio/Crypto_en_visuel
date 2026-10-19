@@ -7,6 +7,7 @@ globalThis.location = { search: '' };
 globalThis.localStorage = { getItem: () => null, setItem() {} };
 const K = await import('../kasiski/js/kasiski.js');
 const { DICTS } = await import('../kasiski/js/i18n.js');
+const { plain } = await import('../kasiski/js/md.js');   // the step text read without its markup (r174)
 const { QUIZ } = await import('../kasiski/js/quiz-data.js');
 
 let bad = 0;
@@ -54,23 +55,24 @@ for (const C of [150, 200, 250, 300]) for (const n of [0, 2, 4, 6]) {
 
 // ---------- the words ----------
 for (const lang of ['fr', 'en']) {
-  const S = DICTS[lang].steps, m = cm => K.metres(cm, lang === 'en' ? '.' : ','), has = (id, s) => ok(S[id].p.includes(s), `${lang} ${id} says « ${s} »`);
+  const S = DICTS[lang].steps, m = cm => K.metres(cm, lang === 'en' ? '.' : ','), has = (id, s) => ok(plain(S[id].p).includes(s), `${lang} ${id} says « ${s} »`);
   const L = (fr, en) => lang === 'fr' ? fr : en;
   const wc = Object.fromEntries(K.wheelCounts(gd).map(c => [c.L, c.n]));
   has('s4', L('4, 6 ou 10 m', '4, 6 or 10 m'));
   has('s5', L(`${m(370)} et ${m(230)}, puis ${m(760)} et ${m(240)}`, `${m(370)} and ${m(230)}, then ${m(760)} and ${m(240)}`));
   has('s6', L(`des ${gd.length} écarts`, `of the ${gd.length} gaps`));
   has('s6', L(`2 m en divise ${wc[200]}`, `2 m divides ${wc[200]}`));
-  has('s6', L(`4 m n’en divise que ${wc[400]}, 3 m et 1,5 m que ${wc[300]}`, `4 m divides only ${wc[400]}, 3 m and 1.5 m only ${wc[300]}`));
+  has('s6', L(`4 m n’en divise que ${wc[400]}`, `4 m divides only ${wc[400]}`));
+  has('s6', L(`3 m ou de 1,5 m, que ${wc[300]}`, `3 m or 1.5 m, only ${wc[300]}`));
   ok(wc[300] === wc[150], `${lang} s6: 3 m and 1.5 m divide as many (${wc[300]})`);
   has('s7', L('L + L donne W, E + E donne I, C + M donne O', 'L + L gives W, E + E gives I, C + M gives O'));
   ok(K.vigenere('LEC', 'LEM') === 'WIO', `${lang} s7: L+L, E+E, C+M = W, I, O`);
   has('s8', 'PMARXIXSGEVQ'); has('s8', '30 = 5 × 6'); has('s8', L('position 51 et à la position 81', 'position 51 and at position 81'));
   has('s9', L(`${ds.length} distances`, `${ds.length} distances`)); has('s9', L('37 lettres plus loin', '37 letters further on'));
   has('s9', `${K.CIPHER.length}`);
-  has('s10', L(`5 en divise ${K.counts(ds)[3].n}`, `5 divides ${K.counts(ds)[3].n}`));
+  has('s10', L(`5 lettres en divise ${K.counts(ds)[3].n}`, `5 letters divides ${K.counts(ds)[3].n}`));
   has('s10', L('37, 76, 86 et 154', '37, 76, 86 and 154'));
-  has('s10', L(`2 suit avec ${K.counts(ds)[0].n}`, `2 comes next with ${K.counts(ds)[0].n}`));
+  has('s10', L(`2 lettres suit avec ${K.counts(ds)[0].n}`, `2 letters comes next with ${K.counts(ds)[0].n}`));
   ok(45 % 2 && 245 % 2 && !(30 % 2) && !(90 % 2) && !(120 % 2), `${lang} s10: 2 misses 45 and 245, divides 30 90 120`);
   has('s11', L(`P sort ${cols[0].n} fois sur ${cols[0].col.length}`, `P comes up ${cols[0].n} times in ${cols[0].col.length}`));
   has('s11', L('le décalage est de 11, la lettre L', 'the shift is 11, the letter L'));
