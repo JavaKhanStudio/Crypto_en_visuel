@@ -25,7 +25,8 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
-| 5 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | publié |
+| 5.1 | Enigma, une touche | https://javakhanstudio.github.io/Crypto_en_visuel/enigma/ | publié |
+| 5.2 | Enigma, le vrai réglage (câbles, bagues, encoche, double pas, nombre de réglages) | https://javakhanstudio.github.io/Crypto_en_visuel/enigma-reglage/ | publié |
 | 6 | Le pingouin et la chaîne (ECB, CBC, bit-flip) | https://javakhanstudio.github.io/Crypto_en_visuel/pingouin/ | publié |
 | 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | publié |
 | 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | publié |
@@ -168,7 +169,7 @@ la tête du messager. Le tableau en haut à droite (`card.js`) garde à chaque l
 la ligne où Alice l'a écrite. `tests/scytale_story.py` clique chaque bouton et vérifie ce que lit
 chaque bâton.
 
-## Épisode 5 — Enigma, une touche
+## Épisode 5.1 — Enigma, une touche
 
 Une seule touche, lentement, avec les valeurs de la carte « Enigma - À la main » du cours :
 rotors I, II, III, réflecteur B, départ AAA, sans câble au tableau de connexions. Alice tape O :
@@ -183,6 +184,21 @@ taper le chiffré »), un quiz de 7 questions. L'arithmétique est seule dans `e
 (pas réel d'Enigma I, double pas compris) ; `tests/enigma_values.mjs` la compare à la diapo
 (`node tests/enigma_values.mjs`), `tests/enigma_story.py` clique chaque bouton de l'histoire et
 du bac à sable et vérifie positions, lampes et lignes du tableau.
+
+## Épisode 5.2 — Enigma, le vrai réglage
+
+La suite de 5.1, avec la machine réelle réglée en quatre parties comme sur une feuille du jour :
+rotors I, II, III, réflecteur B, bague du rotor de droite sur B, dix câbles au tableau
+(BS CZ DN ER FI GU HO KW LM QY), départ ADU. Le même O qu'en 5.1 : T sans rien, F avec les câbles
+(H, Q, Q, X… puis le câble I–F au retour), C avec la bague. Depuis ADU, OUI donne SMK, l'encoche V
+fait avancer le rotor du milieu (AEW) puis le double pas (BFX) ; Bob tape SMK et lit OUI. Puis le
+compte : 60 ordres × 17 576 départs × 150 738 274 937 250 tableaux = 158 962 555 217 826 360 000
+réglages (environ 1,59 × 10²⁰, bagues à part), et la faille qui reste : aucune lettre ne devient
+elle-même. 18 étapes en 7 chapitres, un bac à sable (trois rotors sur cinq, bagues, câbles, départ),
+un quiz de 8 questions. L'arithmétique est seule dans `enigma-reglage/js/enigma.js` ;
+`node tests/enigma-reglage_values.mjs` la compare d'abord à des vecteurs publiés (AAAAA → BDZGO,
+le message Barbarossa de 1941), puis aux valeurs et chiffres écrits dans l'histoire ;
+`tests/enigma-reglage_story.py` clique chaque bouton.
 
 ## Épisode 6 — Le pingouin et la chaîne
 
