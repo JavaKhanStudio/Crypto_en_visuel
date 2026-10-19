@@ -56,8 +56,9 @@ const fr = {
       p: "Le secret d’Alice et de Bob, c’est le réglage du jour : quels rotors, dans quel ordre, et la position de départ. Avec ces trois rotors, il y a 6 ordres possibles et 26 × 26 × 26 = 17 576 départs. Sur la vraie machine s’y ajoutaient le réglage des bagues et les câbles du tableau de connexions. Mais le réflecteur a un défaut : le courant ne revient jamais sur sa propre lettre, alors une lettre n’est jamais chiffrée en elle-même. Alan Turing et Bletchley Park s’en serviront, avec des mots devinés, pour casser Enigma.",
       a: 'Sans le réglage du jour, TVG ne dit rien.', e: 'Une lettre n’est jamais chiffrée en elle-même… Voilà un indice.' },
     s13: { t: 'À vous',
-      p: "Dans le bac à sable, réglez les trois rotors et tapez sur le clavier : chaque touche montre son chemin. Remettez le même départ et tapez le chiffré : le message revient. Ou testez-vous avec le quiz.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz' },
+      p: "Dans le bac à sable, réglez les trois rotors et tapez sur le clavier : chaque touche montre son chemin. Remettez le même départ et tapez le chiffré : le message revient. Ou testez-vous avec le quiz. Puis la suite : les câbles, les bagues et les deux autres rotors qui tournent, le vrai réglage.",
+      doors: { sandbox: ['Bac à sable', 'Réglez les rotors, tapez, voyez le chemin'], quiz: ['Quiz', 'Sept questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 5.2 · Le vrai réglage ▶', 'Câbles, bagues, le double pas'] } },
   },
   sb: {
     title: 'Bac à sable',
@@ -126,8 +127,9 @@ const en = {
       p: "Alice and Bob's secret is the setting of the day: which rotors, in which order, and the start position. With these three rotors there are 6 possible orders and 26 × 26 × 26 = 17,576 starts. The real machine added the ring settings and the plugboard cables. But the reflector has a flaw: the current never comes back on its own letter, so a letter is never encrypted as itself. Alan Turing and Bletchley Park would use it, with guessed words, to break Enigma.",
       a: 'Without the setting of the day, TVG says nothing.', e: 'A letter is never encrypted as itself… That is a clue.' },
     s13: { t: 'Your turn',
-      p: "In the sandbox, set the three rotors and type on the keyboard: every key shows its path. Set the same start again and type the cipher: the message comes back. Or test yourself with the quiz.",
-      go: 'Try the sandbox', go2: 'Take the quiz' },
+      p: "In the sandbox, set the three rotors and type on the keyboard: every key shows its path. Set the same start again and type the cipher: the message comes back. Or test yourself with the quiz. Then what comes next: the cables, the rings and the other two rotors turning, the real setting.",
+      doors: { sandbox: ['Sandbox', 'Set the rotors, type, watch the path'], quiz: ['Quiz', 'Seven questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 5.2 · The Real Setting ▶', 'Cables, rings, the double step'] } },
   },
   sb: {
     title: 'Sandbox',

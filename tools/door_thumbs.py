@@ -5,6 +5,7 @@ the series home — cropped from a 1280×720 shot of each and saved as <slug>/im
 (python3 -m http.server 8793), or pass --base.
 
     tools/door_thumbs.py deux-generaux
+    tools/door_thumbs.py enigma --box sandbox=300,100,1100,550   # another crop for one door
 """
 import argparse, os, subprocess, sys, tempfile
 from PIL import Image
@@ -12,6 +13,7 @@ from PIL import Image
 ap = argparse.ArgumentParser()
 ap.add_argument("slug")
 ap.add_argument("--base", default="http://localhost:8793/")
+ap.add_argument("--box", action="append", default=[], help="name=x0,y0,x1,y1: crop that door elsewhere (16:9)")
 a = ap.parse_args()
 here = os.path.dirname(os.path.abspath(__file__))
 # name: (page, hash, crop box in the 1280×720 shot, 16:9)
@@ -20,6 +22,9 @@ doors = {
     "quiz": (a.slug + "/", "#quiz", (280, 130, 1000, 535)),
     "home": ("", "", (0, 0, 1280, 720)),
 }
+for b in a.box:
+    name, xy = b.split("=")
+    doors[name] = doors[name][:2] + (tuple(int(v) for v in xy.split(",")),)
 os.makedirs(f"{a.slug}/img", exist_ok=True)
 with tempfile.TemporaryDirectory() as tmp:
     for name, (page, hsh, box) in doors.items():
