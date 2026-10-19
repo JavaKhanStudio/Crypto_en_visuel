@@ -28,6 +28,20 @@ export const SHOTS = {
   wheelKey: { pos: v(-45, 3.4, LZ + 6), target: v(-47, .9, LZ) },
 };
 
+// On a phone held upright the step panel covers the lower half and the view is narrow: every shot
+// is taken from further back and aimed lower, so what it frames sits in the upper half, above the
+// panel. A shot named <shot>Phone, when there is one, replaces this rule.
+const portrait = () => innerWidth < innerHeight;
+export function forPhone(s, back = 1.6, low = .24) {
+  const dir = s.pos.clone().sub(s.target).multiplyScalar(back), d = dir.length();
+  return { pos: s.target.clone().add(dir), target: s.target.clone().add(v(0, -low * d, 0)) };
+}
+const pick = shot => {
+  const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+  if (!portrait()) return s;
+  return (typeof shot === 'string' && SHOTS[shot + 'Phone']) || forPhone(s);
+};
+
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 export class CameraRig {
@@ -42,7 +56,7 @@ export class CameraRig {
   // Fly to a shot (name or {pos,target}). The path arcs upward a little so long
   // moves read as a swoop rather than a slide. Resolves when it lands.
   fly(shot, duration = 2.2) {
-    const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+    const s = pick(shot);
     this.follow = null;
     return new Promise(res => {
       const from = { pos: this.camera.position.clone(), target: this.controls.target.clone() };
@@ -53,7 +67,7 @@ export class CameraRig {
 
   // Cut straight to a shot, no flight (used by screenshots and reduced motion).
   jump(shot) {
-    const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+    const s = pick(shot);
     this.flight = null; this.follow = null;
     this.camera.position.copy(s.pos); this.controls.target.copy(s.target); this.camera.lookAt(s.target);
   }
@@ -79,8 +93,10 @@ export class CameraRig {
     if (this.follow) {
       // beside the moving thing, a little behind, on the camera side: the car on the road, the drum on the lane
       const p = this.follow.obj.position, o = this.follow.off || v(-4, 3.2, 7.5);
-      this.camera.position.lerp(p.clone().add(o), 1 - Math.pow(.02, dt));
-      c.target.lerp(p.clone().add(v(2.5, .2, -1)), 1 - Math.pow(.005, dt));
+      let want = { pos: p.clone().add(o), target: p.clone().add(v(2.5, .2, -1)) };
+      if (portrait()) want = forPhone(want);
+      this.camera.position.lerp(want.pos, 1 - Math.pow(.02, dt));
+      c.target.lerp(want.target, 1 - Math.pow(.005, dt));
       this.camera.lookAt(c.target);
       return;
     }
