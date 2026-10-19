@@ -42,7 +42,9 @@ export function renderCard(stage) {
     const filled = Math.max(0, r.n - 1), last = ri === rows.length - 1;
     const cell = (c, on, cls, hot) => `<td class="${cls} ${on ? 'on' : ''} ${last && hot ? 'hot' : ''}">${on ? c : '·'}</td>`;
     const cells = r.rec.path.map((c, i) => cell(c, i < filled, i < 3 ? 'go' : 'back', i === st.hot)).join('');
-    return `<tr><td class="k">${r.rec.key}</td><td class="from">${r.rec.from}</td>${cell(r.rec.in, r.n >= 1, 'go plug', false)}${cells}${cell(r.rec.lamp, r.n >= 8, 'back plug lamp', false)}</tr>`;
+    // a row pressed with other rings than the header's (before a ring turned) says which
+    const was = r.rec.rings !== set.rings ? `<small class="was">${t('card.rings', { g: [...r.rec.rings].join(' ') })}</small>` : '';
+    return `<tr class="${was ? 'other' : ''}"><td class="k">${r.rec.key}</td><td class="from">${r.rec.from}${was}</td>${cell(r.rec.in, r.n >= 1, 'go plug', false)}${cells}${cell(r.rec.lamp, r.n >= 8, 'back plug lamp', false)}</tr>`;
   }).join('');
   const pos = st.pos[st.card], plugs = set.plugs ? set.plugs : t('card.noCable');
   const msg = st.msg ? `<p class="msg">${st.msg.plain} → ${st.msg.cipher} <span>(${t('card.start', { p: st.msg.from })})</span></p>` : '';

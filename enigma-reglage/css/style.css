@@ -188,6 +188,8 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 #card th.go { color: #ffd84d; } #card th.back { color: #ff9a5c; }
 #card td { text-align: center; min-width: 22px; padding: 2px 3px; border-radius: 4px; color: rgba(255,255,255,.25); }
 #card td.k { color: var(--ink); } #card td.from { color: var(--muted); font-size: 13px; }
+#card td.from .was { display: block; font: 600 10px var(--sans); color: #ff9a5c; white-space: nowrap; }
+#card tr.other td.on { opacity: .6; }
 #card td.on.go { color: #1d140a; background: #ffd84d; }
 #card td.on.back { color: #1d140a; background: #ff9a5c; }
 #card td.on.lamp { box-shadow: 0 0 0 2px #fff, 0 0 12px #ffd84d; }

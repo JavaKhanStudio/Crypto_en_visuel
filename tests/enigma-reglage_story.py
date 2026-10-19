@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Enigma, le vrai réglage (r113, episode 5.2): clicks every story button and checks what the
 machines show after it (the setting, rotor positions, the letters in the windows, the lamp lit, the
-rows of the card's table and how far each is filled, the count, what each notepad holds), then in the
+rows of the card's table and how far each is filled, the count, what each notepad holds, and that a row pressed
+with other rings than the card says says which), then in the
 sandbox types OUI with the setting of the day and types the cipher back, refuses bad cables, and
 types AAAAA on the bare machine (BDZGO). Shoots each outcome to out/er-<case>.png. The arithmetic is
 checked apart by tests/enigma-reglage_values.mjs. Serve the repo first (python3 -m http.server 8793),
@@ -26,7 +27,7 @@ CASES = [
     (4, 0, {"pos": "AAB", "down": "O", "rows": [(O_CAB, 4)], "filled": "QQX"}),
     (5, 0, {"pos": "AAB", "lit": "F", "rows": full([O_CAB]), "filled": "QQXJZSI"}),
     (6, 0, {"pos": "AAB", "lit": "O", "rows": full([O_CAB, F_BACK])}),
-    (7, 0, {"rings": "AAB", "windows": "AAA", "pos": "AAA"}),
+    (7, 0, {"rings": "AAB", "windows": "AAA", "pos": "AAA", "rows": full([O_CAB]), "cardHas": "AAA\n" + ("bagues" if lang == "fr" else "rings") + " A A A"}),
     (8, 0, {"rings": "AAB", "pos": "AAB", "lit": "C", "rows": full([O_CAB, O_RING])}),
     (9, 0, {"pos": "ADV", "windows": "ADV", "rows": full(MSG[:1]), "pads": {"a": "S"}}),
     (10, 0, {"pos": "AEW", "windows": "AEW", "rows": full(MSG[:2]), "pads": {"a": "SM"}}),
@@ -57,7 +58,14 @@ with sync_playwright() as p:
                pads: Object.fromEntries(Object.entries(st.pads).filter(([k, v]) => v)),
                msg: st.msg ? st.msg.plain + '>' + st.msg.cipher : null,
                tally: st.tally ? st.tally.kind + ' ' + st.tally.n : null, count: st.count ? st.count.sum : null,
-               card: document.querySelector('#card').innerText }; }"""
+               card: document.querySelector('#card').innerText,
+               // each row the card shows, pressed with other rings than its header's, must say which (r123)
+               ringRows: st.tally ? [] : st.rows.slice(-4).map((r, i) => {
+                 const tr = document.querySelectorAll('#card table tr')[i + 1], was = tr && tr.querySelector('.was');
+                 const want = r.rec.rings === st.set[st.card].rings ? '' : [...r.rec.rings].join(' ');
+                 const said = was ? was.textContent : '';
+                 return want === '' ? (said === '' ? null : `row ${i} says ${said}`) : (said.endsWith(want) ? null : `row ${i} rings ${want}, says '${said}'`);
+               }).filter(Boolean) }; }"""
 
     def report(name, bad):
         print("ok  " if not bad else "FAIL", name, "" if not bad else f"(got, want): {bad}")
@@ -91,6 +99,7 @@ with sync_playwright() as p:
             g = got[key]
             if key == "rows": w = [list(r) for r in w]
             if g != w: bad[key] = (g, w)
+        if got["ringRows"]: bad["ringRows"] = got["ringRows"]
         # the card shows the last row's letters as filled
         if "filled" in want and want["filled"] and want["filled"][-1] not in got["card"]: bad["card"] = got["card"]
         report(f"s{step}-{k}", bad)
