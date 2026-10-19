@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- r89: the Two Generals saga plan drawn for Simon before any episode is built.
+<!-- r89: the Two Generals saga plan drawn for Simon before any episode is built: one brick of
+     the workshop's packet (Atelier « Eve est sur la ligne ») per episode.
      Render: tools/shoot.py out/saga_plan --page tools/saga_plan.html --size 1440x1500 -->
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Saga des deux généraux — plan (r89)</title>
@@ -24,58 +25,69 @@
   .c.saga1 { background: #34405a; border: 1px solid #5b6c94; } .c small { color: #9aa3b5; display: block; }
   .group { border: 1px solid #5b6c94; border-radius: 10px; padding: 6px; display: flex; flex-wrap: wrap; gap: 6px; width: 100%; box-sizing: border-box; }
   .cut { margin: 0 0 18px; padding: 10px 14px; background: #262016; border: 1px solid #5a4a26; border-radius: 10px; color: #f2dca0; font-size: 14px; }
+  .packet-legend { margin: 0 0 16px; font-size: 13.5px; color: #c9cdd6; }
+  .pk { display: inline-block; padding: 3px 8px; margin: 2px 3px; border-radius: 6px; font-size: 12px; color: #12151c; font-weight: 600; }
+  .pk.k { background: #c9a0f0; } .pk.iv { background: #9fd3f0; } .pk.ct { background: #f2c45a; } .pk.mac { background: #8fd18a; }
+  .pk.off { background: #2c3346; color: #5d667a; } .pk.add { outline: 2px solid #fff; }
+  .bar { margin: 8px 0 4px; } .link { margin-top: 8px; font-size: 13px; color: #9fc3f0; }
   @media (max-width: 720px) { body { padding: 14px; } .homes { grid-template-columns: 1fr; } }
 </style></head><body>
-<h1>🏰 La saga des deux généraux</h1>
-<p class="sub">Même vallée, mêmes personnages (Arnaud, Bastien, Étienne). Chaque épisode : une nouvelle ruse d’Étienne, et la seule idée qui l’arrête.</p>
-<p class="cut">✂ La coupe : l’épisode 1 garde les pas 1 à 12 (jusqu’à l’aube). Les pas 13 à 16 (faux messager, HMAC, ce que la crypto ne fait pas) ouvrent l’épisode 2, en plus détaillé.</p>
+<h1>🏰 La saga des deux généraux : construire la messagerie chiffrée</h1>
+<p class="sub">Le fil : l’atelier « Eve est sur la ligne ». Chaque épisode ajoute au paquet du messager une brique du projet, et dit pourquoi elle est là. Étienne joue Eve : il lit, modifie, usurpe, rejoue.</p>
+<p class="cut">✂ L’épisode 1 garde les pas 1 à 12 (jusqu’à l’aube), plus un pas de fin qui ouvre la saga. Le faux messager et le HMAC (pas 13 à 16) passent à l’épisode 3. Les idées réseau (asynchrone, renvois, numéros) attendent dans le ticket r91.</p>
+<div class="packet-legend">Le paquet du projet : <span class="pk k">clés AES + HMAC chiffrées RSA-OAEP</span><span class="pk iv">IV</span><span class="pk ct">chiffré AES-256-CBC</span><span class="pk mac">HMAC-SHA256(IV ‖ chiffré)</span></div>
 <div class="saga" id="saga"></div>
 
 <h3>Où les mettre sur l’accueil ?</h3>
 <div class="homes">
   <div class="home"><h4>A · regroupés sous l’épisode 1 (1.1, 1.2…)</h4>
     <div class="cards"><div class="group">
-      <div class="c saga1">1.1 Deux généraux</div><div class="c saga1">1.2 Le faux messager</div>
-      <div class="c saga1">1.3 Les messagers se doublent</div><div class="c saga1">1.4 Le messager qui revient</div><div class="c saga1">1.5 Étienne lit tout</div></div>
+      <div class="c saga1">1.1 Deux généraux</div><div class="c saga1">1.2 Étienne lit tout</div><div class="c saga1">1.3 L’octet changé</div>
+      <div class="c saga1">1.4 La clé qui traverse</div><div class="c saga1">1.5 Le paquet complet</div><div class="c saga1">1.6 Encore des tours</div></div>
       <div class="c">2 Cadenas</div><div class="c">3 Diffie-Hellman</div><div class="c">4 Scytale</div><div class="c">5 Enigma</div><div class="c">6 Pingouin</div><div class="c">7 Sel</div><div class="c">8 Garde</div></div>
     <p class="sub" style="margin:8px 0 0">Se lit comme une seule histoire. Demande de changer la mise en page de l’accueil (ticket #demo3d).</p></div>
   <div class="home"><h4>B · nouveaux numéros après le garde (9, 10…)</h4>
     <div class="cards"><div class="c saga1">1 Deux généraux</div><div class="c">2 Cadenas</div><div class="c">3 Diffie-Hellman</div><div class="c">4 Scytale</div><div class="c">5 Enigma</div><div class="c">6 Pingouin</div><div class="c">7 Sel</div><div class="c">8 Garde</div>
-      <div class="c saga1">9 Le faux messager</div><div class="c saga1">10 Les messagers se doublent</div><div class="c saga1">11 Le messager qui revient</div><div class="c saga1">12 Étienne lit tout</div></div>
+      <div class="c saga1">9 Étienne lit tout</div><div class="c saga1">10 L’octet changé</div><div class="c saga1">11 La clé qui traverse</div><div class="c saga1">12 Le paquet complet</div><div class="c saga1">13 Encore des tours</div></div>
     <p class="sub" style="margin:8px 0 0">L’accueil ne change pas, mais la saga est coupée en deux par les autres épisodes.</p></div>
 </div>
 <script>
 const EPS = [
-  { n: '1', cls: 'keep', tag: 'existe, on le garde', t: 'Le problème des deux généraux', en: 'The Two Generals’ Problem',
-    trick: 'Étienne capture les messagers.', fix: 'Accusés de réception, probabilité, TCP : le doute est réduit, jamais supprimé.',
-    neu: 'Perte, accusé, preuve par l’absurde.',
-    steps: ['Pas 1–12 tels quels (jusqu’à l’aube)', 'Les questions HMAC du quiz passent à l’épisode 2'] },
-  { n: '2', tag: 'proposé', t: 'Le faux messager', en: 'The Forged Messenger',
-    trick: 'Un cavalier d’Étienne aux couleurs d’Arnaud apporte « attaque à minuit ».', fix: 'Un HMAC calculé avec une clé convenue avant la guerre.',
-    neu: 'HMAC, en détail.',
-    steps: ['Un sceau de cire ou des couleurs, ça se copie', 'Une empreinte du message seul : Étienne la calcule aussi', 'On met la clé dans l’empreinte : HMAC pas à pas (clé, ipad / opad, deux passes), un vrai HMAC-SHA256 calculé dans la page', 'Une lettre changée : un sceau complètement différent', 'Bastien recalcule et compare (le chronomètre, c’est l’épisode du garde)', 'Ce qu’il ne donne pas : le secret (Étienne lit l’ordre), une preuve devant un tiers (les deux ont la clé)'] },
-  { n: '3', tag: 'proposé', t: 'Les messagers se doublent', en: 'Messengers Overtake',
-    trick: 'Pas de ruse : la route elle-même. Pas d’horloge commune, des trajets plus ou moins longs.', fix: 'Délai d’attente, renvoi, numéros de séquence.',
-    neu: 'Échanges asynchrones.',
-    steps: ['Un cavalier parti plus tard double le premier : les ordres arrivent dans le désordre', 'Arnaud attend, puis renvoie : délai trop court, des doublons ; trop long, un siège qui traîne', 'Bastien reçoit deux fois le même ordre', 'Numéroter les ordres : remettre dans l’ordre, jeter les doublons (comme TCP)'] },
-  { n: '4', tag: 'proposé', t: 'Le messager qui revient', en: 'The Messenger Who Came Back',
-    trick: 'Étienne garde un vrai ordre scellé capturé et le rapporte le lendemain : le HMAC passe.', fix: 'Le numéro (ou la date) sous le sceau, et Bastien retient le dernier accepté.',
-    neu: 'Le rejeu.',
-    steps: ['Le vrai ordre d’hier rejoué aujourd’hui : le sceau est valide', 'Numéro à côté du sceau : Étienne le change', 'Numéro sous le sceau : le changer casse le HMAC', 'Bastien refuse tout numéro déjà vu'] },
-  { n: '5', tag: 'proposé', t: 'Étienne lit tout', en: 'Étienne Reads Everything',
-    trick: 'Étienne ne falsifie rien : il lit « aube » et se prépare.', fix: 'Chiffrer, puis sceller le chiffré (encrypt-then-MAC).',
-    neu: 'Confidentialité ≠ authenticité.',
-    steps: ['Le HMAC ne cache rien', 'On chiffre l’ordre (renvoi vers l’épisode du pingouin pour AES)', 'Pourquoi sceller le chiffré, et vérifier avant de déchiffrer'] },
-  { n: '6', cls: 'opt', tag: 'en option, le plus gros', t: 'Le traître', en: 'The Traitor (Byzantine Generals)',
-    trick: 'Trois généraux, dont un traître qui dit une chose à l’un et l’inverse à l’autre.', fix: 'Des ordres signés (et là, le HMAC ne suffit plus).',
-    neu: 'Les généraux byzantins (Lamport, 1982).',
-    steps: ['Ordres oraux : 3 généraux ne démasquent pas 1 traître (il faut n ≥ 3f + 1)', 'Ordres signés : on peut prouver qui a dit quoi', 'Il faut un troisième château et une nouvelle carte'] },
+  { n: '1', cls: 'keep', tag: 'existe, on le garde', t: 'Le problème des deux généraux', en: 'The Two Generals’ Problem', has: [],
+    trick: 'Étienne capture les messagers.', fix: 'Accusés, probabilité, TCP : le doute est réduit, jamais supprimé.',
+    neu: 'Le réseau n’est pas à nous.',
+    steps: ['Pas 1–12 tels quels (jusqu’à l’aube)', 'Nouveau pas de fin : Étienne peut faire pire que capturer. Il peut lire, modifier, usurper, rejouer. La saga va bâtir le paquet qui lui résiste', 'Les questions HMAC du quiz passent à l’épisode 3'] },
+  { n: '2', tag: 'proposé', t: 'Étienne lit tout', en: 'Étienne Reads Everything', has: ['iv', 'ct'], add: ['iv', 'ct'],
+    trick: 'Il arrête le messager, lit « attaque à l’aube », le laisse repartir… et se prépare.', fix: 'Chiffrer l’ordre : AES-256-CBC.',
+    neu: 'La confidentialité.',
+    steps: ['L’ordre devient illisible pour qui n’a pas la clé (comment la clé arrive chez Bastien : épisode 4)', 'Une clé neuve et un IV neuf à chaque envoi : sinon, le même ordre donne le même chiffré, et Étienne reconnaît « aube » qui revient', 'Le padding PKCS7 remplit le dernier bloc'],
+    more: 'Le détail : épisode 6, le pingouin (ECB, CBC)' },
+  { n: '3', tag: 'proposé', t: 'L’octet changé', en: 'The Changed Byte', has: ['iv', 'ct', 'mac'], add: ['mac'],
+    trick: 'Il ne sait pas lire le chiffré, mais il change un octet de l’IV : Bastien déchiffre un autre ordre sans rien voir. Ou bien il envoie un faux cavalier.', fix: 'Un HMAC-SHA256 sur l’IV et le chiffré.',
+    neu: 'L’intégrité (les pas 13–16 d’aujourd’hui, en plus détaillé).',
+    steps: ['Chiffrer n’empêche pas de modifier : un octet changé, un ordre changé (vrai AES dans la page)', 'Le sceau : un HMAC calculé avec une deuxième clé, qu’Étienne n’a pas', 'Un octet changé, un sceau qui ne correspond plus', 'Bastien vérifie le sceau AVANT de déchiffrer, et en temps constant'],
+    more: 'Le détail : épisode 8, le garde trop pressé (temps constant)' },
+  { n: '4', tag: 'proposé', t: 'La clé qui traverse la vallée', en: 'The Key That Crosses the Valley', has: ['k', 'iv', 'ct', 'mac'], add: ['k'],
+    trick: 'Les deux clés doivent arriver chez Bastien. Envoyées en clair, Étienne les lit, et tout ce qui précède tombe.', fix: 'Le cadenas ouvert de Bastien : RSA-2048 avec OAEP.',
+    neu: 'Le chiffrement hybride.',
+    steps: ['Arnaud et Bastien ne se sont jamais vus : pas de clé convenue d’avance', 'Bastien distribue son cadenas ouvert (clé publique) : tout le monde ferme, lui seul ouvre', 'RSA ne transporte que les deux clés : c’est petit et lent, AES fait le gros du travail', 'Des clés neuves à chaque message'],
+    more: 'Le détail : épisode 2, le cadenas de Bob (et 3, Diffie-Hellman)' },
+  { n: '5', tag: 'proposé', t: 'Le paquet complet', en: 'The Whole Packet', has: ['k', 'iv', 'ct', 'mac'],
+    trick: 'Étienne change un octet du paquet complet.', fix: 'Le paquet est rejeté sans avoir été déchiffré.',
+    neu: 'Ce que vous construisez, et dans quel ordre.',
+    steps: ['Côté Arnaud : clés neuves → chiffrer → sceller l’IV et le chiffré → fermer les clés au cadenas de Bastien', 'Côté Bastien : ouvrir les clés → vérifier le sceau → seulement alors, déchiffrer', 'Chaque brique, son fichier : crypto_utils.py, rsa_utils.py, messenger.py, main.py', 'La scène de main.py rejouée : Bob lit, Eve modifie un octet, Bob refuse', 'Pourquoi ces choix (ce que le README doit justifier)'] },
+  { n: '6', tag: 'proposé', t: 'Étienne a encore des tours', en: 'Étienne Has More Tricks', has: ['k', 'iv', 'ct', 'mac'],
+    trick: 'Le cadenas de Bastien est public : Étienne fabrique un paquet entier « Je suis Arnaud », avec ses propres clés. Le HMAC est valide. Puis il rejoue un vrai paquet d’Arnaud.', fix: 'Signer le paquet (RSA-PSS, Ed25519), un numéro ou une date sous la signature. AES-GCM : chiffrer et sceller d’un seul geste.',
+    neu: 'Ce que le projet ne bloque pas encore, et l’atelier attaque-défense.',
+    steps: ['Le HMAC prouve « quelqu’un qui a la clé », et ici l’expéditeur choisit la clé', 'La signature prouve « Arnaud »', 'Le rejeu, et ce qui l’arrête', 'AES-GCM, le chiffrement authentifié', 'À votre tour de jouer Étienne'] },
 ];
+const PK = [['k', 'clés RSA'], ['iv', 'IV'], ['ct', 'chiffré'], ['mac', 'HMAC']];
+const bar = e => '<div class="bar">' + PK.map(([c, l]) => `<span class="pk ${e.has.includes(c) ? c : 'off'} ${(e.add ?? []).includes(c) ? 'add' : ''}">${l}</span>`).join('') + '</div>';
 document.getElementById('saga').innerHTML = EPS.map(e => `<div class="ep ${e.cls ?? ''}"><span class="tag">${e.tag}</span>
-  <div class="num">Épisode ${e.n}</div><h2>${e.t}</h2><div class="en">${e.en}</div>
+  <div class="num">Épisode ${e.n}</div><h2>${e.t}</h2><div class="en">${e.en}</div>${bar(e)}
   <div class="row"><span>🦹</span><span class="trick">${e.trick}</span></div>
   <div class="row"><span>🛡️</span><span class="fix">${e.fix}</span></div>
   <div class="row"><span>💡</span><span class="new"><b>Nouveau :</b> ${e.neu}</span></div>
-  <ol class="steps">${e.steps.map(s => `<li>${s}</li>`).join('')}</ol></div>`).join('');
+  <ol class="steps">${e.steps.map(s => `<li>${s}</li>`).join('')}</ol>${e.more ? `<div class="link">→ ${e.more}</div>` : ''}</div>`).join('');
 window.demo = { ready: true };   // tools/shoot.py waits for it
 </script></body></html>
