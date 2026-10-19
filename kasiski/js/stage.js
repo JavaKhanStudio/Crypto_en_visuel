@@ -16,6 +16,8 @@ const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 export const LANE_N = 96, LANE_TOP = .145;
 export const tileX = i => -47.5 + i * SIDE;
+// the lane's tags on a phone held upright: its shots stand far back to hold 51 and 81 in one frame
+const big = (k = 3) => innerWidth < innerHeight ? k : 1;
 const STEP = 2 * Math.PI / 5;
 export const START_X = WHEEL.start / 100;       // where the stone first touches the road (m)
 const PERSON = .56;                              // the characters are built 3.2 tall: about 1.8 m here
@@ -76,7 +78,9 @@ export class Stage {
     if (k === 'a') return this.st.lane ? this.people.a.position.clone().add(v(0, 2.1, 0)) : this.car.position.clone().add(v(-.1, 1.75, .4));
     if (k === 'kw') return this.kwheel.position.clone().add(v(0, 1.3, 0));
     if (k === 'bars') return this.barsAt.clone().add(v(0, 3.6, 0));
-    return this.people.e.position.clone().add(v(0, 2.1, 0));
+    // on a phone, while Eve reads the arcs from behind the lane, her bubble keeps to the top, off the arcs
+    const up = big() > 1 && this.st.arcs && !this.st.bars && !this.st.key ? 30 : 0;
+    return this.people.e.position.clone().add(v(0, 2.1 + up, 0));
   }
 
   // ---------- the state of a story step ----------
@@ -190,7 +194,9 @@ export class Stage {
     for (const [k, a] of [51, 81].entries()) {
       const tag = this.laneTags[k];
       tag.visible = st.lane && st.hot;
-      if (tag.visible) { setLabel(tag, `${a} · ${c.slice(a, a + 12)}`, '#ff7a3d', .7); tag.position.set(tileX(a + 5.5), 1.1, LANE_Z + .2); }
+      if (tag.visible) { setLabel(tag, `${a} · ${c.slice(a, a + 12)}`, '#ff7a3d', .7 * big(5));
+        // on a phone the tag, five times bigger, stands in front of its twelve letters, under the arcs' tags
+        if (big() > 1) tag.position.set(tileX(a + 5.5), 1.6, LANE_Z + 3.4); else tag.position.set(tileX(a + 5.5), 1.1, LANE_Z + .2); }
     }
   }
 
@@ -202,13 +208,13 @@ export class Stage {
     const all = repeats(this.cipher()), L = best(counts(all.map(r => r.d), 2, 8)).L, reps = all.filter(r => r.b + 3 <= LANE_N);
     for (const r of reps) {
       const good = r.d % L === 0;
-      this.arcsG.add(arc(tileX(r.a + 1), tileX(r.b + 1), LANE_Z - .55, .045, good ? 0xffd66b : 0xff4d5e, 1.2 + r.d * .05));
+      this.arcsG.add(arc(tileX(r.a + 1), tileX(r.b + 1), LANE_Z - .55, .045 * big(3), good ? 0xffd66b : 0xff4d5e, (1.2 + r.d * .05) * big(2.2)));
     }
     // one tag per distance
     for (const d of [...new Set(reps.map(r => r.d))]) {
       const r = reps.find(x => x.d === d), tag = label(); tag.visible = true;
-      setLabel(tag, d % L ? `${d}` : `${d} = ${L} × ${d / L}`, d % L ? '#ff4d5e' : '#ffd66b', .9);
-      tag.position.set((tileX(r.a + 1) + tileX(r.b + 1)) / 2, 1.5 + d * .05 + .5, LANE_Z - .55); this.arcsG.add(tag);
+      setLabel(tag, d % L ? `${d}` : `${d} = ${L} × ${d / L}`, d % L ? '#ff4d5e' : '#ffd66b', .9 * big(4));
+      tag.position.set((tileX(r.a + 1) + tileX(r.b + 1)) / 2, (1.5 + d * .05) * big(2.2) + .5 * big(4), LANE_Z - .55); this.arcsG.add(tag);
     }
   }
 

@@ -20,6 +20,10 @@ export const SHOTS = {
   bars:     { pos: v(BARS_AT.x, 5.8, BARS_AT.z + 11.5), target: v(BARS_AT.x, 1.5, BARS_AT.z) },
   lane:     { pos: v(-44, 4.2, LZ + 6.5), target: v(-43, .3, LZ) },
   lane2:    { pos: v(-38, 7, LZ + 11), target: v(-38, .3, LZ) },
+  // on a phone the lane's letters stay close; at 51 and 81 the tags, drawn bigger, carry the twelve letters
+  lane2Phone: { pos: v(-34.5, 5.5, LZ + 10), target: v(-34.5, -1.6, LZ) },
+  repeatPhone: { pos: v(24, 30, LZ + 86), target: v(24, -15, LZ) },
+  laneAllPhone: { pos: v(24, 30, LZ + 86), target: v(24, -15, LZ) },
   repeat:   { pos: v(24, 17, LZ + 25), target: v(24, 0, LZ) },
   laneAll:  { pos: v(20, 17, LZ + 27), target: v(20, 1, LZ) },
   // step 10: the bars on the near verge, the lane and its repeats behind and above them
@@ -33,7 +37,7 @@ export const SHOTS = {
 // On a phone held upright the step panel covers the lower half and the view is narrow: every shot
 // is taken from further back and aimed lower, so what it frames sits in the upper half, above the
 // panel. A shot named <shot>Phone, when there is one, replaces this rule.
-const portrait = () => innerWidth < innerHeight;
+export const portrait = () => innerWidth < innerHeight;
 export function forPhone(s, back = 1.6, low = .24) {
   const dir = s.pos.clone().sub(s.target).multiplyScalar(back), d = dir.length();
   return { pos: s.target.clone().add(dir), target: s.target.clone().add(v(0, -low * d, 0)) };
@@ -75,7 +79,8 @@ export class CameraRig {
   }
 
   // Ride behind an object (a messenger) until stopFollow() or another fly().
-  chase(obj, off) { this.flight = null; this.follow = { obj, off }; }
+  // back: how much further a phone held upright stands (the lane's letters need it close: 1)
+  chase(obj, off, back = 1.6) { this.flight = null; this.follow = { obj, off, back }; }
   stopFollow() { this.follow = null; }
 
   setOrbit(speed) { this.orbit = speed; }
@@ -96,7 +101,7 @@ export class CameraRig {
       // beside the moving thing, a little behind, on the camera side: the car on the road, the drum on the lane
       const p = this.follow.obj.position, o = this.follow.off || v(-4, 3.2, 7.5);
       let want = { pos: p.clone().add(o), target: p.clone().add(v(2.5, .2, -1)) };
-      if (portrait()) want = forPhone(want);
+      if (portrait()) want = forPhone(want, this.follow.back);
       this.camera.position.lerp(want.pos, 1 - Math.pow(.02, dt));
       c.target.lerp(want.target, 1 - Math.pow(.005, dt));
       this.camera.lookAt(c.target);

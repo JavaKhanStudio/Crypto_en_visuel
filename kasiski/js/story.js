@@ -37,12 +37,12 @@ export const STEPS = [
       x.apply(); await x.stage.grow(); x.say('e');
     } },
   { id: 's7', ch: 2, shot: 'lane', state: LANE, go: async x => {
-      x.apply(); x.chase(x.stage.kwheel, new THREE.Vector3(-2.5, 3.2, 7.5));
+      x.apply(); x.chase(x.stage.kwheel, new THREE.Vector3(-2.5, 3.2, 7.5), 1);
       if (!await x.stage.roll(15, .5)) return;
       await x.fly('lane2'); x.say('a');
     } },
   { id: 's8', ch: 2, shot: 'lane2', state: { ...LANE, stamped: 16, kw: 15 }, go: async x => {
-      x.apply(); x.chase(x.stage.kwheel, new THREE.Vector3(-3, 4, 10));
+      x.apply(); x.chase(x.stage.kwheel, new THREE.Vector3(-3, 4, 10), 1);
       if (!await x.stage.roll(LANE_N - 1, .09)) return;
       await x.fly('repeat'); await x.stage.light(); x.say('a');
     } },
@@ -150,7 +150,7 @@ export class Story {
       say: (who, key) => live() && this.say(who, key),
       clear: () => { if (live()) { c.bubbles.clear(); this.said.clear(); } },
       // the camera rides beside the car, the key wheel, or Eve's tape
-      chase: (obj, off) => live() && c.rig.chase(obj, off),
+      chase: (obj, off, back) => live() && c.rig.chase(obj, off, back),
       celebrate: () => live() && c.celebrate(),
       mode: m => c.setMode(m),
     };
