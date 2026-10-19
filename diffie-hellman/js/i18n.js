@@ -69,8 +69,9 @@ const fr = {
       a: 'Ce sceau n’est pas celui du certificat de Bob : je refuse cet échange.', e: 'Je peux arrêter son pot, pas imiter son sceau.',
       a2: 'Le sceau correspond au certificat : c’est bien la part de Bob.', e2: 'Je n’ai qu’une copie de VERT : je suis revenue au chapitre 3.' },
     s15: { t: 'Ce qu’il faut retenir',
-      p: "JAUNE est public. ROUGE et BLEU ne quittent jamais leur table. ORANGE et VERT passent devant tout le monde. MARRON n'est jamais envoyé : Alice et Bob le calculent chacun de leur côté. Diffie-Hellman calcule un secret commun en public, mais il ne sait pas qui est en face : c'est la signature du certificat qui le dit.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz' },
+      p: "JAUNE est public. ROUGE et BLEU ne quittent jamais leur table. ORANGE et VERT passent devant tout le monde. MARRON n'est jamais envoyé : Alice et Bob le calculent chacun de leur côté. Diffie-Hellman calcule un secret commun en public, mais il ne sait pas qui est en face : c'est la signature du certificat qui le dit. Puis la suite : on remonte à l'Antiquité, avec un ruban enroulé sur un bâton, où le diamètre du bâton est la clé.",
+      doors: { sandbox: ['Bac à sable', 'Choisissez les couleurs, laissez Eve écouter ou s’interposer'], quiz: ['Quiz', 'Sept questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 4 · La scytale ▶', 'Un ruban enroulé sur un bâton'] } },
   },
   sb: {
     title: 'Bac à sable',
@@ -159,8 +160,9 @@ const en = {
       a: 'This seal is not the one on Bob’s certificate: I refuse this exchange.', e: 'I can stop his pot, not fake his seal.',
       a2: 'The seal matches the certificate: this really is Bob’s part.', e2: 'All I have is a copy of GREEN: I am back to chapter 3.' },
     s15: { t: 'What to remember',
-      p: 'YELLOW is public. RED and BLUE never leave their table. ORANGE and GREEN go past everyone. BROWN is never sent: Alice and Bob each work it out on their own side. Diffie-Hellman works out a shared secret in public, but it does not know who is on the other side: the certificate’s signature is what tells.',
-      go: 'Try it in the sandbox', go2: 'Take the quiz' },
+      p: 'YELLOW is public. RED and BLUE never leave their table. ORANGE and GREEN go past everyone. BROWN is never sent: Alice and Bob each work it out on their own side. Diffie-Hellman works out a shared secret in public, but it does not know who is on the other side: the certificate’s signature is what tells. Then what comes next: back to Antiquity, with a strip wound around a stick, where the stick’s diameter is the key.',
+      doors: { sandbox: ['Sandbox', 'Pick the colours, let Eve listen or step in'], quiz: ['Quiz', 'Seven questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 4 · The Scytale ▶', 'A strip wound around a stick'] } },
   },
   sb: {
     title: 'Sandbox',

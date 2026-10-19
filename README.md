@@ -156,7 +156,10 @@ secret avec chacun, un message lu et rechiffré), et la parade : la part de Bob 
 que le certificat permet de vérifier. 15 étapes en 6 chapitres, un bac à sable (couleurs
 secrètes, Eve regarde ou se met au milieu, Bob signe ou non), un quiz de 7 questions.
 La couleur d'un pot ne dépend que de sa recette (`diffie-hellman/js/paint.js`) : même recette,
-même couleur. `tests/dh_story.py` clique chaque bouton et vérifie le contenu de chaque pot.
+même couleur. La dernière étape ouvre quatre portes en image (bac à sable, quiz, tous les
+épisodes, puis l'épisode 4 en or à droite), chacune avec un extrait de 4 s au survol
+(`tests/last_doors.py diffie-hellman 15 scytale`). `tests/dh_story.py` clique chaque bouton et
+vérifie le contenu de chaque pot.
 
 ## Épisode 4 — La scytale
 

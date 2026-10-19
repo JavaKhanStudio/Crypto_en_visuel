@@ -11,6 +11,7 @@ panels hidden as in tools/vignette.py; it stays in this episode's folder. Needs 
     tools/door_clips.py enigma --next enigma-reglage --next-hash '#story=5' --sandbox-keys OUI --box sandbox=300,100,1100,550
     tools/door_clips.py eve-lit-tout --next octet-change --next-hash '#story=3' --sandbox-pre 'input[value=plain]' --sandbox-click '#sb-send' --box sandbox=0,0,1280,720
     tools/door_clips.py cadenas --next diffie-hellman --next-hash '#story=4' --sandbox-click '#sb-lock,#sb-send'
+    tools/door_clips.py diffie-hellman --next scytale --next-hash '#story=2' --sandbox-eval 'demo.stage.speed=1.7' --sandbox-click '#sb-run' --box sandbox=340,84,1080,500
 """
 import argparse, base64, os, subprocess, tempfile, time
 from playwright.sync_api import sync_playwright
@@ -23,6 +24,7 @@ ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--only", default="", help="comma list of sandbox,quiz,home,next")
 ap.add_argument("--sandbox-keys", default="", help="type these letters on #sb-keys instead of clicking #sb-burst (enigma: OUI)")
 ap.add_argument("--sandbox-pre", default="", help="a comma list clicked before the clip starts (eve-lit-tout: « en clair », so Eve reads the order)")
+ap.add_argument("--sandbox-eval", default="", help="JS run before the clip starts (diffie-hellman: demo.stage.speed=1.7, the sandbox's own speed, which ?instant=1 sets to 50)")
 ap.add_argument("--sandbox-click", default="#sb-burst", help="the sandbox buttons the clip presses, a comma list clicked in turn over the 4 s (eve-lit-tout: #sb-send; cadenas: #sb-lock,#sb-send)")
 ap.add_argument("--box", action="append", default=[], help="name=x0,y0,x1,y1: crop that door elsewhere (16:9), as tools/door_thumbs.py")
 a = ap.parse_args()
@@ -36,6 +38,7 @@ ready = "window.demo && window.demo.ready"
 def sandbox(pg):
     pg.goto(f"{a.base}{a.slug}/?instant=1#sandbox"); pg.wait_for_function(ready, timeout=60000)
     for c in filter(None, a.sandbox_pre.split(",")): pg.click(c)
+    if a.sandbox_eval: pg.evaluate(a.sandbox_eval)
     pg.wait_for_timeout(1500); t = time.time()
     if a.sandbox_keys:
         for c in a.sandbox_keys:
