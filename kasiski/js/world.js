@@ -8,6 +8,7 @@ export const ROAD = { x0: -50, x1: 50, half: 1.9 };
 export const LANE_Z = -7.5;          // the letter lane, behind the road
 export const NEAR_Z = .78;           // the near wheels run here (the camera side)
 export const BARS_AT = new THREE.Vector3(0, 0, -3.6);   // where the bar chart stands, between road and lane
+export const BARS_NEAR = new THREE.Vector3(24, 0, .3);   // step 10's bars: on the empty road, under the twelve letters at 51 and 81
 
 // ---------- ground ----------
 function hash(x, z) { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); }

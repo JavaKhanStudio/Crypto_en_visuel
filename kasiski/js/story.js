@@ -49,7 +49,7 @@ export const STEPS = [
   { id: 's9', ch: 3, shot: 'laneAll', state: EVE, go: async x => {
       x.apply(); await x.stage.showArcs(); await x.stage.light(); x.say('e');
     } },
-  { id: 's10', ch: 3, shot: 'barsLane', state: { ...EVE, arcs: true, hot: true, bars: 'cipher', card: 'ccount' }, go: async x => {
+  { id: 's10', ch: 3, shot: 'barsLane', state: { ...EVE, arcs: true, hot: true, bars: 'cipher', barsNear: true, card: 'ccount' }, go: async x => {
       x.apply(); await x.stage.grow(); x.say('e');
     } },
   { id: 's11', ch: 4, shot: 'wheelKey', state: { ...EVE, kw: 0, key: '?????', card: 'cols' }, go: async x => {
