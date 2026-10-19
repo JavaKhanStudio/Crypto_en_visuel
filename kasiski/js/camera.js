@@ -29,7 +29,7 @@ export const SHOTS = {
   repeat:   { pos: v(24, 17, LZ + 25), target: v(24, 0, LZ) },
   laneAll:  { pos: v(20, 17, LZ + 27), target: v(20, 1, LZ) },
   // step 10: the bars on the near verge, the lane and its repeats behind and above them
-  barsLane: { pos: v(BARS_NEAR.x, 11, 19), target: v(BARS_NEAR.x, .8, -2.5) },
+  barsLane: { pos: v(BARS_NEAR.x, 14.5, 18.5), target: v(BARS_NEAR.x, 1.4, -2.5) },
   barsLanePhone: { pos: v(BARS_NEAR.x + 1.4, 9, 25), target: v(BARS_NEAR.x + 1.4, -5.5, -3) },
   // the sandbox's bars, shifted right on screen: its panel covers the left of a desktop screen
   sbBars:   { pos: v(BARS_AT.x - 3.4, 6, BARS_AT.z + 12.5), target: v(BARS_AT.x - 3.4, 1.5, BARS_AT.z) },
