@@ -84,7 +84,7 @@ const sim = new Sim(world, {
   },
 });
 
-// Leaving a sunrise, night falls back as the camera flies to the next shot while the camped armies fade, Étienne's
+// Leaving a sunrise, night falls back as the camera flies to the next shot while the camped armies fade, Eve's
 // spire rises again (his flag, which fell off it, is back at the end) and his gaze comes back (r69): snapping day to night in one frame was a flash. ?instant=1 still snaps.
 const DUSK = 2.2;   // the length of the camera's flight to the next shot
 let dusk = null, era = 0;   // era: a sunrise still rising when the world is reset stops there

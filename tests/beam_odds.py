@@ -21,7 +21,7 @@ JS = """(opts) => {
         u += dir * speed * dt / len; t += dt;
       }
     }
-    res[dir > 0 ? 'Arnaud -> Bastien' : 'Bastien -> Arnaud'] = caught / 360;
+    res[dir > 0 ? 'Alice -> Bob' : 'Bob -> Alice'] = caught / 360;
   }
   Object.assign(B, saved);
   return res;

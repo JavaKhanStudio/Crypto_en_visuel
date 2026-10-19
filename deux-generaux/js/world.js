@@ -45,7 +45,7 @@ const M = {
   window: new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffb347, emissiveIntensity: 2.4 }),
   gate: new THREE.MeshStandardMaterial({ color: 0x1b120b, roughness: 1 }),
   roof: c => new THREE.MeshStandardMaterial({ color: c, roughness: .6, metalness: .1, flatShading: true }),
-  // Étienne's city: black basalt, blood-red windows
+  // Eve's city: black basalt, blood-red windows
   evilStone: new THREE.MeshStandardMaterial({ color: 0x3b3239, roughness: .85, flatShading: true }),
   evilTrim: new THREE.MeshStandardMaterial({ color: 0x1c1519, roughness: .9, flatShading: true }),
   evilWindow: new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff2a18, emissiveIntensity: 3 }),

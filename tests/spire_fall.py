@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Step 12, both armies take the city (r71): Étienne's spire crumbles into the ground and the
+"""Step 12, both armies take the city (r71): Eve's spire crumbles into the ground and the
 victory is celebrated. Raises the sun at full speed and films the fall to out/spire-<n>.png,
 reading the spire's fall (0 standing, 1 gone). Passes when it goes from 0 to 1 and the next
 step stands it back up. Serve the repo first (python3 -m http.server 8793); --base elsewhere."""

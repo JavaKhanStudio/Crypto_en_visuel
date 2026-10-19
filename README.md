@@ -30,9 +30,9 @@ même lien.
 
 ## Épisode 1 — Le problème des deux généraux
 
-Démo interactive : deux armées, Arnaud et Bastien,
-doivent attaquer la ville d'Étienne au même moment, et ne peuvent se parler que par des messagers
-qu'Étienne peut capturer. La démo montre pourquoi aucun nombre fini d'accusés de réception ne donne
+Démo interactive : deux armées, Alice et Bob,
+doivent attaquer la ville d'Eve au même moment, et ne peuvent se parler que par des messagers
+qu'Eve peut capturer. La démo montre pourquoi aucun nombre fini d'accusés de réception ne donne
 la certitude, ce que fait TCP à la place, et ce que la cryptographie (HMAC) règle ou ne règle pas.
 
 Interactive demo of the Two Generals' Problem, French first, English with `?lang=en`.
@@ -165,11 +165,11 @@ puis http://localhost:8793/ (l'accueil) ou http://localhost:8793/deux-generaux/.
 
 | Mode | Contenu |
 |---|---|
-| **Histoire** | 17 étapes en 6 chapitres : le problème, un messager, l'accusé, la régression infinie (avec la preuve par l'absurde), le monde réel (rafales, TCP, l'aube), et la crypto (faux messager d'Étienne, HMAC, ce que le HMAC ne fait pas). Flèches ou télécommande de présentation pour avancer. |
+| **Histoire** | 17 étapes en 6 chapitres : le problème, un messager, l'accusé, la régression infinie (avec la preuve par l'absurde), le monde réel (rafales, TCP, l'aube), et la crypto (faux messager d'Eve, HMAC, ce que le HMAC ne fait pas). Flèches ou télécommande de présentation pour avancer. |
 | **Bac à sable** | Envoyer des messagers dans les deux sens, protocole automatique, rafale de 10, probabilité de capture, « le prochain est capturé », faux messager, HMAC, règle de l'aube. |
 | **Quiz** | 8 questions (FR/EN) avec explication de chaque réponse. |
 
-Le panneau **Qui sait quoi ?** tient l'échelle de connaissance (« Arnaud sait que Bastien sait que… ») ;
+Le panneau **Qui sait quoi ?** tient l'échelle de connaissance (« Alice sait que Bob sait que… ») ;
 au-dessus des châteaux, une colonne de blocs lumineux la double en 3D, et un « ? » flotte là où
 le prochain messager devrait arriver.
 
@@ -186,7 +186,7 @@ deux-generaux/      l'épisode 1 :
   vignette.jpg        sa carte sur l'accueil
   css/style.css
   js/main.js          rendu, bloom, boucle, modes
-  js/world.js         terrain, châteaux, ville d'Étienne, route, ciel, aube
+  js/world.js         terrain, châteaux, ville d'Eve, route, ciel, aube
   js/camera.js        plans nommés, vols, poursuite d'un messager
   js/messenger.js     un cavalier : livré, capturé, ou refusé (HMAC)
   js/sim.js           le protocole : numéros de message, qui sait quoi, l'aube

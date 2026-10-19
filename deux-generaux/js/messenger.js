@@ -1,7 +1,7 @@
 // A messenger on horseback riding the road. Its fate is decided when it leaves:
 // 'deliver' (reaches the far gate), 'capture' (Eve's guards take it on the way),
 // 'reject' (a forged rider turned away at the gate by the HMAC check),
-// 'beam' (caught only if Étienne's searchlight sweeps over it on the way).
+// 'beam' (caught only if Eve's searchlight sweeps over it on the way).
 // `done` resolves with 'delivered' | 'captured' | 'rejected'.
 import * as THREE from 'three';
 import { COLORS, CITY } from './world.js';

@@ -80,7 +80,7 @@ export class Story {
     this.i = i; this.seen = false; const tok = ++this.token, step = STEPS[i], c = this.ctx;
     location.hash = 'story=' + (i + 1);
     c.bubbles.clear(); c.resetWorld();
-    if (step.noBeam) c.world.setBeam(false);   // dawn: Étienne's searchlight is off
+    if (step.noBeam) c.world.setBeam(false);   // dawn: Eve's searchlight is off
     this.applyState(step.state);
     c.rig.setOrbit(0);
     c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
@@ -157,7 +157,7 @@ export class Story {
       ride: async (from, opts) => { const m = c.sim.send(from, opts); c.rig.chase(m.obj); const r = await m.done; await wait(600); return r; },
       forge: async () => { const m = c.sim.forge(); c.rig.chase(m.obj); const r = await m.done; await wait(900); return r; },
       dawn: k => c.dawn(k),
-      // the searchlight took the rider: show the valley, let Étienne gloat, and the button sends again
+      // the searchlight took the rider: show the valley, let Eve gloat, and the button sends again
       caught: async () => { if (!live()) return; await c.rig.fly('both'); x.say('e', 'caught'); },
       mode: m => c.setMode(m),
     };

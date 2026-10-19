@@ -54,7 +54,7 @@ export function march(world, teams, win, { duration = 3.2, onHit } = {}) {
           }
         }
       }
-      if (tick.flag) {   // Étienne's flag topples off its tower and drops out of sight
+      if (tick.flag) {   // Eve's flag topples off its tower and drops out of sight
         const f = tick.flag, s = t - duration, y0 = f.userData.y0 ??= f.position.y;
         f.rotation.z = Math.min(2, s * 1.6); f.position.y = Math.max(0, y0 - Math.max(0, s - .3) ** 2 * 7); f.visible = s < 2.2;
       }
@@ -69,7 +69,7 @@ export function march(world, teams, win, { duration = 3.2, onHit } = {}) {
 }
 const easeOut = k => 1 - Math.pow(1 - k, 2);
 
-// Victory: Étienne's spire crumbles into his city over FALL seconds, in clouds of dust, and once
+// Victory: Eve's spire crumbles into her city over FALL seconds, in clouds of dust, and once
 // it is down a second round of fireworks goes up (r71). s: seconds since the armies hit the walls.
 const FALL = 2.6;
 function crumble(world, tick, s) {
