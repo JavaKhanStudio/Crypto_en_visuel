@@ -67,6 +67,21 @@ with sync_playwright() as p:
                  return want === '' ? (said === '' ? null : `row ${i} says ${said}`) : (said.endsWith(want) ? null : `row ${i} rings ${want}, says '${said}'`);
                }).filter(Boolean) }; }"""
 
+    # every name tag in the scene (a rotor's 'I · A', 'réflecteur B', 'entrée'...) is whole on screen, under no
+    # bubble and no panel (r125: Alice's bubble hid 'I · A' on s7 and 'réflecteur B' on s11, the card cut 'entrée')
+    TAGS = """() => { const W = innerWidth, H = innerHeight, out = [];
+      const cut = (a, b) => Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) > 1 && Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) > 1;
+      const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; };
+      const over = [...document.querySelectorAll('#bubbles .bubble.show')].map(e => ['bubble', box(e)])
+        .concat(['topbar', 'modes', 'lang', 'sound', 'card', 'story'].map(id => document.getElementById(id))
+          .filter(e => e && !e.classList.contains('hidden') && e.offsetHeight).map(e => [e.id, box(e)]));
+      for (const t of demo.bubbles.tagBoxes()) {
+        if (t.x + t.w < 0 || t.x > W || t.y + t.h < 0 || t.y > H) continue;     // a tag wholly out of the shot is not shown
+        if (t.x < 0 || t.y < 0 || t.x + t.w > W || t.y + t.h > H) out.push(`'${t.text}' cut by the screen edge`);
+        for (const [n, o] of over) if (cut(t, o)) out.push(`'${t.text}' under ${n}`);
+      }
+      return out; }"""
+
     def report(name, bad):
         print("ok  " if not bad else "FAIL", name, "" if not bad else f"(got, want): {bad}")
         bad and fails.append(name)
@@ -100,6 +115,8 @@ with sync_playwright() as p:
             if key == "rows": w = [list(r) for r in w]
             if g != w: bad[key] = (g, w)
         if got["ringRows"]: bad["ringRows"] = got["ringRows"]
+        tags = pg.evaluate(TAGS)
+        if tags: bad["tags"] = tags
         # the card shows the last row's letters as filled
         if "filled" in want and want["filled"] and want["filled"][-1] not in got["card"]: bad["card"] = got["card"]
         report(f"s{step}-{k}", bad)

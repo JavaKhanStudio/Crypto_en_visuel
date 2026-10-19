@@ -55,6 +55,7 @@ addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
 const bubbles = new Bubbles(camera); bubbles.instant = instant;
+bubbles.avoid = () => [...Object.values(stage.names.a), ...Object.values(stage.names.b), ...Object.values(stage.rackTags), stage.rackSum];
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
@@ -137,5 +138,5 @@ else if (h === 'sandbox' || h === 'quiz') setMode(h);
 else setMode('story', { step: Math.max(0, Math.min(STEPS.length - 1, (parseInt(h.split('=')[1]) || 1) - 1)) });
 loop();
 document.getElementById('loading').classList.add('done');
-window.demo = { THREE, scene, camera, world, stage, rig, story, sandbox, quiz, setMode, ready: true,
+window.demo = { THREE, scene, camera, world, stage, rig, bubbles, story, sandbox, quiz, setMode, ready: true,
   freeze: () => { frozen = true; }, step: dt => tick(dt) };
