@@ -207,7 +207,7 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 .pickers select { font: 700 16px "Courier New", monospace; }
 fieldset.pair { display: flex; justify-content: space-around; gap: 6px; }
 fieldset.pair legend { display: block; text-align: center; margin-bottom: 4px; }
-#sb-cables { width: 100%; font: 700 13px "Courier New", monospace; background: #1b1d2a; color: var(--ink); border: 1px solid var(--edge); border-radius: 8px; padding: .35em .4em; }
+#sb-cables { width: 100%; font: 700 12px "Courier New", monospace; background: #1b1d2a; color: var(--ink); border: 1px solid var(--edge); border-radius: 8px; padding: .35em .4em; }
 .hint.bad { color: #ff8f9a; margin: 6px 0 0; }
 #card table.tally { font: 600 13px var(--sans); border-spacing: 6px 3px; }
 #card table.tally th { font: 600 12px var(--sans); color: var(--muted); text-align: left; }

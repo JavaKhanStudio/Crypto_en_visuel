@@ -107,6 +107,12 @@ with sync_playwright() as p:
     # the sandbox opens on the setting of the day: OUI from ADU lights SMK; back to the start, SMK lights OUI
     open_page("#sandbox")
     pg.wait_for_timeout(1500)
+    # the ten cables of the day show whole in their field (r124: a wider fallback monospace cut QY):
+    # no overflow here, and room for them even at 0.72 em a letter
+    fit = pg.evaluate("""() => { const i = document.querySelector('#sb-cables'), cs = getComputedStyle(i);
+      const room = i.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      return { value: i.value, over: i.scrollWidth > i.clientWidth, room, need: i.value.length * .72 * parseFloat(cs.fontSize) }; }""")
+    report("sb-cables-fit", {} if fit["value"] == CABLES and not fit["over"] and fit["need"] <= fit["room"] else {"fit": fit})
     def type_keys(text):
         for c in text:
             pg.locator("#sb-keys button", has_text=c).first.click(); pg.wait_for_timeout(200)
