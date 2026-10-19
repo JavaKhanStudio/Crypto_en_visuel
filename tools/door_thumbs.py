@@ -6,6 +6,7 @@ the series home — cropped from a 1280×720 shot of each and saved as <slug>/im
 
     tools/door_thumbs.py deux-generaux
     tools/door_thumbs.py enigma --box sandbox=300,100,1100,550   # another crop for one door
+    tools/door_thumbs.py eve-lit-tout --box sandbox=0,0,1280,720   # the whole frame: Eve's notebook is in the corner card
 """
 import argparse, os, subprocess, sys, tempfile
 from PIL import Image

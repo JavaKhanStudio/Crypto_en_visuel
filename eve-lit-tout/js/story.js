@@ -34,8 +34,13 @@ export const STEPS = [
     go: async x => { await x.ride({ cipher: true, seen: true, log: day(2, 1, { seen: true, tag: 'same' }) }); x.say('e'); } },
   { id: 'fresh', refs: { '1.4': 9 }, ch: 2, shot: 'city', view: 'book', book: () => [day(1, 1), day(2, 1, { seen: true, tag: 'same' })], key: 2,
     go: async x => { await x.ride({ cipher: true, log: day(3, 2, { tag: 'other' }) }); x.say('e'); } },
-  { id: 'packet', refs: { '1.3': 2 }, ch: 3, shot: 'city', orbit: .03, view: 'packet', key: 2, say: ['e'], link: '../octet-change/' },
-  { id: 'end', refs: { '6': 3 }, ch: 3, shot: 'overview', orbit: .06, view: 'packet', key: 2, go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: '../pingouin/' },
+  { id: 'packet', refs: { '1.3': 2 }, ch: 3, shot: 'city', orbit: .03, view: 'packet', key: 2, say: ['e'] },
+  // r105/r126: the last step is the doors out, each with its picture and its hover clip; the next episode is last, at the right
+  { id: 'end', refs: { '6': 3 }, ch: 3, shot: 'overview', orbit: .06, view: 'packet', key: 2, doors: [
+      { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
+      { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
+      { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'next', img: '../octet-change/vignette.jpg', clip: 'img/door-next.mp4', href: '../octet-change/' }] },
 ];
 
 export class Story {
@@ -111,7 +116,23 @@ export class Story {
       b.onclick = () => this.run(step[key]);
       if (anim && key === 'go') { b.id = 'play'; this.el.next.after(b); this.el.play = b; } else this.el.actions.appendChild(b);
     }
-    if (step.link) this.el.actions.insertAdjacentHTML('beforeend', `<a class="button" href="${step.link}?lang=${lang}">${s.link}</a>`);
+    this.el.actions.classList.toggle('doors', !!step.doors);
+    for (const d of step.doors || []) {
+      const [name, what] = s.doors[d.k], a = document.createElement('a');
+      a.className = 'door' + (d.k === 'next' ? ' next' : '');
+      a.innerHTML = `<span class="pic"><img src="${d.img}" alt=""></span><b>${name}</b><span>${what}</span>`;
+      // r105 (Simon): on hover, a 4 s clip of where the door leads loops; it stops where it is when the
+      // pointer leaves and goes on from there. A phone has no hover: it keeps the picture.
+      if (d.clip && matchMedia('(hover: hover)').matches) {
+        const v = document.createElement('video');
+        Object.assign(v, { src: d.clip, muted: true, loop: true, playsInline: true, preload: 'none' });
+        v.addEventListener('playing', () => v.classList.add('on'), { once: true });
+        a.firstChild.appendChild(v);
+        a.onmouseenter = () => v.play().catch(() => {}); a.onmouseleave = () => v.pause();
+      }
+      if (d.href) a.href = d.href + '?lang=' + lang; else { a.href = '#'; a.onclick = e => { e.preventDefault(); d.go({ mode: m => this.ctx.setMode(m) }); }; }
+      this.el.actions.appendChild(a);
+    }
     this.el.next.classList.toggle('primary', !anim || this.seen);
     if (!this.seen) this.el.next.classList.remove('shine');
     if (langOnly) for (const s2 of step.say || []) this.say(s2, undefined, step.inside ? this.ctx.inside.anchor() : undefined);
