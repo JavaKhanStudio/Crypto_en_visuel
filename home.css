@@ -54,3 +54,25 @@ h1 { font: 600 44px/1.1 var(--serif); margin: 8px 0 10px; letter-spacing: .03em;
 @keyframes flash { 0%, 100% { box-shadow: none; } 30% { box-shadow: 0 0 0 3px var(--gold); } }
 
 footer { text-align: center; color: var(--muted); font-size: 13px; padding: 12px 20px 36px; }
+
+/* The Two Generals saga (r94, layout A of r89): one block across the grid, under « Épisode 1 »;
+   episode 1.1 as a full card, 1.2 to 1.6 as compact cards beside it (stacked on a phone). */
+.saga { grid-column: 1 / -1; padding: 14px 16px 16px; border: 1px solid rgba(255, 194, 77, .3); border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 194, 77, .07), rgba(255, 194, 77, .02)); }
+.saga-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 4px 12px; }
+.saga-head .num { color: var(--gold); font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+.saga-head h2 { font: 600 24px/1.2 var(--serif); margin: 0; }
+.saga-head p { flex-basis: 100%; margin: 0; color: var(--muted); }
+.saga-cards { display: grid; grid-template-columns: minmax(280px, 1fr) 2fr; gap: 14px; align-items: start; }
+.saga-rest { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.saga-rest .card { flex-direction: row; }
+.saga-rest .card .art { aspect-ratio: auto; flex: 0 0 64px; }
+.saga-rest .card .icon { font-size: 30px; }
+.saga-rest .card .text { padding: 10px 12px 12px; }
+.saga-rest .card h2 { font-size: 17px; margin: 2px 0 4px; }
+.saga-rest .card p { font-size: 13px; margin-bottom: 8px; }
+@media (max-width: 720px) {
+  .saga { padding: 12px 10px; }
+  .saga-cards { grid-template-columns: 1fr; }
+  .saga-rest { grid-template-columns: 1fr; }
+}

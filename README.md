@@ -11,10 +11,17 @@ du cours pointent dessus. Un épisode pas encore construit a déjà son dossier,
 carte « Bientôt » sur l'accueil ; sa vraie page remplace ce renvoi quand il est publié (et passe
 `live: true` dans `home.js`). Le numéro d'épisode est fixé aussi. Les 7 suivants ont été choisis
 dans cryptographie r66.
+L'épisode 1 est devenu une saga, *La saga des deux généraux* (1.1 à 1.6, r89) : l'accueil la
+montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 
 | N° | Épisode | Adresse | État |
 |---|---|---|---|
-| 1 | Le problème des deux généraux | https://javakhanstudio.github.io/Crypto_en_visuel/deux-generaux/ | publié |
+| 1.1 | Le problème des deux généraux | https://javakhanstudio.github.io/Crypto_en_visuel/deux-generaux/ | publié |
+| 1.2 | Eve lit tout (AES-256-CBC) | https://javakhanstudio.github.io/Crypto_en_visuel/eve-lit-tout/ | bientôt |
+| 1.3 | L'octet changé (HMAC) | https://javakhanstudio.github.io/Crypto_en_visuel/octet-change/ | bientôt |
+| 1.4 | La clé qui traverse la vallée (RSA-OAEP, chiffrement hybride) | https://javakhanstudio.github.io/Crypto_en_visuel/cle-vallee/ | bientôt |
+| 1.5 | Le paquet complet | https://javakhanstudio.github.io/Crypto_en_visuel/paquet-complet/ | bientôt |
+| 1.6 | Eve a encore des tours (signature, rejeu, AES-GCM) | https://javakhanstudio.github.io/Crypto_en_visuel/encore-des-tours/ | bientôt |
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
