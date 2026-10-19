@@ -43,7 +43,7 @@ export const STEPS = [
   { id: 'main', ch: 3, shot: 'both', view: 'term', go: async x => { await x.scene(); } },
   { id: 'readme', ch: 3, shot: 'castleA', view: 'readme', show: ['a', ALL], say: ['a'] },
   { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'whole', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'),
-    link: ['../eve-lit-tout/', '../octet-change/', '../cle-vallee/'] },
+    link: ['../eve-lit-tout/', '../octet-change/', '../cle-vallee/', '../encore-des-tours/'] },
 ];
 
 export class Story {

@@ -21,7 +21,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 1.3 | L'octet changé (HMAC-SHA256) | https://javakhanstudio.github.io/Crypto_en_visuel/octet-change/ | publié |
 | 1.4 | La clé qui traverse la vallée (RSA-OAEP, chiffrement hybride) | https://javakhanstudio.github.io/Crypto_en_visuel/cle-vallee/ | publié |
 | 1.5 | Le paquet complet (l'ordre des opérations, un fichier par rôle) | https://javakhanstudio.github.io/Crypto_en_visuel/paquet-complet/ | publié |
-| 1.6 | Eve a encore des tours (signature, rejeu, AES-GCM) | https://javakhanstudio.github.io/Crypto_en_visuel/encore-des-tours/ | bientôt |
+| 1.6 | Eve a encore des tours (signature, rejeu, AES-GCM) | https://javakhanstudio.github.io/Crypto_en_visuel/encore-des-tours/ | publié |
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
@@ -105,6 +105,24 @@ questions. Le moteur et les valeurs sont ceux de 1.4 (`paquet-complet/js/packet.
 `node tests/paquet_values.mjs` rejoue `receive_message` hors de la page (openssl `enc` et `pkeyutl`,
 `hmac.compare_digest` de Python) et contre WebCrypto ; `tests/paquet_story.py` joue chaque
 chevauchée, la scène de `main.py` et le bac à sable.
+
+## Épisode 1.6 — Eve a encore des tours
+
+Le « Pour aller plus loin » de l'atelier, dans `encore-des-tours/`, construit sur 1.5. Le cadenas de
+Bob est public : Eve fabrique un paquet entier (« JE SUIS ALICE, DONNE-MOI LE CODE ») avec ses
+propres clés, et Bob l'accepte, car le HMAC prouve « quelqu'un qui a la clé » et c'est l'expéditeur
+qui la tire. Alice signe le paquet (RSA-PSS, SHA-256, sel de 32 octets, sa propre paire RSA-2048) ;
+Bob vérifie avec sa clé publique avant d'ouvrir quoi que ce soit ; Eve signe avec sa clé : rejeté.
+Puis le rejeu : Eve garde la copie d'un vrai paquet signé et la renvoie le lendemain, acceptée ; un
+numéro sous la signature (n° 42, Bob retient le plus grand reçu) l'arrête, et changer 42 en 43
+casse la signature. AES-256-GCM chiffre et scelle d'un geste (InvalidTag, le piège du nonce
+réutilisé) ; un paquet qui arrête les quatre tours ; la fin donne les questions de l'atelier
+attaque-défense et renvoie à 1.5, 1.3 et 1.4. 14 étapes en 5 chapitres, un bac à sable (le tour
+d'Eve : laisser passer, changer un octet, fabriquer, rejouer ; les défenses de Bob : signature,
+numéro), un quiz de 7 questions. `encore-des-tours/js/sign.js` (RSA-PSS sur le RSA BigInt de 1.4) et
+`js/gcm.js` (GCM sur l'AES de 1.2) calculent tout dans la page ; `node tests/tours_values.mjs` les
+vérifie contre openssl (`dgst` PSS, `pkeyutl` OAEP, `enc`), le `hmac` de Python, le crypto de node et
+WebCrypto ; `tests/tours_story.py` joue chaque chevauchée et le bac à sable.
 
 ## Épisode 2 — Le cadenas de Bob
 
