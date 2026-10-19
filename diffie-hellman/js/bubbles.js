@@ -46,6 +46,24 @@ function settle(boxes, bounds) {
     boxes.forEach(clamp);
     if (!moved) break;
   }
+  // Relaxation can lock up when a wall and a bubble push a third one back and forth (phone, r84): then each
+  // bubble still in the way, the highest first, takes the free spot nearest to where it is, if there is one.
+  const hits = (b, o) => Math.min(b.x + b.w, o.x + o.w) - Math.max(b.x, o.x) + GAP > 1 && Math.min(b.y + b.h, o.y + o.h) - Math.max(b.y, o.y) + GAP > 1;
+  const placed = [];
+  for (const b of [...boxes].sort((p, q) => p.y - q.y)) {
+    const blocked = s => ws.some(w => hits(s, w)) || placed.some(o => hits(s, o));
+    if (blocked(b)) {
+      const xs = [b.x, bounds.r - b.w];
+      for (let x = bounds.l; x < bounds.r - b.w; x += 12) xs.push(x);
+      let best = null, d = Infinity;
+      for (let y = bounds.t; y <= bounds.b - b.h; y += 6) for (const x of xs) {
+        const dd = (x - b.x) ** 2 + (y - b.y) ** 2;
+        if (dd < d && !blocked({ x, y, w: b.w, h: b.h })) { best = { x, y }; d = dd; }
+      }
+      if (best) Object.assign(b, best);
+    }
+    placed.push(b);
+  }
 }
 
 export class Bubbles {

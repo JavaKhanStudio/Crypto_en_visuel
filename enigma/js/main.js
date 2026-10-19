@@ -70,6 +70,10 @@ const quiz = new Quiz(ctx);
 // ---------- modes ----------
 const panels = { story: document.getElementById('story'), sandbox: document.getElementById('sandbox'), quiz: document.getElementById('quiz') };
 const card = document.getElementById('card');
+// On a phone the card folds to its title line, so the scene and the bubbles keep their room (r84, r85);
+// a tap on the title opens or folds it, and it stays as the reader left it from step to step.
+card.classList.add('folded');
+card.addEventListener('click', e => { if (e.target.closest('h3')) card.classList.toggle('folded'); });
 let mode = null;
 // On a phone the corner card sits just above whichever bottom panel is open, however tall that
 // panel grows with the step, and never climbs under the top bar (r83). See #card in style.css.

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""On a phone, the episode's corner card never covers the step panel nor climbs under the top bar (r83).
+"""On a phone, the episode's corner card never covers the step panel nor climbs under the top bar (r83);
+it is folded to its title line, and a tap on the title opens it (r84).
 
 Serve the repo first (python3 -m http.server 8793). For every episode with a #card, walks every story
 step and the sandbox at 390x844 (and 1440x900, where the card must stay at the top right), checks
@@ -41,6 +42,13 @@ with sync_playwright() as p:
                         bad.append(f"{where}: card left the top right (top {ct:.0f})")
                 if w < 900:
                     path = f"out/card-dock-{ep}-{i + 1}.png"; pg.screenshot(path=path); shots.append(path)
+            if w < 900 and m["card"]:   # folded on a phone (r84); a tap on its title opens it, still docked
+                if m["card"][1] - m["card"][0] > 60: bad.append(f"{ep} {w}px: the card is not folded ({m['card'][1] - m['card'][0]:.0f}px tall)")
+                pg.click("#card h3"); pg.wait_for_timeout(400); o = pg.evaluate(MEASURE)
+                if o["card"][1] - o["card"][0] < 60 or o["card"][1] > o["panel"] + 1 or o["card"][0] < o["top"] - 1:
+                    bad.append(f"{ep} {w}px: the tapped card {o['card'][0]:.0f}-{o['card'][1]:.0f} is not open above the panel")
+                path = f"out/card-dock-{ep}-open.png"; pg.screenshot(path=path); shots.append(path)
+                pg.click("#card h3"); pg.wait_for_timeout(200)
             pg.evaluate("demo.setMode('sandbox')"); pg.wait_for_timeout(1500)
             m = pg.evaluate(MEASURE)
             if w < 900 and m["card"] and (m["card"][1] > m["panel"] + 1 or m["card"][0] < m["top"] - 1):

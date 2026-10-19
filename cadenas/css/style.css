@@ -163,4 +163,10 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
   .panel.side { top: auto; bottom: 14px; left: 14px; right: 14px; width: auto; max-height: 45%; }
   #topbar { flex-wrap: wrap; gap: 8px; }
   .brand h1 { font-size: 16px; }
+  /* Two rows on a phone (r84): the title with FR/EN, then the modes with the sound, so the scene keeps its room */
+  #topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  #topbar .right { display: contents; }
+  .brand { grid-area: 1 / 1; padding: 6px 12px; } #lang { grid-area: 1 / 2; }
+  #modes { grid-area: 2 / 1 / 3 / 3; justify-self: start; white-space: nowrap; } #sound { grid-area: 2 / 2; justify-self: end; }
+  #modes button { padding: .45em .75em; }
 }
