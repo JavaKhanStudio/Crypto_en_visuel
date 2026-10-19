@@ -24,7 +24,8 @@ export const STEPS = [
   { id: 'read', ch: 0, shot: 'both', view: 'order', go: async x => { await x.ride({ cipher: false }); x.say('e'); } },
   { id: 'why', ch: 0, shot: 'valley', view: 'order', say: ['n'] },
   { id: 'key', ch: 1, shot: 'castleA', view: 'key', say: ['a'] },
-  { id: 'aes', ch: 1, shot: 'castleA', view: 'aes', say: ['a'] },
+  // ?inside=1: the step zooms into Alice's keep, where the AES machine works on P1 (r103, a prototype)
+  { id: 'aes', ch: 1, shot: 'castleA', view: 'aes', say: ['a'], inside: new URLSearchParams(location.search).has('inside') ? 'aes' : null },
   { id: 'pad', ch: 1, shot: 'castleA', view: 'pad', say: ['a'] },
   { id: 'cbc', ch: 1, shot: 'castleA', view: 'cbc', say: ['a'] },
   { id: 'cipher', ch: 1, shot: 'both', view: 'cipher', go: async x => { await x.ride({ cipher: true }); } },
@@ -61,10 +62,24 @@ export class Story {
     c.bubbles.clear(); c.resetWorld();
     this.card();
     c.rig.setOrbit(0);
-    c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
     this.render();
-    // bubbles appear once the camera has mostly arrived
-    setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : 1300);
+    if (step.inside) return this.enter(step, tok);
+    // out of a room first, then the camera pulls back from its window to the step's shot
+    (c.inside.active ? c.inside.leave() : Promise.resolve()).then(() => {
+      if (tok !== this.token) return;
+      c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
+      // bubbles appear once the camera has mostly arrived
+      setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : 1300);
+    });
+  }
+
+  // a step inside the castle: fly to the step's shot, zoom in through the window, the speaker talks in the room
+  async enter(step, tok) {
+    const c = this.ctx, live = () => tok === this.token;
+    if (!c.inside.active) await c.rig.fly(step.shot, c.instant ? 0.001 : 1.6);
+    else c.inside.play();
+    if (!live() || (!c.inside.active && !await c.inside.enter(step.inside, sendOf(step.key || 1), live))) return;
+    setTimeout(() => { if (live()) for (const s of step.say || []) this.say(s, undefined, c.inside.anchor()); }, c.instant ? 0 : 900);
   }
 
   say(who, text, anchor) {
@@ -98,7 +113,7 @@ export class Story {
     if (step.link) this.el.actions.insertAdjacentHTML('beforeend', `<a class="button" href="${step.link}?lang=${lang}">${s.link}</a>`);
     this.el.next.classList.toggle('primary', !anim || this.seen);
     if (!this.seen) this.el.next.classList.remove('shine');
-    if (langOnly) for (const s2 of step.say || []) this.say(s2);
+    if (langOnly) for (const s2 of step.say || []) this.say(s2, undefined, step.inside ? this.ctx.inside.anchor() : undefined);
   }
 
   // the step's animation has played: Suivant takes the gold back and shines once to call the eye
