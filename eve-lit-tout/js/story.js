@@ -32,7 +32,7 @@ export const STEPS = [
     go: async x => { await x.ride({ cipher: true, seen: true, log: day(2, 1, { seen: true, tag: 'same' }) }); x.say('e'); } },
   { id: 'fresh', ch: 2, shot: 'city', view: 'book', book: () => [day(1, 1), day(2, 1, { seen: true, tag: 'same' })], key: 2,
     go: async x => { await x.ride({ cipher: true, log: day(3, 2, { tag: 'other' }) }); x.say('e'); } },
-  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', key: 2, say: ['e'] },
+  { id: 'packet', ch: 3, shot: 'city', orbit: .03, view: 'packet', key: 2, say: ['e'], link: '../octet-change/' },
   { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'packet', key: 2, go: x => x.mode('sandbox'), go2: x => x.mode('quiz'), link: '../pingouin/' },
 ];
 

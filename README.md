@@ -18,7 +18,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 |---|---|---|---|
 | 1.1 | Le problème des deux généraux | https://javakhanstudio.github.io/Crypto_en_visuel/deux-generaux/ | publié |
 | 1.2 | Eve lit tout (AES-256-CBC) | https://javakhanstudio.github.io/Crypto_en_visuel/eve-lit-tout/ | publié |
-| 1.3 | L'octet changé (HMAC) | https://javakhanstudio.github.io/Crypto_en_visuel/octet-change/ | bientôt |
+| 1.3 | L'octet changé (HMAC-SHA256) | https://javakhanstudio.github.io/Crypto_en_visuel/octet-change/ | publié |
 | 1.4 | La clé qui traverse la vallée (RSA-OAEP, chiffrement hybride) | https://javakhanstudio.github.io/Crypto_en_visuel/cle-vallee/ | bientôt |
 | 1.5 | Le paquet complet | https://javakhanstudio.github.io/Crypto_en_visuel/paquet-complet/ | bientôt |
 | 1.6 | Eve a encore des tours (signature, rejeu, AES-GCM) | https://javakhanstudio.github.io/Crypto_en_visuel/encore-des-tours/ | bientôt |
@@ -56,6 +56,20 @@ montre ce qu'elle reconnaît), un quiz de 7 questions. Même vallée et même di
 `deux-generaux/`. Le chiffrement est calculé dans la page (`eve-lit-tout/js/aes.js`, vrai AES-256)
 et vérifié par `node tests/eve_values.mjs` contre FIPS-197, openssl et WebCrypto ;
 `tests/eve_story.py` joue chaque chevauchée et le bac à sable.
+
+## Épisode 1.3 — L'octet changé
+
+Eve ne sait plus lire le chiffré, mais elle peut l'écrire : elle change le 11e octet de l'IV (XOR 0f),
+et Bob déchiffre « ATTAQUE A 9H DEMAIN » au lieu de 6H, sans aucune erreur. Un octet du chiffré
+marche aussi (un bloc de bruit, un octet changé dans le suivant). Alice scelle alors l'IV et le
+chiffré d'un HMAC-SHA256, avec une deuxième clé ; Bob recalcule le sceau, rejette le paquet changé
+et le faux cavalier d'Eve, vérifie AVANT de déchiffrer (oracle de padding) et compare en temps
+constant (renvoi à l'épisode 8). 13 étapes en 4 chapitres, un bac à sable (votre ordre ; Eve ne
+touche à rien, change un octet de l'IV ou du chiffré, ou envoie son cavalier ; Bob vérifie le sceau
+ou non), un quiz de 7 questions. Tout est calculé dans la page (`octet-change/js/aes.js`,
+`octet-change/js/hmac.js`) et vérifié par `node tests/octet_values.mjs` contre FIPS-197, RFC 4231,
+openssl, le module `hmac` de Python et WebCrypto ; `tests/octet_story.py` joue chaque chevauchée et
+le bac à sable.
 
 ## Épisode 2 — Le cadenas de Bob
 
