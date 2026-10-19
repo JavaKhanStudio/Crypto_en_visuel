@@ -68,9 +68,11 @@ footer { text-align: center; color: var(--muted); font-size: 13px; padding: 12px
 .saga-rest .card { flex-direction: row; }
 .saga-rest .card .art { aspect-ratio: auto; flex: 0 0 64px; }
 .saga-rest .card .icon { font-size: 30px; }
+.saga-rest .card.live .art { flex-basis: 96px; }   /* a published episode shows its picture, not a strip of it */
 .saga-rest .card .text { padding: 10px 12px 12px; }
 .saga-rest .card h2 { font-size: 17px; margin: 2px 0 4px; }
 .saga-rest .card p { font-size: 13px; margin-bottom: 8px; }
+.saga-rest .card .go { white-space: nowrap; font-size: 13px; padding: .35em .7em; }
 @media (max-width: 720px) {
   .saga { padding: 12px 10px; }
   .saga-cards { grid-template-columns: 1fr; }

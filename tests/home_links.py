@@ -8,7 +8,7 @@ import sys
 from playwright.sync_api import sync_playwright
 
 base = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
-SOON = ["eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours"]   # saga 1.2-1.6 (r94), not built yet: their folder is a stub that forwards to the card
+SOON = ["octet-change", "cle-vallee", "paquet-complet", "encore-des-tours"]   # saga 1.3-1.6 (r94), not built yet: their folder is a stub that forwards to the card
 fails = []
 with sync_playwright() as p:
     b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
@@ -31,7 +31,7 @@ with sync_playwright() as p:
     pg.wait_for_function("window.demo && window.demo.story", timeout=60000)
     check("hash typed on the home -> step 5 of deux-generaux/", pg.url == base + "deux-generaux/#story=5" and pg.evaluate("demo.story.i") == 4)
     pg.goto(base, wait_until="load")
-    for live in ["deux-generaux", "cadenas", "diffie-hellman", "scytale", "enigma", "pingouin", "sel", "garde"]:
+    for live in ["deux-generaux", "eve-lit-tout", "cadenas", "diffie-hellman", "scytale", "enigma", "pingouin", "sel", "garde"]:
         check(f"{live} card links {live}/", pg.locator(f"a.card#{live}").get_attribute("href").startswith(f"{live}/"))
     for s in SOON:
         check(f"{s} card is a « soon » card, not a link", pg.locator(f"div.card.soon#{s}").count() == 1)

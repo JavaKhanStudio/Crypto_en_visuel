@@ -17,7 +17,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | N° | Épisode | Adresse | État |
 |---|---|---|---|
 | 1.1 | Le problème des deux généraux | https://javakhanstudio.github.io/Crypto_en_visuel/deux-generaux/ | publié |
-| 1.2 | Eve lit tout (AES-256-CBC) | https://javakhanstudio.github.io/Crypto_en_visuel/eve-lit-tout/ | bientôt |
+| 1.2 | Eve lit tout (AES-256-CBC) | https://javakhanstudio.github.io/Crypto_en_visuel/eve-lit-tout/ | publié |
 | 1.3 | L'octet changé (HMAC) | https://javakhanstudio.github.io/Crypto_en_visuel/octet-change/ | bientôt |
 | 1.4 | La clé qui traverse la vallée (RSA-OAEP, chiffrement hybride) | https://javakhanstudio.github.io/Crypto_en_visuel/cle-vallee/ | bientôt |
 | 1.5 | Le paquet complet | https://javakhanstudio.github.io/Crypto_en_visuel/paquet-complet/ | bientôt |
@@ -44,6 +44,18 @@ la certitude et ce que fait TCP à la place. Il se termine sur les quatre autres
 modifier, se faire passer pour Alice, rejouer), qu'affrontent les épisodes 1.2 à 1.6 de la série.
 
 Interactive demo of the Two Generals' Problem, French first, English with `?lang=en`.
+
+## Épisode 1.2 — Eve lit tout
+
+Eve ne capture plus les messagers : ses gardes les arrêtent sous ses murs, elle lit l'ordre et les
+laisse repartir. Alice chiffre alors l'ordre en AES-256-CBC : une clé de 32 octets, des blocs de
+16 octets, le padding PKCS7, le chaînage CBC et l'IV, puis une clé et un IV neufs à chaque envoi
+pour qu'Eve ne reconnaisse plus un ordre qui revient. 12 étapes en 4 chapitres, un bac à sable
+(votre ordre, envoyé en clair, avec la même clé, ou avec une clé et un IV neufs ; le carnet d'Eve
+montre ce qu'elle reconnaît), un quiz de 7 questions. Même vallée et même distribution que
+`deux-generaux/`. Le chiffrement est calculé dans la page (`eve-lit-tout/js/aes.js`, vrai AES-256)
+et vérifié par `node tests/eve_values.mjs` contre FIPS-197, openssl et WebCrypto ;
+`tests/eve_story.py` joue chaque chevauchée et le bac à sable.
 
 ## Épisode 2 — Le cadenas de Bob
 

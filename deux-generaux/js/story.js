@@ -2,7 +2,7 @@
 // state the story has reached (so Back, Next and the chapter chips always land
 // somewhere consistent), flies the camera, pins its bubbles, and offers buttons.
 import * as THREE from 'three';
-import { t, raw, onLang } from './i18n.js';
+import { t, raw, lang, onLang } from './i18n.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import { wait } from './sim.js';
 
@@ -54,8 +54,8 @@ export const STEPS = [
       if (!x.live()) return;
       await x.fly('both'); await x.dawn(1);
     } },
-  { id: 'tricks', ch: 5, shot: 'city', orbit: .04, state: S(0, 0), say: ['e'] },
-  { id: 's17', ch: 5, shot: 'overview', orbit: .06, state: S(0, 0), say: ['n'], go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
+  { id: 'tricks', ch: 5, shot: 'city', orbit: .04, state: S(2, 1), say: ['e'] },
+  { id: 's17', ch: 5, shot: 'overview', orbit: .06, state: S(2, 1), say: ['n'], go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
 ];
 
 export class Story {
@@ -103,8 +103,9 @@ export class Story {
     const step = STEPS[this.i], s = raw('steps')[step.id];
     this.el.title.textContent = s.t; this.el.text.textContent = s.p;
     // a step may lay its points out as tiles under the text (r93: Eve's four tricks, each with the episode that stops it)
-    this.el.tiles.innerHTML = (s.tiles || []).map(([icon, name, what, ep]) =>
-      `<div class="tile"><span class="icon">${icon}</span><b>${name}</b><span>${what}</span><em>${ep}</em></div>`).join('');
+    // a tile whose episode is published links to it (its folder, 5th field), in the same language
+    this.el.tiles.innerHTML = (s.tiles || []).map(([icon, name, what, ep, href]) =>
+      `<div class="tile"><span class="icon">${icon}</span><b>${name}</b><span>${what}</span><em>${href ? `<a href="${href}?lang=${lang}">${ep} ▶</a>` : ep}</em></div>`).join('');
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     // chapter chips

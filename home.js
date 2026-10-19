@@ -15,7 +15,7 @@ addEventListener('hashchange', forwardOldLink);
 // saga: 1 = the Two Generals saga (r89, Simon's layout A): numbered 1.1 to 1.6, shown as one group.
 const EPISODES = [
   { n: '1.1', slug: 'deux-generaux', icon: '🏰', live: true, saga: 1 },
-  { n: '1.2', slug: 'eve-lit-tout', icon: '👁️', saga: 1 },
+  { n: '1.2', slug: 'eve-lit-tout', icon: '👁️', live: true, saga: 1 },
   { n: '1.3', slug: 'octet-change', icon: '✏️', saga: 1 },
   { n: '1.4', slug: 'cle-vallee', icon: '🔑', saga: 1 },
   { n: '1.5', slug: 'paquet-complet', icon: '📦', saga: 1 },

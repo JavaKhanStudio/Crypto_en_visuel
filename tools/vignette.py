@@ -23,6 +23,7 @@ ap.add_argument("--pos", default="")
 ap.add_argument("--target", default="")
 ap.add_argument("--wait", type=int, default=6000)
 ap.add_argument("--out", default="")
+ap.add_argument("--real-speed", action="store_true", help="no ?instant=1, so a story ride plays at its own pace (eve-lit-tout: the rider held at the gate)")
 a = ap.parse_args()
 out = a.out or f"{a.slug}/vignette.jpg"
 W, H = 1280, 720
@@ -32,7 +33,7 @@ with sync_playwright() as p:
     b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
     pg = b.new_page(viewport={"width": W, "height": H})
     errors = []; pg.on("pageerror", lambda e: errors.append(str(e)))
-    pg.goto(f"{a.base}{a.slug}/?instant=1{a.hash}", wait_until="load")
+    pg.goto(f"{a.base}{a.slug}/{'' if a.real_speed else '?instant=1'}{a.hash}", wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
     if a.click:
         pg.wait_for_timeout(800); pg.click(a.click)
