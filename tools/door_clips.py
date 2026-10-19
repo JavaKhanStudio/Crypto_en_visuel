@@ -50,9 +50,16 @@ def sandbox(pg):
 
 def quiz(pg):
     pg.goto(f"{a.base}{a.slug}/?instant=1#quiz"); pg.wait_for_function(ready, timeout=60000)
+    # the student reads question 1 and hesitates between two WRONG options, never pressing
+    # « Vérifier »: check() paints the right option green even on a wrong pick (r139)
+    right = pg.evaluate("async () => (await import(new URL('js/quiz-data.js', location.href))).QUIZ[0].correct")
+    n = pg.locator("#quiz-options li").count()
+    wrong = [k for k in range(n) if k not in right][:2]
     pg.wait_for_timeout(1500); t = time.time()
-    pg.wait_for_timeout(600); pg.locator("#quiz-options li").nth(2).click()
-    pg.wait_for_timeout(900); pg.click("#quiz-check"); pg.wait_for_timeout(SEC * 1000)
+    for k in wrong:
+        pg.wait_for_timeout(1200); pg.locator("#quiz-options li").nth(k).click()
+    pg.wait_for_timeout(SEC * 1000)
+    assert not pg.locator("#quiz-options li.right, #quiz-options li.wrong").count(), "the quiz clip revealed an answer"
     return t, BOX.get("quiz", (280, 130, 1000, 535))
 
 
