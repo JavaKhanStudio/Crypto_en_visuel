@@ -18,7 +18,7 @@ import { Quiz } from '../../lib/quiz.js';
 import { QUIZ } from './quiz-data.js';
 import * as i18n from './i18n.js';
 import { march, resetCityFlag, clearArmies, fadeArmies, hasArmies, haltArmies } from './army.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 import { t, setLang, applyStatic, onLang } from './i18n.js';
 
 const params = new URLSearchParams(location.search);

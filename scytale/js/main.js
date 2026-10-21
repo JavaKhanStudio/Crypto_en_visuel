@@ -16,7 +16,7 @@ import { initSandbox } from './sandbox.js';
 import { Quiz } from '../../lib/quiz.js';
 import { QUIZ } from './quiz-data.js';
 import * as i18n from './i18n.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 import { renderCard } from './card.js';
 import { clean } from './scytale.js';
 import { setLang, applyStatic, t } from './i18n.js';

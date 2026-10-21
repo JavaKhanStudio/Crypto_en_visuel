@@ -11,7 +11,7 @@ import { badge, drawBoard, drawLedger, drawChart } from './props.js';
 import { hmacHex } from './hmac.js';
 import { KEY, MSG_E, HEX, N, guess, looks } from './data.js';
 import { burst, icon } from '../../lib/fx.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 import { t, raw, dec, ord } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);

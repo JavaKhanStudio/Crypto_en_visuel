@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { PLACES, BENCH, TABLE_TOP } from './world.js';
 import { padlock, key, chest, person, COLORS } from './props.js';
 import { burst, ring, icon } from '../../lib/fx.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;

@@ -5,7 +5,7 @@
 import { t, onLang } from './i18n.js';
 import { A, KEYBOARD } from './enigma.js';
 import { SEGS } from './stage.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 
 const $ = id => document.getElementById(id);
 

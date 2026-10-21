@@ -9,7 +9,7 @@ import { stick, cradles, stylus, person, COLORS, STICK_L } from './props.js';
 import { Strip } from './strip.js';
 import { layout, order, lines, show } from './scytale.js';
 import { burst, ring, icon } from '../../lib/fx.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 import { t } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);

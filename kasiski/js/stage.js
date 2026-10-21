@@ -9,7 +9,7 @@ import { ROAD, LANE_Z, NEAR_Z, BARS_AT, BARS_NEAR } from './world.js';
 import { car, keyWheel, letterTex, label, setLabel, person, COLORS, WHEEL_R, AXLES, PENT_IN, SIDE } from './props.js';
 import { WHEEL, CANDIDATES, TEXT, CIPHER, KEY, track, gaps, wheelCounts, repeats, counts, best, metres } from './kasiski.js';
 import { burst, ring } from '../../lib/fx.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 import { t, lang } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);

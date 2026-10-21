@@ -8,7 +8,7 @@ import { PLACES, TOP_Y, FLOOR, MAST_H } from './world.js';
 import { machine, person, COLORS, STEP, R, RC, wirePoints, loopPoints, at, DRUM } from './props.js';
 import { A, ROTORS, ORDER, press } from './enigma.js';
 import { burst, ring } from '../../lib/fx.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 import { raw } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);

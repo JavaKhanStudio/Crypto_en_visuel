@@ -13,7 +13,7 @@ import { PLACES, TOP_Y, FLOOR, MAST_H } from './world.js';
 import { machine, person, rack, COLORS, STEP, R, RC, wirePoints, loopPoints, at, DRUM, SLOTS, socketAt, cablePoints, FRONT, APART_C } from './props.js';
 import { A, ROTORS, NAMES, BARE, STARTS, press, clashes, menuLetters, bombe as runBombe, check, scrambler, posOf } from './enigma.js';
 import { burst, ring } from '../../lib/fx.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 import { raw } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z), X = v(1, 0, 0);
