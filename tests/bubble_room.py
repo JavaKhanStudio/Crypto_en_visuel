@@ -3,7 +3,7 @@
 
 Serve the repo first (python3 -m http.server 8793). Walks every story step of every episode at
 390x844 and 1440x900 (?instant=1), measures the shown bubbles against each other and against the
-page's walls (bubbles.js WALLS), and writes a phone contact sheet to out/bubble-room-<episode>.png.
+page's walls (lib/bubbles.js WALLS), and writes a phone contact sheet to out/bubble-room-<episode>.png.
     tests/bubble_room.py [episode ...]"""
 import sys
 from playwright.sync_api import sync_playwright
@@ -13,7 +13,7 @@ BASE = "http://localhost:8793/"
 EPISODES = sys.argv[1:] or ["deux-generaux", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "kasiski", "vpn", "aes-interieur"]
 MEASURE = """() => {
   const box = (el, name) => { const r = el.getBoundingClientRect(); return { name, x: r.left, y: r.top, w: r.width, h: r.height }; };
-  const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz'].map(id => document.getElementById(id))
+  const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz', 'credit'].map(id => document.getElementById(id))
     .filter(el => el && !el.classList.contains('hidden') && el.offsetHeight).map(el => box(el, '#' + el.id));
   const bubbles = [...document.querySelectorAll('#bubbles .bubble.show')].filter(el => getComputedStyle(el).visibility !== 'hidden')
     .map(el => box(el, 'bubble ' + el.querySelector('.who').textContent));

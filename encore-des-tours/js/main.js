@@ -13,7 +13,7 @@ import { cargo as buildCargo, packet as buildPacket } from './props.js';
 import { CameraRig } from './camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from './messenger.js';
-import { Bubbles } from './bubbles.js';
+import { Bubbles } from '../../lib/bubbles.js';
 import { Inside } from './inside.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
@@ -59,7 +59,7 @@ let inside;
 addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
-const bubbles = new Bubbles(camera); bubbles.instant = instant;
+const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
 // steps 5-6 (Alice signs, Bob checks) and 11-12 (AES-GCM, Eve's byte) happen inside the keeps, in rooms
 // where the machines run on the real bytes (r103, r162)
 inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant }); resize();

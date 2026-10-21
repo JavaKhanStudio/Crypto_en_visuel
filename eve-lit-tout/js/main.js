@@ -11,7 +11,7 @@ import { buildWorld, CASTLE_B } from './world.js';
 import { CameraRig } from './camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from './messenger.js';
-import { Bubbles } from './bubbles.js';
+import { Bubbles } from '../../lib/bubbles.js';
 import { Inside } from './inside.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
@@ -57,7 +57,7 @@ let inside;
 addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
-const bubbles = new Bubbles(camera); bubbles.instant = instant;
+const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
 // a step that explains a mechanism can zoom into the castle, where a room shows it at work (r103)
 inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant }); resize();
 const toastEl = document.getElementById('toast');
