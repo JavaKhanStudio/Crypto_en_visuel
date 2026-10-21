@@ -27,7 +27,7 @@ const fr = {
     route: { read: 'lit : vers {addr}', via: '→ le câble vers {dir}', here: 'c’est mon adresse : je garde', dir: { i: 'le fournisseur', b: 'Bob' } },
     secret: 'secret', public: 'publique', shared: 'clé commune',
     pubOf: { a: 'publique d’Alice', v: 'publique de Victor' },
-    crowd: { head: 'ouvre chaque tunnel, lit :', line: '{addr} → {name}', when: 'l’heure, la taille de chacun' },
+    crowd: { head: 'ouvre chaque tunnel, lit :', line: '{from} → {to} {name}', when: 'l’heure, la taille de chacun' },
   },
   card: {
     map: 'Les adresses', cafe: 'le café (sa box Wi-Fi)', bob: 'le site de Bob', vpn: 'le serveur VPN de Victor',
@@ -130,7 +130,7 @@ const en = {
     route: { read: 'reads: to {addr}', via: '→ the cable to {dir}', here: 'my own address: I keep it', dir: { i: 'the provider', b: 'Bob' } },
     secret: 'secret', public: 'public', shared: 'shared key',
     pubOf: { a: 'Alice’s public key', v: 'Victor’s public key' },
-    crowd: { head: 'opens every tunnel, reads:', line: '{addr} → {name}', when: 'the time, the size of each' },
+    crowd: { head: 'opens every tunnel, reads:', line: '{from} → {to} {name}', when: 'the time, the size of each' },
   },
   card: {
     map: 'The addresses', cafe: 'the café (its Wi-Fi box)', bob: 'Bob’s site', vpn: 'Victor’s VPN server',

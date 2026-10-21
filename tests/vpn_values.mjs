@@ -115,8 +115,11 @@ check('tunnel: Bob sees the VPN\'s address, not the café\'s', N.sees('b', { tun
 check('no tunnel: nothing passes through the VPN', N.sees('v', {}).content, null);
 check('route through the tunnel', N.route(true).join(''), 'awivb');
 // Victor's other customers (step 12): documentation addresses (RFC 5737), example names (RFC 2606)
-check('other customers: RFC 5737 addresses, .example names', N.OTHERS.every(o => /^(192\.0\.2|198\.51\.100|203\.0\.113)\.\d{1,3}$/.test(o.addr) && o.name.endsWith('.example'))
-  && new Set(N.OTHERS.map(o => o.addr).concat(Object.values(N.ADDR))).size === N.OTHERS.length + 3, true);
+// each has its own source and destination, all distinct, so Victor's tag reads every line as from → to name (r366)
+check('other customers: RFC 5737 addresses, .example names', N.OTHERS.every(o => [o.from, o.to].every(a => /^(192\.0\.2|198\.51\.100|203\.0\.113)\.\d{1,3}$/.test(a)) && o.name.endsWith('.example'))
+  && new Set(N.OTHERS.flatMap(o => [o.from, o.to]).concat(Object.values(N.ADDR))).size === 2 * N.OTHERS.length + 3, true);
+// Victor's crowd tag on a phone (step 12) has room for lines as long as Alice's, not more (r366)
+check('other customers: no tag line longer than Alice\'s', N.OTHERS.every(o => `${o.from} → ${o.to} ${o.name}`.length <= `${N.ADDR.cafe} → ${N.ADDR.bob} ${N.NAME}`.length), true);
 
 // THE WORDS: every address, byte group and count the story, the tags and the quiz write is the page's
 for (const [l, d] of Object.entries(DICTS)) {

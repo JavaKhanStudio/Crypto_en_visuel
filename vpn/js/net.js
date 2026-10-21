@@ -8,12 +8,12 @@ import { seal, open, poly1305, chachaBlock } from './aead.js';
 // Addresses from the ranges set aside for documentation (RFC 5737): no real machine answers them.
 export const ADDR = { cafe: '203.0.113.7', bob: '198.51.100.20', vpn: '192.0.2.44' };
 export const NAME = 'bob.example';          // a name set aside for examples (RFC 2606)
-// Victor's other customers (step 12, r360): each one's tunnel ends at his server too, so he reads where
-// each goes. Documentation addresses and example names, like the rest.
+// Victor's other customers (step 12, r360): each one's tunnel ends at his server too, so he reads who
+// sends it (from) and where it goes (to, name), as for Alice (r366); no line longer than hers, or a phone has no room for the tag. Documentation addresses and example names, like the rest.
 export const OTHERS = [
-  { addr: '198.51.100.61', name: 'shop.example' },
-  { addr: '203.0.113.142', name: 'news.example' },
-  { addr: '192.0.2.203', name: 'mail.example' },
+  { from: '192.0.2.8', to: '198.51.100.61', name: 'shop.example' },
+  { from: '192.0.2.71', to: '203.0.113.142', name: 'news.example' },
+  { from: '198.51.100.9', to: '192.0.2.203', name: 'mail.example' },
 ];
 
 // ---------- WireGuard, cut to one exchange ----------

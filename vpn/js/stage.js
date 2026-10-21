@@ -151,7 +151,7 @@ export class Stage {
       : [[w.twoPubs, '#fff'], [`${hex(PUBLIC.a, 4)}… ${hex(PUBLIC.v, 4)}…`, '#5fb0ff'], [w.noSecret, '#9aa3b5']];
     if (st.what === 'dns' && who !== 'v' && who !== 'b') return [[t('tag.asks', { name: NAME }), '#fff'], [t('tag.answer', { addr: ADDR.bob }), '#fff']];
     if (st.dropped && who === 'v') return [[w.badTag, '#ff8f9a'], [w.thrown, '#ff8f9a']];
-    if (st.crowd !== null && who === 'v') return [[w.crowd.head, '#fff'], [t('tag.crowd.line', { addr: ADDR.cafe, name: `${ADDR.bob} ${NAME}` }), '#ffb3bb'],
+    if (st.crowd !== null && who === 'v') return [[w.crowd.head, '#fff'], [t('tag.crowd.line', { from: ADDR.cafe, to: ADDR.bob, name: NAME }), '#ffb3bb'],
       ...OTHERS.slice(0, st.crowd).map(o => [t('tag.crowd.line', o), '#ffb3bb']), [w.crowd.when, '#d9d2c0']];
     const s = sees(who, st), L = [];
     if (s.content === null) return [[w.nothing, '#9aa3b5']];
