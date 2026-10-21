@@ -12,7 +12,7 @@ import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Quiz } from '../../lib/quiz.js';
 import { sfx } from '../../lib/sound.js';
 import { Room } from './room.js';
-import { Bubbles } from './bubbles.js';
+import { Bubbles } from '../../lib/bubbles.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
 import { QUIZ } from './quiz-data.js';
@@ -47,7 +47,7 @@ function resize() {
 addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
-const bubbles = new Bubbles(camera); bubbles.instant = instant;
+const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
