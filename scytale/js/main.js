@@ -41,7 +41,7 @@ stage.onChange = () => renderCard(stage);
 const rig = new CameraRig(camera, canvas);
 if (instant) { const fly = rig.fly.bind(rig); rig.fly = shot => fly(shot, .001); }
 
-const composer = qualityComposer(renderer, document.getElementById('quality'));
+const composer = qualityComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .45, .5, .9));
 composer.addPass(new OutputPass());
