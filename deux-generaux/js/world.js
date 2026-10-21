@@ -1,6 +1,7 @@
 // The valley: terrain, sky, the two castles, Eve's city, the road between them.
 // Everything is built from primitives in code: no model files to load.
 import * as THREE from 'three';
+import { buildHumanCastle, buildElfCastle } from './castles.js';
 
 export const CASTLE_A = new THREE.Vector3(-70, 0, 0);
 export const CASTLE_B = new THREE.Vector3(70, 0, 0);
@@ -138,7 +139,8 @@ function tower(r, h, roofColor, { roof = true, windows = 2, stone = M.stone, tri
   if (roof) {
     // spiky: a tall needle instead of a cone roof
     const rh = spiky ? h * 1.1 : h * .55, cone = new THREE.Mesh(new THREE.ConeGeometry(r * (spiky ? 1.05 : 1.35), rh, spiky ? 6 : 12), M.roof(roofColor));
-    cone.position.y = h + 1.25 + rh / 2; cone.castShadow = true; g.add(cone);
+    // on the ring's top, inside the merlons: at h + 1.25 it floated over them, sky between (r262)
+    cone.position.y = h + .3 + rh / 2; cone.castShadow = true; g.add(cone);
   }
   for (let i = 0; i < windows; i++) {
     const a = i / windows * Math.PI * 2 + .4, w = new THREE.Mesh(new THREE.BoxGeometry(.35, .7, .2), win);
@@ -167,35 +169,6 @@ export function flag(color, w = 4, h = 2.4) {
   const cloth = new THREE.Mesh(geo, mat); cloth.position.y = 6 - h / 2; cloth.castShadow = true; g.add(cloth);
   flags.push({ geo, base: Float32Array.from(geo.attributes.position.array), w, phase: Math.random() * 6 });
   g.userData.cloth = cloth;
-  return g;
-}
-
-// ---------- castles ----------
-function buildCastle(team, facing) {
-  const color = COLORS[team], g = new THREE.Group();
-  const S = 17, H = 5.5;
-  const sides = [[0, -S / 2, 0], [0, S / 2, 0], [-S / 2, 0, Math.PI / 2], [S / 2, 0, Math.PI / 2]];
-  for (const [x, z, ry] of sides) { const w = wall(S, H, 1.4); w.position.set(x, 0, z); w.rotation.y = ry; g.add(w); }
-  for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const t = tower(2.3, 10, color); t.position.set(x * S / 2, 0, z * S / 2); g.add(t); }
-  // gate, on the wall facing +x (the group is rotated so it faces the road)
-  const gate = new THREE.Mesh(new THREE.BoxGeometry(.6, 3.6, 3.2), M.gate); gate.position.set(S / 2 + .5, 1.8, 0); g.add(gate);
-  const arch = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, .62, 12, 1, false, 0, Math.PI), M.gate);
-  arch.rotation.z = Math.PI / 2; arch.rotation.y = Math.PI / 2; arch.position.set(S / 2 + .5, 3.6, 0); g.add(arch);
-  for (const z of [-2.4, 2.4]) { const gt = tower(1.4, 8, color, { windows: 1 }); gt.position.set(S / 2 + .6, 0, z); g.add(gt); }
-  // keep
-  const keep = new THREE.Mesh(new THREE.BoxGeometry(7, 13, 7), M.stone); keep.position.y = 6.5; keep.castShadow = keep.receiveShadow = true; g.add(keep);
-  merlons(g, 16, i => { const side = i >> 2, k = (i % 4) / 3 * 6 - 3; const p = [[k, -3.4], [k, 3.4], [-3.4, k], [3.4, k]][side]; return [p[0], 13.45, p[1]]; });
-  for (let i = 0; i < 8; i++) { const w = new THREE.Mesh(new THREE.BoxGeometry(.25, 1, .6), M.window); const side = i % 4, y = 5 + (i >> 2) * 4;
-    const p = [[3.52, 0], [-3.52, 0], [0, 3.52], [0, -3.52]][side]; w.position.set(p[0], y, p[1]); if (side > 1) w.rotation.y = Math.PI / 2; g.add(w); }
-  const top = tower(2.2, 7, color, { windows: 2 }); top.position.y = 13; g.add(top);
-  const f = flag(color); f.position.set(0, 13 + 7 + 4.5, 0); f.scale.setScalar(.9); g.add(f);
-  // courtyard ground
-  const yard = new THREE.Mesh(new THREE.CylinderGeometry(S * .72, S * .78, .6, 24), M.darkStone); yard.position.y = -.25; yard.receiveShadow = true; g.add(yard);
-  // team glow: a ring of light at the foot, picked up by bloom
-  const glow = new THREE.Mesh(new THREE.TorusGeometry(S * .78, .12, 6, 64), new THREE.MeshBasicMaterial({ color }));
-  glow.rotation.x = Math.PI / 2; glow.position.y = .15; g.add(glow);
-  g.rotation.y = facing;
-  g.userData = { team, flag: f, glow };
   return g;
 }
 
@@ -248,8 +221,8 @@ function buildCity() {
   const spotGeo = new THREE.CircleGeometry(BEAM.radius, 40, 0, Math.PI * 2); spotGeo.rotateX(-Math.PI / 2);
   const spot = new THREE.Mesh(spotGeo, new THREE.MeshBasicMaterial({ color: 0xff3a30, transparent: true, opacity: .45, blending: THREE.AdditiveBlending, depthWrite: false }));
   spot.userData.base = Float32Array.from(spotGeo.attributes.position.array); spot.renderOrder = 2; g.add(spot);
-  // on the needle of the west gate tower (h 7.5, needle tip at 7.5 + 1.25 + 7.5 * 1.1), flying over the gate
-  const f = flag(COLORS.e, 5, 3); f.position.set(-2.6, 16.6, R); g.add(f);
+  // on the needle of the west gate tower (h 7.5, needle tip at 7.5 + .3 + 7.5 * 1.1), flying over the gate
+  const f = flag(COLORS.e, 5, 3); f.position.set(-2.6, 15.65, R); g.add(f);
   g.position.copy(CITY);
   g.userData = { eye, fireLight, pivot, beam, spot, flag: f, spire, fall: 0, target: new THREE.Vector3() };
   return g;
@@ -384,12 +357,14 @@ export function buildWorld(scene) {
   moonLight.position.set(-50, 130, 90); moonLight.castShadow = true;
   moonLight.shadow.mapSize.set(2048, 2048);
   Object.assign(moonLight.shadow.camera, { left: -110, right: 110, top: 70, bottom: -70, near: 10, far: 400 });
-  moonLight.shadow.bias = -.0008; scene.add(moonLight);
+  // normalBias: without it the flat tops (house roofs, the white city's tier rims) wore stripes of shadow acne (r262)
+  moonLight.shadow.bias = -.0008; moonLight.shadow.normalBias = .06; scene.add(moonLight);
 
   scene.add(buildTerrain());
   const road = buildRoad(); scene.add(road.mesh);
-  const castleA = buildCastle('a', 0); castleA.position.copy(CASTLE_A); scene.add(castleA);
-  const castleB = buildCastle('b', Math.PI); castleB.position.copy(CASTLE_B); scene.add(castleB);
+  // Middle-earth's castles (d7, r262): Alice the humans' white city, Bob the elves' towers (js/castles.js)
+  const castleA = buildHumanCastle('a', 0); castleA.position.copy(CASTLE_A); scene.add(castleA);
+  const castleB = buildElfCastle('b', Math.PI); castleB.position.copy(CASTLE_B); scene.add(castleB);
   const city = buildCity(); scene.add(city);
   scene.add(buildTrees(road));
   scene.add(buildTorches(road));

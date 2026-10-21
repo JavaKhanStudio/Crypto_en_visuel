@@ -1,7 +1,7 @@
 <!doctype html>
-<!-- r192 lab: the episode's own valley (js/world.js, Eve's city and the Eye in the middle) with the two keeps swapped for the
-     prototypes of js/castles.js: humans (a white city of tiers) and elves (towers and a mallorn). Nothing here is in the episode.
-     Query: ?set=old|new  ?west=human|elf (which one is Alice's)  ?view=over|a|b|gateA|gateB|both  ?dawn=0..1   (tools/shoot.py --page deux-generaux/lab/castles.html) -->
+<!-- r192 lab, since d7 (r262) the episode's own castles: the valley of js/world.js with Alice's white city (humans) and
+     Bob's towers (elves) from js/castles.js, to look at them close up without playing the story.
+     Query: ?view=over|a|b|gateA|gateB  ?dawn=0..1  ?cam=x,y,z,tx,ty,tz   (tools/shoot.py --page deux-generaux/lab/castles.html) -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Two Generals: castles of Middle-earth (lab)</title>
 <script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
@@ -17,8 +17,6 @@
 </style></head><body>
 <canvas id="scene"></canvas>
 <div id="ui">
-  <div><span>castles</span><button data-k="set" data-v="old">today's keeps</button><button data-k="set" data-v="new">Middle-earth</button></div>
-  <div><span>Alice (west, blue)</span><button data-k="west" data-v="human">humans</button><button data-k="west" data-v="elf">elves</button></div>
   <div><span>view</span><button data-k="view" data-v="over">valley</button><button data-k="view" data-v="a">Alice</button><button data-k="view" data-v="b">Bob</button><button data-k="view" data-v="gateA">gate A</button><button data-k="view" data-v="gateB">gate B</button></div>
   <div><span>sky</span><button data-k="dawn" data-v="0">night</button><button data-k="dawn" data-v="1">dawn</button></div>
 </div>
@@ -32,10 +30,10 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld, CASTLE_A, CASTLE_B } from '../js/world.js';
 import { SHOTS } from '../js/camera.js';
-import { buildHumanCastle, buildElfCastle } from '../js/castles.js';
 
 const q = new URLSearchParams(location.search);
-const st = { set: q.get('set') || 'new', west: q.get('west') || 'elf', view: q.get('view') || 'over', dawn: q.get('dawn') || '0' };
+let cam = q.get('cam')?.split(',').map(Number);
+const st = { view: q.get('view') || 'over', dawn: q.get('dawn') || '0' };
 
 // the renderer exactly as js/main.js sets it, so the castles are judged in the episode's own light
 const canvas = document.getElementById('scene');
@@ -66,25 +64,14 @@ const VIEWS = {
   gateB: { pos: v(40, 20, 28), target: v(CASTLE_B.x - 4, CASTLE_B.y + 6, 0) },
 };
 
-// the old keeps stay in the scene, hidden, so 'today' and 'Middle-earth' flip without a rebuild
-const made = { human: {}, elf: {} };
-const build = { human: buildHumanCastle, elf: buildElfCastle };
-function castle(kind, team) {
-  if (!made[kind][team]) {
-    const c = build[kind](team, team === 'a' ? 0 : Math.PI);
-    c.position.copy(team === 'a' ? CASTLE_A : CASTLE_B); scene.add(c); made[kind][team] = c;
-  }
-  return made[kind][team];
-}
 function apply() {
-  const fresh = st.set === 'new', east = st.west === 'elf' ? 'human' : 'elf';
-  world.castleA.visible = world.castleB.visible = !fresh;
-  for (const k of ['human', 'elf']) for (const t of ['a', 'b']) if (made[k][t]) made[k][t].visible = false;
-  if (fresh) { castle(st.west, 'a').visible = true; castle(east, 'b').visible = true; }
-  const s = VIEWS[st.view]; camera.position.copy(s.pos); controls.target.copy(s.target); controls.update();
+  const s = VIEWS[st.view]; camera.position.copy(s.pos); controls.target.copy(s.target);
+  // ?cam=x,y,z,tx,ty,tz: any close-up, for the detail fixes of r262; the first view only, the buttons then fly as before
+  if (cam?.length === 6) { camera.position.set(cam[0], cam[1], cam[2]); controls.target.set(cam[3], cam[4], cam[5]); cam = null; }
+  controls.update();
   world.setDawn(+st.dawn);
   for (const b of document.querySelectorAll('#ui button')) b.classList.toggle('on', st[b.dataset.k] === b.dataset.v);
-  document.getElementById('who').textContent = fresh ? `Alice (west): ${st.west === 'elf' ? 'elves' : 'humans'} · Bob (east): ${east === 'elf' ? 'elves' : 'humans'} · Eve: the black city` : 'today\'s twin keeps';
+  document.getElementById('who').textContent = 'Alice (west): humans · Bob (east): elves · Eve: the black city';
 }
 document.getElementById('ui').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;

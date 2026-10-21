@@ -342,6 +342,8 @@ deux-generaux/      l'épisode 1 :
   css/style.css
   js/main.js          rendu, bloom, boucle, modes
   js/world.js         terrain, châteaux, ville d'Eve, route, ciel, aube
+  js/castles.js       les deux châteaux de la Terre du Milieu : la cité blanche des humains (Alice), les tours des elfes (Bob)
+  lab/castles.html    les mêmes de près, sans l'histoire (?view=, ?cam=x,y,z,tx,ty,tz)
   js/camera.js        plans nommés, vols, poursuite d'un messager
   js/messenger.js     un cavalier : livré ou capturé (le faux cavalier refusé au HMAC y reste pour l'épisode 1.3)
   js/sim.js           le protocole : numéros de message, qui sait quoi, l'aube

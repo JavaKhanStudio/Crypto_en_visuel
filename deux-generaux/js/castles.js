@@ -1,10 +1,10 @@
-// r192 PROTOTYPE, not wired into the episode: two castles in Middle-earth's manner, tried in
-// lab/castles.html in place of buildCastle()'s twin keeps. Humans: a white city of tiers on its
-// hill, a rock spur splitting it, a citadel tower and a white tree on top. Elves: no walls,
-// slender towers with leaf spires, arches between them, a golden mallorn in the middle.
-// Same contract as buildCastle(team, facing): the gate faces local +x, about 9 m out, where the
-// road ends; userData { team, flag, glow }; the team colour sits on the flag, the roofs or spires
-// and the ring of light at the foot, so the story's colour code (Alice blue, Bob gold) holds.
+// Episode 1's two castles in Middle-earth's manner (r192 prototype, wired by d7/r262: Alice gets the
+// humans, Bob the elves). Humans: a white city of tiers on its hill, a rock spur splitting it, a
+// citadel tower and a white tree on top. Elves: no walls, slender towers with leaf spires, arches
+// between them, a golden mallorn in the middle. Tried close up in lab/castles.html.
+// Contract (the old keeps'): the gate faces local +x, about 9 m out, where the road ends;
+// userData { team, flag, glow }; the team colour sits on the flag, the roofs or spires and the ring
+// of light at the foot, so the story's colour code (Alice blue, Bob gold) holds.
 import * as THREE from 'three';
 import { COLORS, M, flag } from './world.js';
 
@@ -41,7 +41,8 @@ export function buildHumanCastle(team, facing) {
   TIERS.forEach(({ r, top }, i) => {
     const base = i ? TIERS[i - 1].top : -4;
     add(g, new THREE.CylinderGeometry(r, r * 1.02, top - base, 36), WHITE, 0, (top + base) / 2, 0);
-    add(g, new THREE.CylinderGeometry(r * 1.03, r * 1.03, .35, 36), WHITE_TRIM, 0, top - .2, 0);
+    // the rim stands .1 proud of the terrace: .025 below it, the two faces fought for depth in stripes (r262)
+    add(g, new THREE.CylinderGeometry(r * 1.03, r * 1.03, .4, 36), WHITE_TRIM, 0, top - .1, 0);
     const n = Math.round(r * 5.4);
     many(g, new THREE.BoxGeometry(.5, .7, .4), WHITE_TRIM, n, k => { const a = k / n * Math.PI * 2; return [Math.cos(a) * r * 1.02, top + .3, Math.sin(a) * r * 1.02, -a]; });
     // lit windows on the wall face, none behind the spur
@@ -51,8 +52,10 @@ export function buildHumanCastle(team, facing) {
     if (i < TIERS.length - 1) {
       const rr = (r + TIERS[i + 1].r) / 2, h = 22 - i * 5, sp = [];
       for (let k = 0; k < h; k++) { const a = k / h * Math.PI * 2 + i * .4; if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) > .32) sp.push(a); }
-      many(g, new THREE.BoxGeometry(1, 1.1, .9), WHITE, sp.length, k => [Math.cos(sp[k]) * rr, top + .55, Math.sin(sp[k]) * rr, -sp[k], 1, .8 + (k % 3) * .25, 1]);
-      many(g, new THREE.ConeGeometry(.78, .7, 4), SLATE, sp.length, k => [Math.cos(sp[k]) * rr, top + 1.1 + (.8 + (k % 3) * .25) * 1.1 / 2 + .05, Math.sin(sp[k]) * rr, -sp[k] + Math.PI / 4]);
+      // each roof's base sits on its house's top face, a hair lower so no gap shows (r262: they floated .25 above)
+      const hh = k => 1.1 * (.8 + (k % 3) * .25);
+      many(g, new THREE.BoxGeometry(1, 1.1, .9), WHITE, sp.length, k => [Math.cos(sp[k]) * rr, top + hh(k) / 2, Math.sin(sp[k]) * rr, -sp[k], 1, hh(k) / 1.1, 1]);
+      many(g, new THREE.ConeGeometry(.78, .7, 4), SLATE, sp.length, k => [Math.cos(sp[k]) * rr, top + hh(k) + .35 - .02, Math.sin(sp[k]) * rr, -sp[k] + Math.PI / 4]);
     }
   });
   // the spur: a prow of rock from the top tier down to the gate, splitting the tiers
