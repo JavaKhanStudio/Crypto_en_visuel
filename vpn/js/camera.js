@@ -21,6 +21,9 @@ export const SHOTS = {
   tunnel:   { pos: v(-20, 20, 20), target: v(-12, 2, -12) },
   // on a phone held upright the VPN's racks from further down the street, not through the house behind
   vpnPhone: { pos: v(-11.5, 4.2, -15), target: v(-13.5, 1, -32) },
+  // who sees what (steps 11, 13, 14): the map whole, left of the corner card and above the step card, so every
+  // watcher's tag reads in full (r225)
+  seen:     { pos: v(20, 74, 84), target: v(20, 0, 2) },
   // the sandbox: its panel covers the left of a desktop screen, so the map sits right of centre
   sandbox:  { pos: v(-16, 60, 36), target: v(-14, 0, -19) },
 };
@@ -32,6 +35,8 @@ export function forPhone(s, back = 1.6, low = .24) {
   const dir = s.pos.clone().sub(s.target).multiplyScalar(back), d = dir.length();
   return { pos: s.target.clone().add(dir), target: s.target.clone().add(v(0, -low * d, 0)) };
 }
+// on a phone, 'seen' is framed as the overview was: no corner card to keep clear there
+SHOTS.seenPhone = forPhone(SHOTS.overview);
 const pick = shot => {
   const s = typeof shot === 'string' ? SHOTS[shot] : shot;
   if (!portrait()) return s;

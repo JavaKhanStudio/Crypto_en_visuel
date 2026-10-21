@@ -61,9 +61,20 @@ export class Stage {
       p.material.depthTest = true;
       p.onBeforeRender = (r, sc, cam) => { p.material.opacity = Math.min(1, Math.max(0, (cam.position.distanceTo(p.position) - 24) / 14)); };
     }
+    // seen from far (the map whole), a watcher's tag hangs down from the body instead of sitting on it,
+    // so the speaker's bubble, drawn up from the head, never lands on its top lines (r225)
+    // Victor's stands to his left instead: hanging, it would fall on the provider's, right below it on the map.
+    // They draw over the places' names.
+    for (const [k, s] of Object.entries(this.tags)) {
+      s.renderOrder = 30;   // tag() gives 20, the places keep it
+      if (k !== 'i') s.onBeforeRender = (r, sc, cam) => {
+        const far = cam.position.distanceTo(s.position) > 30;
+        s.center.set(far && k === 'v' ? 1.08 : .5, far && k !== 'v' ? 1 : .5);
+      };
+    }
     // each place's name over the back of its roof, clear of the watchers' tags at the front
     this.places.cafe.position.set(SPOTS.cafe.x, 7.6, SPOTS.cafe.z - 2.5);
-    this.places.isp.position.set(SPOTS.isp.x, 11.4, SPOTS.isp.z - 3);
+    this.places.isp.position.set(SPOTS.isp.x + 9, 11.4, SPOTS.isp.z - 3);   // east of the roof: Victor's tag, seen whole, stands west of it (r225)
     this.places.vpn.position.set(SPOTS.vpn.x, 8, SPOTS.vpn.z - 2.5);
     this.places.bob.position.set(SPOTS.bob.x, 7.6, SPOTS.bob.z - 2);
     this.tags.i.position.copy(NODES.i).add(v(0, -.6, .8));
