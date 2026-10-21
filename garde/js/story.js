@@ -5,6 +5,7 @@
 // land somewhere consistent), flies the camera, pins its bubbles, and offers buttons.
 import { t, raw, lang, onLang } from './i18n.js';
 import { KEY, MSG_A, MSG_E, MAC_A, guess } from './data.js';
+import { portrait } from './camera.js';
 
 // A story step's state for the stage (see Stage.apply): the guard on duty, the message Eve is
 // after, the prefix she has recovered so far, and which corner card to show.
@@ -14,7 +15,9 @@ const safe = { guard: 'cd', msg: MSG_E, table: { kind: 'safe' } };
 const recap = { guard: 'cd', msg: MSG_E, table: { kind: 'recap' } };
 
 export const STEPS = [
-  { id: 's1', ch: 0, shot: 'intro', orbit: .02, state: code, say: ['a', 'b', 'e'] },
+  // r219 (Simon's pick B): a phone has room above the panel for one bubble, so there the three
+  // speak in turns, each bubble replacing the one before; the desktop keeps all three at once
+  { id: 's1', ch: 0, shot: 'intro', orbit: .02, state: code, say: ['a', 'b', 'e'], turns: ['a', 'e', 'b'] },
   { id: 's2', ch: 0, shot: 'booth', state: code, go: async x => {
       x.apply(); const r = await x.stage.present('a', MSG_A, MAC_A); if (!r) return;
       await x.fly('gate'); if (!await x.stage.answer(r)) return; x.say('a');
@@ -80,7 +83,24 @@ export class Story {
     });
     this.render();
     // bubbles appear once the camera has mostly arrived
-    setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : 1300);
+    setTimeout(() => {
+      if (tok !== this.token) return;
+      if (step.turns && portrait()) this.turns(step.turns, tok); else for (const s of step.say || []) this.say(s);
+    }, c.instant ? 0 : 1300);
+  }
+
+  // one bubble at a time: each stays long enough to be typed in and read, then gives way to the next;
+  // the last one stays
+  turns(list, tok, k = 0) {
+    if (tok !== this.token) return;
+    this.say(list[k]);
+    if (k === list.length - 1) return;
+    const hold = 1500 + raw('steps')[STEPS[this.i].id][list[k]].length * 50;
+    setTimeout(() => {
+      if (tok !== this.token) return;
+      this.ctx.bubbles.hide('story-' + list[k]); this.said.delete(list[k]);
+      setTimeout(() => this.turns(list, tok, k + 1), 400);   // the old bubble fades out first
+    }, hold);
   }
 
   say(who, key = who) {
