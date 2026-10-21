@@ -31,15 +31,22 @@ export const SHOTS = {
   slate:    { pos: v(7, 25, 4), target: v(7, 17.4, -42) },
   bombe:    { pos: v(18, 17, 6), target: v(30, 11, -38) },
   eveWide:  { pos: v(6, 30, 34), target: v(8, 14, -40) },
-  // on a phone held upright (narrow view, the step panel over the lower half), the slate and the
-  // bombe from further back, high in the frame: shot + 'Phone' replaces the shot there
-  slatePhone: { pos: v(0, 24, 32), target: v(0, 4, -42) },
+  menu:     { pos: v(7, 25, 4), target: v(7, 17.4, -42) },   // the slate again, for the menu: drawn (step 8), its loop (9)
+  menuDraw: { pos: v(7, 25, 4), target: v(7, 17.4, -42) },
+  // on a phone held upright (narrow view, the step panel over the lower half): shot + 'Phone'
+  // replaces the shot there. The slate close, its three rows of tiles ~20 px, panned along x with
+  // the crib's place (follow: rig.follow); the menu's loop E-B-R-T high in the frame, its outer letters (H X F, C M I W S) off it (r147)
+  slatePhone: { pos: v(0, 17, -4), target: v(0, 13.5, -42), follow: true },
+  menuPhone: { pos: v(-1, 16, -12), target: v(-1, 8.4, -42) },   // the trace's tags (B→S) clear of the top controls
+  menuDrawPhone: { pos: v(-1, 16, -10), target: v(-1, 7.3, -42) },   // a little higher: Eve's bubble fits under T
   bombePhone: { pos: v(22, 22, 30), target: v(32, 2, -38) },
   bobMachine: machineShot('b'),
   bobDrum:  drumShot('b'),
 };
 
 const pick = shot => typeof shot !== 'string' ? shot : (innerWidth < innerHeight && SHOTS[shot + 'Phone']) || SHOTS[shot];
+// a follow shot moved along x by the rig's follow() (null: where it is)
+const along = (s, dx) => !s.follow || dx == null ? s : { ...s, pos: s.pos.clone().setX(s.pos.x + dx), target: s.target.clone().setX(s.target.x + dx) };
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 export class CameraRig {
@@ -48,13 +55,15 @@ export class CameraRig {
     this.controls = new OrbitControls(camera, dom);
     Object.assign(this.controls, { enableDamping: true, dampingFactor: .07, maxPolarAngle: Math.PI * .47, minDistance: 2, maxDistance: 600 });
     this.flight = null; this.orbit = 0;
+    // follow: () => x or null, set by the story; a shot with follow: true keeps its x on it
+    this.follow = null; this.tracking = false; this.fx = 0;
     camera.position.copy(SHOTS.wide.pos); this.controls.target.copy(SHOTS.wide.target);
   }
 
   // Fly to a shot (name or {pos,target}). The path arcs upward a little so long
   // moves read as a swoop rather than a slide. Resolves when it lands.
   fly(shot, duration = 2.2) {
-    const s = pick(shot);
+    const s = this.aim(pick(shot));
     return new Promise(res => {
       const from = { pos: this.camera.position.clone(), target: this.controls.target.clone() };
       const lift = Math.min(40, from.pos.distanceTo(s.pos) * .18);
@@ -64,9 +73,15 @@ export class CameraRig {
 
   // Cut straight to a shot, no flight (used by screenshots and reduced motion).
   jump(shot) {
-    const s = pick(shot);
+    const s = this.aim(pick(shot));
     this.flight = null;
     this.camera.position.copy(s.pos); this.controls.target.copy(s.target); this.camera.lookAt(s.target);
+  }
+
+  aim(s) {
+    this.tracking = !!s.follow && !!this.follow;
+    this.fx = this.tracking ? this.follow() ?? 0 : 0;
+    return along(s, this.tracking ? this.fx : null);
   }
 
   setOrbit(speed) { this.orbit = speed; }
@@ -82,6 +97,11 @@ export class CameraRig {
       this.camera.lookAt(c.target);
       if (f.t >= 1) { this.flight = null; f.res(); }
       return;
+    }
+    const want = this.tracking ? this.follow() : null;
+    if (want != null && Math.abs(want - this.fx) > .01) {   // the crib moved: pan with it
+      const d = (want - this.fx) * Math.min(1, dt * 5);
+      this.camera.position.x += d; c.target.x += d; this.fx += d;
     }
     if (this.orbit) {
       const off = this.camera.position.clone().sub(c.target);

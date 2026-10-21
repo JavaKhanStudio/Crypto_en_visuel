@@ -64,10 +64,10 @@ export const STEPS = [
   { id: 's7', ch: 2, shot: 'slate', state: SLATE(0, { 0: 'out' }), go: async x => {
       x.apply(); if (!await x.stage.slide(CIPHER.length - CRIB.length, .7)) return; x.say('e');
     } },
-  { id: 's8', ch: 3, shot: 'slate', state: MENU0, go: async x => {
+  { id: 's8', ch: 3, shot: 'menuDraw', state: MENU0, go: async x => {
       x.apply(); if (!await x.stage.drawMenu(.5)) return; x.say('e');
     } },
-  { id: 's9', ch: 3, shot: 'slate', state: MENU, go: async x => {
+  { id: 's9', ch: 3, shot: 'menu', state: MENU, go: async x => {
       x.apply(); if (!await x.stage.trace('A', 1.1)) return;
       if (!await x.stage.wait(1.6)) return;
       if (!await x.stage.trace('R', 1.1)) return; x.say('e');
@@ -105,6 +105,10 @@ export class Story {
     this.el.next.onclick = () => this.go(this.i + 1);
     this.said = new Map();   // bubble id -> text key, to re-say them after a language switch
     onLang(() => { this.ctx.stage.relabel(); this.render(true); });
+    // on a phone the slate shot pans with the crib: the x of its middle column (r147)
+    // Eve's tags and the slate's tiles are walls for the bubbles (r147)
+    ctx.bubbles.avoid = () => [...Object.values(ctx.stage.names.e), ...ctx.stage.slateG.children.filter(o => o.isSprite)];
+    ctx.rig.follow = () => { const sl = ctx.stage.st.slate; return sl && Number.isFinite(sl.k) ? ctx.stage.colX(sl.k + (sl.crib.length - 1) / 2, sl.cipher.length) : null; };
   }
 
   state(i = this.i) { return STEPS[i].state; }

@@ -11,8 +11,29 @@ const tmp = new THREE.Vector3();
 // starts where its speaker wants it; then, a few rounds over, two bubbles that overlap push apart along
 // the shorter way out, and a bubble on a wall steps off it the shorter way, all inside the screen.
 const GAP = 6, WALLS = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz'];
-function walls() {
-  const out = [];
+// The tags floating in the scene (a rotor's 'I · A', 'réflecteur B', 'entrée', the slate's tiles; copied
+// from 5.2's r125 by r147) are walls too: story.js sets bubbles.avoid to the list of those sprites, and
+// each visible one walls off its box on screen.
+const right = new THREE.Vector3(), up = new THREE.Vector3(), c = new THREE.Vector3(), q = new THREE.Vector3();
+function tagBoxes(camera, sprites) {
+  const out = [], w = innerWidth, h = innerHeight;
+  right.setFromMatrixColumn(camera.matrixWorld, 0); up.setFromMatrixColumn(camera.matrixWorld, 1);
+  for (const s of sprites) {
+    if (!s.visible || !s.parent || s.material.opacity < .5) continue;
+    s.getWorldPosition(c);
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, behind = false;
+    for (const [i, j] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      q.copy(c).addScaledVector(right, i * s.scale.x / 2).addScaledVector(up, j * s.scale.y / 2).project(camera);
+      if (q.z > 1) behind = true;
+      const x = (q.x * .5 + .5) * w, y = (-q.y * .5 + .5) * h;
+      x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    }
+    if (!behind) out.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, text: s.userData.text });
+  }
+  return out;
+}
+function walls(extra = []) {
+  const out = [...extra];
   for (const id of WALLS) {
     const el = document.getElementById(id);
     if (!el || el.classList.contains('hidden') || !el.offsetHeight) continue;
@@ -21,8 +42,8 @@ function walls() {
   }
   return out;
 }
-function settle(boxes, bounds) {
-  const ws = walls();
+function settle(boxes, bounds, extra) {
+  const ws = walls(extra);
   const clamp = b => { b.x = Math.min(bounds.r - b.w, Math.max(bounds.l, b.x)); b.y = Math.min(bounds.b - b.h, Math.max(bounds.t, b.y)); };
   boxes.forEach(clamp);
   for (let round = 0; round < 60; round++) {
@@ -66,7 +87,9 @@ function settle(boxes, bounds) {
 }
 
 export class Bubbles {
-  constructor(camera) { this.camera = camera; this.items = new Map(); }
+  constructor(camera) { this.camera = camera; this.items = new Map(); this.avoid = () => []; }
+  // the tags' boxes on screen, for the bubbles to keep off and for tools/story_shot.py to check
+  tagBoxes() { return tagBoxes(this.camera, this.avoid()); }
 
   // who: 'a' | 'b' | 'e' | 'n'. anchor: Vector3, Object3D or () => Vector3.
   show(id, who, text, anchor, { lift = 0, ttl = 0 } = {}) {
@@ -121,7 +144,7 @@ export class Bubbles {
       it.el.style.visibility = behind ? 'hidden' : 'visible';
       if (!behind) boxes.push({ it, ax: x, x: cx, y: cy, w: bw, h: bh });
     }
-    settle(boxes, { l: 8, r: w - 8, t: top, b: h - 8 });
+    if (boxes.length) settle(boxes, { l: 8, r: w - 8, t: top, b: h - 8 }, this.tagBoxes());
     for (const b of boxes) {
       b.it.el.style.transform = `translate(${b.x}px, ${b.y}px)`;
       b.it.el.style.setProperty('--tail', `${Math.min(b.w - 16, Math.max(16, b.ax - b.x))}px`);   // the tail still points at the speaker
