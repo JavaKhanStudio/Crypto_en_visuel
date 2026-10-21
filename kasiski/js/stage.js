@@ -78,8 +78,8 @@ export class Stage {
     if (k === 'a') return this.st.lane ? this.people.a.position.clone().add(v(0, 2.1, 0)) : this.car.position.clone().add(v(-.1, 1.75, .4));
     if (k === 'kw') return this.kwheel.position.clone().add(v(0, 1.3, 0));
     if (k === 'bars') return this.barsAt.clone().add(v(0, 3.6, 0));
-    // on a phone, while Eve reads the arcs from behind the lane, her bubble keeps to the top, off the arcs
-    const up = big() > 1 && this.st.arcs && !this.st.bars && !this.st.key ? 30 : 0;
+    // on a phone, while Eve reads the arcs (from behind the lane, or beside her bars in step 10), her bubble keeps to the top, off the arcs
+    const up = big() > 1 && this.st.arcs && (!this.st.bars || this.st.barsNear) && !this.st.key ? 30 : 0;
     return this.people.e.position.clone().add(v(0, 2.1 + up, 0));
   }
 
@@ -108,7 +108,7 @@ export class Stage {
     a.position.set(tileX(0) - .4, 0, LANE_Z - 1.7); a.rotation.y = .3;
     e.visible = true;
     // on the lane Eve stands behind it, facing us; on the road, on the verge, at the first marks
-    if (st.lane && st.barsNear) { e.position.copy(BARS_NEAR).add(v(6.2, 0, .4)); e.rotation.y = -.7; }   // beside her bars
+    if (st.lane && st.barsNear) { e.position.copy(BARS_NEAR).add(v(big() > 1 ? 8 : 6.2, 0, .4)); e.rotation.y = -.7; }   // beside her bars (wider on a phone)
     else if (st.lane) { e.position.set(st.eve ? tileX(st.key ? 3 : 46) : tileX(30), 0, LANE_Z - 1.7); e.rotation.y = st.key ? -.4 : 0; }
     // with the bars up she stands to their right, in the bar shot rather than in front of its lens
     else if (st.bars) { e.position.copy(BARS_AT).add(v(5.4, 0, -.4)); e.rotation.y = -.6; }
@@ -166,7 +166,9 @@ export class Stage {
   drawBars(k) {
     this.barsG.clear();
     if (!this.st.bars) return;
-    const { cs, n, name, win } = this.barData(), w = .9, gap = .45, x0 = -(cs.length - 1) * (w + gap) / 2, road = this.st.bars === 'wheel', H = road ? 4.2 : 3.2, big = road ? 1.35 : 1;   // the road's six bars are step 6's subject: taller, bigger tags
+    const { cs, n, name, win } = this.barData(), wide = this.st.barsNear && big() > 1, w = wide ? 1.3 : .9, gap = wide ? .6 : .45, x0 = -(cs.length - 1) * (w + gap) / 2, road = this.st.bars === 'wheel', H = road ? 4.2 : wide ? 2.3 : 3.2;
+    // the road's six bars are step 6's subject: taller, bigger tags; step 10's, on a phone, wider with bigger tags (read from far back)
+    const tk = road ? 1.35 : this.st.barsNear ? big(2.8) : 1;
     const base = new THREE.Mesh(new THREE.BoxGeometry(cs.length * (w + gap) + .6, .12, 1.4), new THREE.MeshStandardMaterial({ color: 0x3a3d46, roughness: .8 }));
     base.position.copy(this.barsAt).setY(.06); base.receiveShadow = true; this.barsG.add(base);
     cs.forEach((c, i) => {
@@ -174,16 +176,19 @@ export class Stage {
       const bar = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), new THREE.MeshStandardMaterial({ color: isWin && k >= 1 ? 0xf2c24f : 0x6f8fb8, roughness: .5,
         emissive: isWin && k >= 1 ? 0x6a4a08 : 0x000000 }));
       bar.position.set(this.barsAt.x + x0 + i * (w + gap), .12 + h / 2, this.barsAt.z); bar.castShadow = true; this.barsG.add(bar);
-      const under = label(); under.visible = true; setLabel(under, name(c), '#b9b2a3', .32 * big);
+      const under = label(); under.visible = true; setLabel(under, name(c), '#b9b2a3', .32 * tk);
       under.position.set(bar.position.x, .35, this.barsAt.z + .9); this.barsG.add(under);
-      if (k > .05) { const top = label(); top.visible = true; setLabel(top, String(Math.round(c.n * Math.min(1, k * 1.05))), isWin && k >= 1 ? '#f2c24f' : '#9fc0ff', .34 * big);
-        top.position.set(bar.position.x, .12 + h + .32 * big, this.barsAt.z); this.barsG.add(top); }
+      if (k > .05) { const top = label(); top.visible = true; setLabel(top, String(Math.round(c.n * Math.min(1, k * 1.05))), isWin && k >= 1 ? '#f2c24f' : '#9fc0ff', .34 * tk);
+        top.position.set(bar.position.x, .12 + h + .32 * tk, this.barsAt.z); this.barsG.add(top); }
     });
   }
 
   // ---------- the lane ----------
+  // the lane's tags and arcs on a phone: drawn bigger for the lane's own far shots (steps 7-9); in step 10
+  // the bars are the subject and the lane stays behind them at its own size
+  get laneBig() { return k => this.st.barsNear ? 1 : big(k); }
   drawTiles() {
-    const st = this.st, c = this.cipher(), hotSet = new Set();
+    const st = this.st, big = this.laneBig, c = this.cipher(), hotSet = new Set();
     if (st.hot) for (const a of [51, 81]) for (let i = a; i < a + 12; i++) hotSet.add(i);
     this.tiles.forEach((m, i) => {
       const stamped = i < st.stamped;
@@ -203,18 +208,23 @@ export class Stage {
   // arcs over the lane from each group of 3 letters to where it comes back, inside the lane
   drawArcs() {
     this.arcsG.clear();
+    // step 10 on a phone: the arcs lie flat under Eve's bubble, their tags read from far back
+    const flat = this.st.barsNear && big() > 1, hk = flat ? .5 : big(2.2), tk = flat ? 2.4 : big(4);
     if (!this.st.lane || !this.st.arcs) return;
     // gold: a multiple of the length the counts keep (5 for LEMON); red: a coincidence
     const all = repeats(this.cipher()), L = best(counts(all.map(r => r.d), 2, 8)).L, reps = all.filter(r => r.b + 3 <= LANE_N);
     for (const r of reps) {
       const good = r.d % L === 0;
-      this.arcsG.add(arc(tileX(r.a + 1), tileX(r.b + 1), LANE_Z - .55, .045 * big(3), good ? 0xffd66b : 0xff4d5e, (1.2 + r.d * .05) * big(2.2)));
+      this.arcsG.add(arc(tileX(r.a + 1), tileX(r.b + 1), LANE_Z - .55, .045 * (flat ? 2 : big(3)), good ? 0xffd66b : 0xff4d5e, (1.2 + r.d * .05) * hk));
     }
     // one tag per distance
-    for (const d of [...new Set(reps.map(r => r.d))]) {
+    for (const [i, d] of [...new Set(reps.map(r => r.d))].sort((p, q) => p - q).entries()) {
       const r = reps.find(x => x.d === d), tag = label(); tag.visible = true;
-      setLabel(tag, d % L ? `${d}` : `${d} = ${L} × ${d / L}`, d % L ? '#ff4d5e' : '#ffd66b', .9 * big(4));
-      tag.position.set((tileX(r.a + 1) + tileX(r.b + 1)) / 2, (1.5 + d * .05) * big(2.2) + .5 * big(4), LANE_Z - .55); this.arcsG.add(tag);
+      setLabel(tag, d % L ? `${d}` : `${d} = ${L} × ${d / L}`, d % L ? '#ff4d5e' : '#ffd66b', .9 * tk);
+      tag.position.set((tileX(r.a + 1) + tileX(r.b + 1)) / 2, (1.5 + d * .05) * hk + .5 * tk, LANE_Z - .55);
+      // flat, the tags stack at the lane's left, the free corner beside Eve's bubble
+      if (flat) tag.position.set(BARS_NEAR.x - 8, 1.2 + i * 2.2, LANE_Z - .55);
+      this.arcsG.add(tag);
     }
   }
 
