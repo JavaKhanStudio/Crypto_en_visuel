@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<!-- The logo (r220), as web/app.js atelierLogo() draws it with every seat lit. Keep the two in step. -->
+  <rect width="64" height="64" rx="15" fill="#16171f"/>
+  <g transform="translate(32 33) scale(.66) translate(-32 -33)">
+    <path d="M32 11 V20 M23 43 L17.5 54 M41 43 L46.5 54 M32 43 V51" stroke="#fcfcff" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <path d="M13.5 43 H50.5" stroke="#fcfcff" stroke-width="4" stroke-linecap="round"/>
+    <rect x="16" y="18" width="32" height="22" rx="3.5" fill="#fcfcff"/>
+    <path d="M19.5 18 h2.5 v22 h-2.5 a3.5 3.5 0 0 1 -3.5 -3.5 v-15 a3.5 3.5 0 0 1 3.5 -3.5z" fill="#4f95ff"/>
+    <rect x="26" y="23.5" width="16" height="3" rx="1.5" fill="#16171f" opacity=".55"/>
+    <rect x="26" y="30" width="10" height="3" rx="1.5" fill="#16171f" opacity=".35"/>
+  </g>
+  <circle cx="32.00" cy="7.50" r="2.6" fill="#fcfcff" opacity=".3"/>
+  <circle cx="32.00" cy="7.50" r="4.3" fill="#4feb9f"/>
+  <circle cx="49.32" cy="14.68" r="2.6" fill="#fcfcff" opacity=".3"/>
+  <circle cx="56.50" cy="32.00" r="2.6" fill="#fcfcff" opacity=".3"/>
+  <circle cx="56.50" cy="32.00" r="4.3" fill="#ffc53d"/>
+  <circle cx="49.32" cy="49.32" r="2.6" fill="#fcfcff" opacity=".3"/>
+  <circle cx="49.32" cy="49.32" r="4.3" fill="#4f95ff"/>
+  <circle cx="32.00" cy="56.50" r="2.6" fill="#fcfcff" opacity=".3"/>
+  <circle cx="32.00" cy="56.50" r="4.3" fill="#ff5d6c"/>
+  <circle cx="14.68" cy="49.32" r="2.6" fill="#fcfcff" opacity=".3"/>
+  <circle cx="14.68" cy="49.32" r="4.3" fill="#fcfcff"/>
+  <circle cx="7.50" cy="32.00" r="2.6" fill="#fcfcff" opacity=".3"/>
+  <circle cx="7.50" cy="32.00" r="4.3" fill="#d096ff"/>
+  <circle cx="14.68" cy="14.68" r="2.6" fill="#fcfcff" opacity=".3"/>
+  <circle cx="14.68" cy="14.68" r="4.3" fill="#101117" stroke="#fcfcff" stroke-opacity=".9" stroke-width="2"/>
+</svg>
