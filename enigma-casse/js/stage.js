@@ -42,6 +42,8 @@ const bez = (p0, p1, p2, p3, n = 24) => new THREE.CubicBezierCurve3(p0, p1, p2, 
 // where a guess's tag sits beside each letter of the story's loop, as [first, middle, last] offsets:
 // clear of the link numbers round E (11 on E-H, 19 on T-E) and of 9 on T-R
 const TRACE_AT = { E: [[-2.5, 1.3], [1.9, 1], [-0.2, -1.5]], T: [[-1.9, 1.2], [2.1, -0.85], [-1.9, -1.2]] };
+// on a phone held upright E's first tag keeps inside the screen and B's sits level with B, under the top controls rather than behind them (r354)
+const TRACE_AT_UPRIGHT = { ...TRACE_AT, E: [[-1.6, 1.5], ...TRACE_AT.E.slice(1)], B: [[1.9, 1], [2.3, 0], [-1.9, -1.2]] };
 
 export class Stage {
   constructor(world, tickers) {
@@ -566,6 +568,9 @@ export class Stage {
     const mn = this.st.menu;
     if (mn) {
       const pos = this.menuLayout(mn.links), n = mn.n ?? mn.links.length, L = sl?.cipher.length ?? 23;
+      // on a phone held upright (camera.js's menuPhone shots) the link numbers and the trace's tags,
+      // which step 9's text reads out, are drawn bigger: at desktop size they were ~6 px there (r354)
+      const upright = innerWidth < innerHeight, numH = upright ? 1 : .58, traceH = upright ? 1.2 : .72;
       // two links between the same letters (E-B 8 and B-E 13) bow apart, one each side, so their numbers part
       const key = l => [l.a, l.b].sort().join(''), count = {}, pairs = {};
       for (const l of mn.links) count[key(l)] = (count[key(l)] ?? 0) + 1;
@@ -578,7 +583,7 @@ export class Stage {
         const curve = new THREE.QuadraticBezierCurve3(a, ctrl, b);
         const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, hot ? .12 : .07, 6, false), new THREE.MeshBasicMaterial({ color: hot ? 0xffd84d : 0x9fb4c8, toneMapped: false }));
         g.add(tube);
-        g.add(this.tag(curve.getPoint(.5).add(v(0, 0, .05)), String(l.i + 1), hot ? '#ffd84d' : '#9fb4c8', .58));
+        g.add(this.tag(curve.getPoint(.5).add(v(0, 0, .05)), String(l.i + 1), hot ? '#ffd84d' : '#9fb4c8', numH));
         // the link's column on the cipher, when the crib is shown: a faint thread up to it
         if (sl && Number.isInteger(sl.k) && li === n - 1 && mn.n != null && mn.n < mn.links.length + 1) {
           const top = this.slateAt(this.colX(l.i, L), 8.8);
@@ -586,11 +591,11 @@ export class Stage {
         }
       });
       for (const c of menuLetters(mn.links.slice(0, Math.max(1, n)))) g.add(this.tag(this.slateAt(...pos[c]).add(v(0, 0, .1)), c, '#ff8a9a', 1.1));
-      const tr = mn.trace;
+      const tr = mn.trace, AT = upright ? TRACE_AT_UPRIGHT : TRACE_AT;
       if (tr) tr.letters.slice(0, tr.upto).forEach((c, j) => {
         const last = j === tr.letters.length - 1, bad = last && tr.vals[j] !== tr.vals[0];
-        const off = j === 0 ? v(...(TRACE_AT[c]?.[0] ?? [-1.9, 1.2]), .2) : last ? v(...(TRACE_AT[c]?.[2] ?? [-1.9, -1.2]), .2) : v(...(TRACE_AT[c]?.[1] ?? [1.9, 1]), .2);
-        g.add(this.tag(this.slateAt(...pos[c]).add(off), `${c}→${tr.vals[j]}${last ? (bad ? ' ✗' : ' ✓') : ''}`, last ? (bad ? '#ff4d5e' : '#5fe39a') : '#ffd84d', .72));
+        const off = j === 0 ? v(...(AT[c]?.[0] ?? [-1.9, 1.2]), .2) : last ? v(...(AT[c]?.[2] ?? [-1.9, -1.2]), .2) : v(...(AT[c]?.[1] ?? [1.9, 1]), .2);
+        g.add(this.tag(this.slateAt(...pos[c]).add(off), `${c}→${tr.vals[j]}${last ? (bad ? ' ✗' : ' ✓') : ''}`, last ? (bad ? '#ff4d5e' : '#5fe39a') : '#ffd84d', traceH));
       });
     }
   }
