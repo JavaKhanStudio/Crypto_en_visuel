@@ -31,13 +31,10 @@ with sync_playwright() as p:
             "next at the right, bottom row": all(got[-1]["x"] >= d["x"] - 1 and got[-1]["y"] >= d["y"] - 1 for d in got),
             "home links in language": got[2]["href"] == f"../?lang={lang}",
         }
-        # r182: the quiz door's picture and clip are words, so they are the page's language's
+        # r290 (Simon: no clip per language): the quiz door is door-quiz.* in every language
         quiz = pg.evaluate("() => { const d = document.querySelectorAll('#step-actions .door')[1], v = d.querySelector('video');"
                            " return [d.querySelector('img').getAttribute('src'), v && v.getAttribute('src')]; }")
-        tag = "" if lang == "fr" else f".{lang}"
-        if lang != "fr" and not os.path.exists(f"{SLUG}/img/door-quiz{tag}.jpg"):
-            print(f"todo {size[0]}px {lang}: no {SLUG}/img/door-quiz{tag}.jpg yet, the quiz door shows French (r182 roll-out)")
-        else: checks[f"quiz door in {lang} ({quiz[0]})"] = quiz[0].endswith(f"door-quiz{tag}.jpg") and quiz[1] in (None, f"img/door-quiz{tag}.mp4")
+        checks[f"quiz door is the one clip ({quiz[0]})"] = quiz[0] == "img/door-quiz.jpg" and quiz[1] in (None, "img/door-quiz.mp4")
         clip = "() => { const v = document.querySelector('#step-actions .door.next video'); return v && [v.currentTime, v.paused, v.classList.contains('on')]; }"
         if not CLIPS:
             checks["no clip (stills only)"] = pg.evaluate("document.querySelectorAll('#step-actions video').length") == 0
