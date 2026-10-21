@@ -8,9 +8,9 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld } from './world.js';
 import { Stage } from './stage.js';
-import { CameraRig } from './camera.js';
+import { CameraRig, portrait } from './camera.js';
 import { initFx, updateFx, fireworks } from './fx.js';
-import { Bubbles } from './bubbles.js';
+import { Bubbles, walls } from './bubbles.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
 import { Quiz } from './quiz.js';
@@ -120,6 +120,8 @@ function loop() {
   updateFx(dt);
   rig.update(dt);
   bubbles.update(dt);
+  if (stage.st) stage.pinTags(camera, [...walls(), ...[...document.querySelectorAll('#bubbles .bubble.show')]
+    .map(el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })], portrait());
   composer.render();
   requestAnimationFrame(loop);
 }

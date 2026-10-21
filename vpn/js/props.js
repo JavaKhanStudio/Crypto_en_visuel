@@ -38,7 +38,7 @@ export function envelope(kind = 'plain') {
 // array of strings, or of [text, colour]. It keeps its size on screen however far the camera stands
 // (sizeAttenuation off): h is one line's height as a share of the view, about 0.83 a screen on a desktop.
 export function tag() {
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false, sizeAttenuation: false }));
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false, sizeAttenuation: false, fog: false }));   // no fog: a tag reads crisp however far
   s.renderOrder = 20; s.visible = false; s.userData.key = '';
   return s;
 }

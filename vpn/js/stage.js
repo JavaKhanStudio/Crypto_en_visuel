@@ -68,6 +68,7 @@ export class Stage {
     for (const [k, s] of Object.entries(this.tags)) {
       s.renderOrder = 30;   // tag() gives 20, the places keep it
       if (k !== 'i') s.onBeforeRender = (r, sc, cam) => {
+        if (s.userData.pin) return;   // a phone placed it (pinTags)
         const far = cam.position.distanceTo(s.position) > 30;
         s.center.set(far && k === 'v' ? 1.08 : .5, far && k !== 'v' ? 1 : .5);
       };
@@ -163,9 +164,54 @@ export class Stage {
       const s = this.tags[who], show = st.read.includes(who);
       if (who !== 'i') s.position.copy(this.people[who].position).add(v(0, .9, 0));   // over the body: the bubble goes over the head
       if (show) setTag(s, this.lines(who), '#' + new THREE.Color(COLORS[who]).getHexString(), .019); else s.visible = false;
+      s.userData.want = show;
     }
     const p = raw('place');
     for (const [k, s] of Object.entries(this.places)) setTag(s, [p[k]], '#e6dfcf', .026);
+  }
+
+  // The screen box of a tag (a sprite that keeps its size) for a camera, centred as s.center says;
+  // null when it is behind the camera. In CSS pixels, like the page's walls.
+  screenBox(s, cam) {
+    const p = s.getWorldPosition(new THREE.Vector3()).project(cam);
+    if (p.z > 1) return null;
+    const k = cam.projectionMatrix.elements[5] * innerHeight / 2, w = s.scale.x * k, h = s.scale.y * k;
+    const ax = (p.x * .5 + .5) * innerWidth, ay = (-p.y * .5 + .5) * innerHeight;
+    return { ax, ay, w, h, x: ax - s.center.x * w, y: ay - (1 - s.center.y) * h };
+  }
+  // On a phone the map is narrow and the tags keep their size: they would stack on each other, on the
+  // places' names and under the cards (r226). Each frame, the newest reader's tag first takes the free
+  // spot nearest to where it hangs, clear of the walls (the cards, the panel, the top controls), the
+  // bubbles, the places' names and the tags already placed; a tag with no free spot near its watcher
+  // hides, so the oldest give way. walls: boxes in CSS pixels. On a desktop the tags hang as r225 set.
+  pinTags(cam, walls, phone) {
+    const order = [...this.st.read].reverse().filter(k => this.tags[k]?.userData.want);
+    for (const s of Object.values(this.tags)) { s.userData.pin = null; if (s.userData.want !== undefined) s.visible = s.userData.want; }
+    for (const p of Object.values(this.places)) p.visible = true;
+    if (!phone) return;
+    const GAP = 4, R = 80, W = innerWidth, H = innerHeight;
+    const hits = (a, b) => Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) + GAP > 0 && Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) + GAP > 0;
+    // a place's name a card, a bubble or another name covers, or the screen's edge cuts, is hidden; the
+    // others are in the tags' way
+    const taken = [...walls];
+    for (const p of Object.values(this.places)) {
+      const b = p.material.opacity > .05 && this.screenBox(p, cam);
+      p.visible = !b || (b.x >= 0 && b.x + b.w <= W && !taken.some(o => hits(b, o)));
+      if (b && p.visible) taken.push(b);
+    }
+    for (const k of order) {
+      const s = this.tags[k]; s.center.set(.5, k === 'i' ? .5 : 1);
+      const b = this.screenBox(s, cam);
+      let best = null, d = Infinity;
+      if (b) for (let dy = -R; dy <= R; dy += 6) for (let dx = -R; dx <= R; dx += 6) {
+        const c = { x: b.x + dx, y: b.y + dy, w: b.w, h: b.h }, dd = dx * dx + dy * dy;
+        if (dd >= d || dd > R * R || c.x < 4 || c.y < 4 || c.x + c.w > W - 4 || c.y + c.h > H - 4 || taken.some(o => hits(c, o))) continue;
+        best = c; d = dd;
+      }
+      if (!best) { s.visible = false; continue; }
+      taken.push(best);
+      s.userData.pin = true; s.center.set((b.ax - best.x) / b.w, 1 - (b.ay - best.y) / b.h);
+    }
   }
 
   // an envelope of a kind, with the address on its tag

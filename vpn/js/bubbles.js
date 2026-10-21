@@ -11,7 +11,7 @@ const tmp = new THREE.Vector3();
 // starts where its speaker wants it; then, a few rounds over, two bubbles that overlap push apart along
 // the shorter way out, and a bubble on a wall steps off it the shorter way, all inside the screen.
 const GAP = 6, WALLS = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz'];
-function walls() {
+export function walls() {
   const out = [];
   for (const id of WALLS) {
     const el = document.getElementById(id);

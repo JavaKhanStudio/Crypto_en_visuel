@@ -55,7 +55,7 @@ export const STEPS = [
       x.apply({ ...TUNNEL, card: 'trust' }); x.chase(x.stage.focus, new THREE.Vector3(-3, 6, 12));
       if (!await x.stage.send(['v'])) return; await x.fly('vpn'); x.say('v');
     } },
-  { id: 's13', ch: 4, shot: 'seen', state: { ...TUNNEL, read: ['e', 'b'], card: 'sees2' }, say: ['a'] },
+  { id: 's13', ch: 4, shot: 'seenCafe', state: { ...TUNNEL, read: ['e', 'b'], card: 'sees2' }, say: ['a'] },
   { id: 's14', ch: 4, shot: 'seen', state: { ...TUNNEL, read: ALL, card: 'sees2' },
     go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
 ];
