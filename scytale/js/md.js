@@ -18,8 +18,10 @@ function inline(parent, text) {
 
 // non-breaking spaces (r178): a number keeps its unit (2 m, 5 lettres), « 30 = 5 × 6 » stays whole,
 // and a French : ; ? ! » (and the space after «) never starts or ends a line alone. Applied when
-// rendering, so the source and plain() keep ordinary spaces for the values test.
+// rendering, so the source and plain() keep ordinary spaces for the values test. A letter keeps its
+// « (ligne N) » / '(line N)' label on its line, and the label stays whole (r314).
 export const tie = src => src
+  .replace(/(\}|\b\w) (?=\((?:ligne|line) \d\))/g, '$1\u00a0').replace(/\((ligne|line) (\d)\)/g, '($1\u00a0$2)')
   .replace(/(\d\}?) (?=(?:\{[1-4]\|)?(?:k?m|cm|lettres?|letters?|R\d+)\b)/g, '$1\u00a0')
   .replace(/ ([=×+]) /g, '\u00a0$1\u00a0')
   .replace(/ ([:;?!»])/g, '\u00a0$1').replace(/« /g, '«\u00a0');
