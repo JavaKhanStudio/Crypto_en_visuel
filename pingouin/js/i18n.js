@@ -65,8 +65,9 @@ const fr = {
       p: "ECB : à proscrire, les motifs restent visibles. CBC : sûr avec un IV aléatoire, neuf à chaque message, et un HMAC vérifié avant tout déchiffrement. Encore mieux, AES-GCM chiffre et authentifie en une seule opération : c’est le mode de TLS, le choix recommandé. Eve n’a jamais touché à la clé ni à AES : elle a joué sur l’assemblage des blocs.",
       a: 'Un IV neuf, et rien ne se déchiffre sans avoir été authentifié.', e: 'Je n’ai pas cassé AES, j’ai joué avec les blocs.' },
     s13: { t: 'À vous',
-      p: "Dans le bac à sable, écrivez votre message, choisissez ECB ou CBC, et laissez Eve retourner le bit de votre choix, avec ou sans HMAC : regardez quels blocs Bob lit. Ou testez-vous avec le quiz.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz' },
+      p: "Dans le bac à sable, écrivez votre message, choisissez ECB ou CBC, et laissez Eve retourner le bit de votre choix, avec ou sans HMAC : regardez quels blocs Bob lit. Ou testez-vous avec le quiz. Puis la suite : les mots de passe, gardés en empreintes, et pourquoi deux mêmes mots de passe ne doivent pas donner la même.",
+      doors: { sandbox: ['Bac à sable', 'Votre message, ECB ou CBC, le bit qu’Eve retourne'], quiz: ['Quiz', 'Sept questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 7 · Le sel ▶', 'Même mot de passe, même empreinte… sauf avec du sel'] } },
   },
   sb: {
     title: 'Bac à sable',
@@ -143,8 +144,9 @@ const en = {
       p: "ECB: never, the patterns stay visible. CBC: safe with a random IV, fresh for every message, and an HMAC checked before any decryption. Better still, AES-GCM encrypts and authenticates in one operation: it is TLS’s mode, the recommended choice. Eve never touched the key or AES: she played with the way the blocks are put together.",
       a: 'A fresh IV, and nothing is decrypted before it is authenticated.', e: 'I did not break AES, I played with the blocks.' },
     s13: { t: 'Your turn',
-      p: "In the sandbox, write your own message, pick ECB or CBC, and let Eve flip the bit of your choice, with or without an HMAC: see which blocks Bob reads. Or test yourself with the quiz.",
-      go: 'Try the sandbox', go2: 'Take the quiz' },
+      p: "In the sandbox, write your own message, pick ECB or CBC, and let Eve flip the bit of your choice, with or without an HMAC: see which blocks Bob reads. Or test yourself with the quiz. Then what comes next: passwords, kept as hashes, and why two identical passwords must not give the same one.",
+      doors: { sandbox: ['Sandbox', 'Your message, ECB or CBC, the bit Eve flips'], quiz: ['Quiz', 'Seven questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 7 · Salt ▶', 'Same password, same hash… unless it is salted'] } },
   },
   sb: {
     title: 'Sandbox',

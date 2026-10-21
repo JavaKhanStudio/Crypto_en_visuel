@@ -245,7 +245,9 @@ avant de déchiffrer. La diapo ne donne pas de clé HMAC : l'épisode prend `cle
 ou sans HMAC), un quiz de 7 questions. `pingouin/js/aes.js` est un vrai AES-128 (ECB, CBC, PKCS#7),
 `tests/pingouin_values.mjs` le compare aux diapos et au vecteur de FIPS-197
 (`node tests/pingouin_values.mjs`), `tests/pingouin_story.py` clique chaque bouton de l'histoire et
-du bac à sable et vérifie les caisses, le tableau et le verdict de Bob.
+du bac à sable et vérifie les caisses, le tableau et le verdict de Bob. La dernière étape ouvre quatre
+portes en image (bac à sable, quiz, tous les épisodes, puis l'épisode 7 en or à droite), chacune avec
+un extrait de 4 s au survol (`tests/last_doors.py pingouin 13 sel`).
 
 ## Épisode 7 — Le sel (et la lenteur de bcrypt)
 
