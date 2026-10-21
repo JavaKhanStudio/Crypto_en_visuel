@@ -10,7 +10,7 @@ import { NODES, SPOTS, edge } from './world.js';
 import { envelope, tag, setTag, key, person, COLORS } from './props.js';
 import { ADDR, NAME, OTHERS, PUBLIC, KEY, hex, sees, route, opened, flipped, SEALED } from './net.js';
 import { burst, ring } from '../../lib/fx.js';
-import { sfx } from './sound.js';
+import { sfx } from '../../lib/sound.js';
 import { t, raw } from './i18n.js';
 import { portrait } from './camera.js';
 
@@ -77,7 +77,8 @@ export class Stage {
     }
     // each place's name over the back of its roof, clear of the watchers' tags at the front
     this.places.cafe.position.set(SPOTS.cafe.x, 7.6, SPOTS.cafe.z - 2.5);
-    this.places.isp.position.set(SPOTS.isp.x + 9, 11.4, SPOTS.isp.z - 3);   // east of the roof: Victor's tag, seen whole, stands west of it (r225)
+    // the provider's starts over the middle of its hall's back and runs east: Victor's tag, seen whole, stands west of it (r225, r364)
+    this.places.isp.position.set(SPOTS.isp.x, 6.5, SPOTS.isp.z - 4.5); this.places.isp.center.set(0, .5);
     this.places.vpn.position.set(SPOTS.vpn.x, 8, SPOTS.vpn.z - 2.5);
     this.places.bob.position.set(SPOTS.bob.x, 7.6, SPOTS.bob.z - 2);
     this.tags.i.position.copy(NODES.i).add(v(0, -.6, .8));
