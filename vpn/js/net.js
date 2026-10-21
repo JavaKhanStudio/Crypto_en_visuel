@@ -8,6 +8,13 @@ import { seal, open, poly1305, chachaBlock } from './aead.js';
 // Addresses from the ranges set aside for documentation (RFC 5737): no real machine answers them.
 export const ADDR = { cafe: '203.0.113.7', bob: '198.51.100.20', vpn: '192.0.2.44' };
 export const NAME = 'bob.example';          // a name set aside for examples (RFC 2606)
+// Victor's other customers (step 12, r360): each one's tunnel ends at his server too, so he reads where
+// each goes. Documentation addresses and example names, like the rest.
+export const OTHERS = [
+  { addr: '198.51.100.61', name: 'shop.example' },
+  { addr: '203.0.113.142', name: 'news.example' },
+  { addr: '192.0.2.203', name: 'mail.example' },
+];
 
 // ---------- WireGuard, cut to one exchange ----------
 const enc = s => new TextEncoder().encode(s);

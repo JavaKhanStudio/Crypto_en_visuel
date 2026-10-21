@@ -16,9 +16,19 @@ export const SHOTS = {
   street:   { pos: v(-16, 18, 26), target: v(-14, 1, -6) },
   isp:      { pos: v(-4, 6, 10), target: v(-6, 2.6, -6.5) },
   keys:     { pos: v(-16, 52, 20), target: v(-25, 0, -17) },
-  vpn:      { pos: v(-8.5, 4.6, -22.5), target: v(-13.2, 1.9, -32) },
+  vpn:      { pos: v(-8.5, 8.5, -23), target: v(-13.2, 1.2, -32.5) },   // high enough to see over the front wall into the hall (r360)
   bob:      { pos: v(36.5, 4.6, 10.5), target: v(33, 2, 0) },
   tunnel:   { pos: v(-20, 20, 20), target: v(-12, 2, -12) },
+  // step 3: the whole way from the café to Bob's site, high enough to see each box pick its cable (r360)
+  route:    { pos: v(0, 42, 58), target: v(-1, 0, -3) },
+  // step 8: close on Alice's keys, then on Victor's, then both sides at once, seen across the line
+  // between them so they stand apart (r360)
+  keysA:    { pos: v(-36.5, 9.5, 13), target: v(-39.2, 2.6, -1.4) },
+  keysV:    { pos: v(-4.5, 9.5, -19), target: v(-11.7, 2.6, -31.4) },   // from the east: the valley cable's poles stay out
+  // step 12: the VPN's hall from the south, high, its racks and the sky to the north where the other
+  // customers' tunnels come from (r360)
+  vpnCrowd: { pos: v(-4, 17, -9), target: v(-14, -4, -40) },
+  keysBoth: { pos: v(8, 26, 14), target: v(-25.4, 3, -16.4) },
   // on a phone held upright the VPN's racks from further down the street, not through the house behind,
   // looking down enough that Victor stands high, his bubble over him and his tag under him (r226)
   vpnPhone: { pos: v(-11.5, 4.2, -15), target: v(-13.5, -2, -32) },
@@ -42,6 +52,10 @@ SHOTS.seenPhone = { pos: v(-74, 92, 78), target: v(0, -50, -4) };
 // step 13 (Alice: nobody at the café reads where she goes): on a desktop 'seen'; on a phone the café,
 // where Alice's bubble and Eve's tag both find room over the step panel, taller there
 SHOTS.seenCafe = SHOTS.seen;
+// step 8 on a phone: the map from the south as before r360, where Eve's tag and both pairs of keys find room
+SHOTS.keysBothPhone = forPhone(SHOTS.keys);
+// step 3 on a phone: down the street from the café's end, the café near, the provider, then Bob's far
+SHOTS.routePhone = { pos: v(-68, 24, 4), target: v(-4, -12, -5) };
 SHOTS.seenCafePhone = { pos: v(-26, 53, 60), target: v(-26, -16, -4) };
 const pick = shot => {
   const s = typeof shot === 'string' ? SHOTS[shot] : shot;
@@ -103,6 +117,11 @@ export class CameraRig {
       const p = this.follow.obj.position, o = this.follow.off || v(-3, 4, 9);
       let want = { pos: p.clone().add(o), target: p.clone() };
       if (portrait()) want = forPhone(want, this.follow.back);
+      // never inside a building or under a roof: over any box it would enter, it rides 1.5 m above (r360)
+      for (const b of this.obstacles || []) {
+        const m = 1.5, q = want.pos;
+        if (q.x > b.min.x - m && q.x < b.max.x + m && q.z > b.min.z - m && q.z < b.max.z + m) q.y = Math.max(q.y, b.max.y + m);
+      }
       this.camera.position.lerp(want.pos, 1 - Math.pow(.02, dt));
       c.target.lerp(want.target, 1 - Math.pow(.005, dt));
       this.camera.lookAt(c.target);

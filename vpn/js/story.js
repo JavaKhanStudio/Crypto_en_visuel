@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { render as md } from './md.js';
-import { linkify } from '../../xref.js';
+import { linkify, href } from '../../xref.js';
 
 const ALL = ['e', 'i', 'v', 'b'];
 const TUNNEL = { tunnel: true };            // the keys did their work: from here the gold tube shows the tunnel
@@ -17,10 +17,10 @@ export const STEPS = [
       if (!await x.stage.send(['b'])) return;
       await x.fly('bob'); x.say('b');
     } },
-  { id: 's3', ch: 0, shot: 'street', state: { https: false, card: 'env' }, go: async x => {
-      x.apply(); x.chase(x.stage.focus, new THREE.Vector3(-2, 6, 12));
-      if (!await x.stage.send([])) return;
-      await x.fly('street');
+  // the boxes on the way: seen from high, each one reads the address and lights the cable it picks (r360)
+  { id: 's3', ch: 0, shot: 'route', state: { https: false, card: 'env' }, go: async x => {
+      x.apply(); await x.fly('route'); if (!x.live()) return;
+      await x.stage.routeRead();
     } },
   { id: 's4', ch: 1, shot: 'cafe', state: { https: false, card: 'sees' }, go: async x => {
       x.apply(); if (!await x.stage.send(['e'])) return; x.say('e');
@@ -35,8 +35,15 @@ export const STEPS = [
   { id: 's7', ch: 2, shot: 'keys', state: { card: 'keys' }, go: async x => {
       x.apply(); if (!await x.stage.exchange()) return; x.say('v');
     } },
-  { id: 's8', ch: 2, shot: 'keys', state: { keys: 1, what: 'keys', read: ['e'], card: 'shared' }, go: async x => {
-      x.apply(); if (!await x.stage.derive()) return; x.say('e');
+  // the same secret on both sides: close on Alice's keys, then Victor's, then both and Eve (r360)
+  { id: 's8', ch: 2, shot: 'keysBoth', state: { keys: 1, what: 'keys', read: ['e'], card: 'shared' }, go: async x => {
+      x.apply();
+      for (const w of ['a', 'v']) {
+        await x.fly(w === 'a' ? 'keysA' : 'keysV'); if (!x.live()) return;
+        if (!await x.stage.merge(w)) return;
+      }
+      x.stage.st.keys = 2; x.stage.drawKeys();
+      await x.fly('keysBoth'); x.say('e');
     } },
   { id: 's9', ch: 2, shot: 'tunnel', state: { ...TUNNEL, card: 'seal' }, go: async x => {
       x.apply(); x.chase(x.stage.focus, new THREE.Vector3(-3, 6, 12));
@@ -48,12 +55,17 @@ export const STEPS = [
       if (!await x.stage.send(['v'], { flip: true })) return;
       await x.fly('vpn'); x.say('v');
     } },
+  // the camera rides with the packet, high enough to see each watcher's tag light as it passes, then
+  // pulls back to the whole map with all four tags (r360: seen whole all along, the packet was a dot)
   { id: 's11', ch: 3, shot: 'seen', state: { ...TUNNEL, read: ALL, card: 'sees2' }, say: ['b'], go: async x => {
-      x.apply({ ...TUNNEL, card: 'sees2' }); if (!await x.stage.send(ALL)) return; x.say('b');
+      x.apply({ ...TUNNEL, card: 'sees2' }); x.chase(x.stage.focus, new THREE.Vector3(-2, 13, 21));
+      if (!await x.stage.send(ALL)) return;
+      await x.fly('seen'); x.say('b');
     } },
+  // Victor opens every customer's tunnel, not only Alice's: theirs fly in from other towns (r360)
   { id: 's12', ch: 3, shot: 'vpn', state: { ...TUNNEL, read: ['v'], card: 'trust' }, say: ['v'], go: async x => {
-      x.apply({ ...TUNNEL, card: 'trust' }); x.chase(x.stage.focus, new THREE.Vector3(-3, 6, 12));
-      if (!await x.stage.send(['v'])) return; await x.fly('vpn'); x.say('v');
+      x.apply({ ...TUNNEL, card: 'trust' }); await x.fly('vpnCrowd'); if (!x.live()) return;
+      if (!await x.stage.crowd()) return; x.say('v');
     } },
   { id: 's13', ch: 4, shot: 'seenCafe', state: { ...TUNNEL, read: ['e', 'b'], card: 'sees2' }, say: ['a'] },
   { id: 's14', ch: 4, shot: 'seen', state: { ...TUNNEL, read: ALL, card: 'sees2' },
@@ -63,6 +75,7 @@ export const STEPS = [
 export class Story {
   constructor(ctx) {
     this.ctx = ctx; this.i = 0; this.token = 0;
+    ctx.rig.obstacles = ctx.world.obstacles;   // the riding camera stays over the buildings (r360)
     this.el = { title: document.getElementById('step-title'), text: document.getElementById('step-text'),
       actions: document.getElementById('step-actions'), count: document.getElementById('step-count'),
       chapters: document.getElementById('chapters'), prev: document.getElementById('prev'), next: document.getElementById('next') };
@@ -100,7 +113,10 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; md(this.el.text, s.p); linkify(this.el.text, lang, { '1.3': 6 });
+    // an episode cited by its name ({@3|...}) or as « l'épisode 1.3 » links to the step that explains it
+    const refs = { '1.3': 6 };
+    this.el.title.textContent = s.t; md(this.el.text, s.p); linkify(this.el.text, lang, refs);
+    for (const a of this.el.text.querySelectorAll('a.xref[data-ep]')) a.href = href(a.dataset.ep, lang, refs);
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';

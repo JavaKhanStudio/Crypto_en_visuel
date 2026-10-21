@@ -1,14 +1,22 @@
 // A small map, one unit = one metre: a town with its café (Alice and Eve at the terrace, the café's
-// Wi-Fi box on the wall) and its internet provider's building (racks out front), Bob's site at the
-// east end, and in another town, up the valley to the north-west, the VPN server's room. Cables on poles join them:
+// Wi-Fi box on the wall) and its internet provider's server hall, Bob's site at the east end, and in
+// another town, up the valley to the north-west, the VPN's server hall. The halls have no roof (r360):
+// from above, the rows of racks inside show; the packet's stop is the front rack, by the door. Cables on poles join them:
 // café → provider, provider → Bob, provider → VPN, VPN → Bob. Built from primitives, except the
 // servers and the laptops, which are Shadow's (assets/shapes, through lib/shapes.js).
 import * as THREE from 'three';
 import { loadShape } from '../../lib/shapes.js';
-import { router, table, cup, building, awning, pole, house, TABLE_Y } from './props.js';
+import { router, table, cup, building, hall, awning, pole, house, TABLE_Y } from './props.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const CABLE_Y = 4.2;
+// the two server halls, roofless (r360): centre and size; the packet's stop (NODES.i, NODES.v) is over
+// the middle of the front row of racks, just inside the front wall, and Victor stands before that row
+export const HALL_H = 2;
+export const HALLS = {
+  i: { x: -6, z: -11.5, w: 14, d: 12, rows: [-8, -10.4, -12.8, -15.2] },
+  v: { x: -14, z: -35.2, w: 12, d: 10.4, rows: [-33, -35.4, -37.8] },
+};
 
 // where things stand
 export const SPOTS = {
@@ -74,7 +82,7 @@ function buildStreets() {
   };
   strip(-52, 3.2, 44, 3.2, 5, asphalt);              // the main street, in front of the café, the provider and Bob
   // up the valley to the other town: between the street's houses and the provider's west wall, to the VPN's forecourt (r197)
-  strip(-16.6, 1, -16.6, -31.6, 4, asphalt);
+  strip(-16.6, 1, -16.6, -29.6, 4, asphalt);
   strip(-42, -.4, -30, -.4, 5.8, pave);              // the café's terrace
   return g;
 }
@@ -114,7 +122,7 @@ function buildTrees() {
 function buildCable(curve, pts) {
   const g = new THREE.Group();
   const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 160, .05, 6), new THREE.MeshStandardMaterial({ color: 0x1d2128, roughness: .6, emissive: 0x16304a, emissiveIntensity: .5 }));
-  tube.castShadow = true; g.add(tube);
+  tube.castShadow = true; g.add(tube); g.userData.tube = tube;
   // no pole right in front of a rack or a box: the cable leaves it in the air
   const near = p => Object.values(NODES).some(n => Math.hypot(n.x - p.x, n.z - p.z) < 3);
   for (const p of pts.slice(1, -1)) if (Math.abs(p.y - CABLE_Y) < .01 && !near(p)) { const q = pole(CABLE_Y); q.position.set(p.x, 0, p.z); g.add(q); }
@@ -134,6 +142,20 @@ function buildWaves() {
   return g;
 }
 
+const solid = o => { o.userData.solid = true; return o; };
+// many copies of a shape at the given spots: one InstancedMesh per mesh of the shape
+function instanced(shape, spots) {
+  const g = new THREE.Group(), m = new THREE.Matrix4();
+  shape.updateMatrixWorld(true);
+  shape.traverse(o => {
+    if (!o.isMesh) return;
+    const im = new THREE.InstancedMesh(o.geometry, o.material, spots.length);
+    spots.forEach((p, k) => im.setMatrixAt(k, m.makeTranslation(p.x, p.y, p.z).multiply(o.matrixWorld)));
+    im.castShadow = true; im.receiveShadow = true; g.add(im);
+  });
+  return g;
+}
+
 export async function buildWorld(scene) {
   scene.fog = new THREE.FogExp2(0xd8d2c8, .0042);
   scene.add(buildSky());
@@ -145,45 +167,56 @@ export async function buildWorld(scene) {
   scene.add(buildTerrain(), buildStreets(), buildTrees());
 
   // the café: its front at z = -4.5, the terrace before it, the Wi-Fi box over the door
-  const cafe = building(11, 4.2, 7, 0xe9dcc4, { sign: 0x7a2e22 }); cafe.position.copy(SPOTS.cafe); scene.add(cafe);
-  const aw = awning(10); aw.position.set(SPOTS.cafe.x, 3.1, -3.4); scene.add(aw);
+  const cafe = building(11, 4.2, 7, 0xe9dcc4, { sign: 0x7a2e22 }); cafe.position.copy(SPOTS.cafe); scene.add(solid(cafe));
+  const aw = awning(10); aw.position.set(SPOTS.cafe.x, 3.1, -3.4); scene.add(solid(aw));
   const box = router(); box.position.copy(NODES.w).add(v(0, -.08, 0)); scene.add(box);
   for (const k of ['tableA', 'tableE']) { const tb = table(); tb.position.copy(SPOTS[k]); scene.add(tb); }
   for (const k of ['tableA', 'tableE']) { const c = cup(); c.position.copy(SPOTS[k]).add(v(.25, TABLE_Y, .12)); scene.add(c); }
-  // the provider: a tall block, its racks out front under a canopy
-  const isp = building(14, 8, 9, 0x8c95a3, { sign: 0x2d5f9a }); isp.position.copy(SPOTS.isp); scene.add(isp);
-  // the VPN server's room in the other town, and the town around it
-  const dc = building(10, 4.6, 7, 0x6f7a6c, { sign: 0x1f5a3c, windows: false }); dc.position.copy(SPOTS.vpn); scene.add(dc);
+  // the provider's server hall, and the VPN's in the other town, with the town around it: no roof (r360)
+  for (const [at, w, sign] of [[HALLS.i, 0x8c95a3, 0x2d5f9a], [HALLS.v, 0x7d8a7a, 0x1f5a3c]]) {
+    const h = hall(at.w, at.d, HALL_H, w, sign); h.position.set(at.x, 0, at.z); scene.add(solid(h));
+  }
   for (const [x, z, w, d, h, wall] of [[-27, -41, 5, 5, 3.4, 0xd9c8a8], [-25, -32, 4.5, 4, 3, 0xcbb894], [-3, -43, 6, 5, 3.6, 0xe0d2b4], [-1, -35, 4, 4, 3, 0xd2c29c]]) {
-    const hs = house(w, d, h, wall, 0x8e3f2c); hs.position.set(x, 0, z); hs.rotation.y = (x + z) % 2 * .2; scene.add(hs);
+    const hs = house(w, d, h, wall, 0x8e3f2c); hs.position.set(x, 0, z); hs.rotation.y = (x + z) % 2 * .2; scene.add(solid(hs));
   }
   // Bob's site: a small office, its server out front
-  const office = building(9, 4.4, 6, 0xd8cfbf, { sign: 0xb07d00 }); office.position.copy(SPOTS.bob); scene.add(office);
+  const office = building(9, 4.4, 6, 0xd8cfbf, { sign: 0xb07d00 }); office.position.copy(SPOTS.bob); scene.add(solid(office));
   // houses along the main street, for a town
-  for (const [x, z] of [[-50, -8], [-22, -9], [12, -9], [46, -6]]) { const hs = house(5, 5, 3.6, 0xe4d6bc, 0x7a3a2a); hs.position.set(x, 0, z); scene.add(hs); }
+  for (const [x, z] of [[-50, -8], [-22, -9], [12, -9], [46, -6]]) { const hs = house(5, 5, 3.6, 0xe4d6bc, 0x7a3a2a); hs.position.set(x, 0, z); scene.add(solid(hs)); }
 
-  for (const [k, pts] of Object.entries(LINES)) scene.add(buildCable(EDGES[k], pts));
+  const cables = {};   // each cable's tube, by edge ('wi', 'ib', 'iv', 'vb'): step 3 lights the one a box picks
+  for (const [k, pts] of Object.entries(LINES)) { const c = buildCable(EDGES[k], pts); scene.add(c); cables[k] = c.userData.tube; }
   const waves = buildWaves(); scene.add(waves);
 
   // Shadow's items: racks at the provider and at the VPN, a tower at Bob's, a laptop on each table
   const [rack, tower, laptop] = await Promise.all(['server_rack', 'tower', 'laptop'].map(n => loadShape(`../assets/shapes/${n}.json`)));
   const shadows = o => { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; };
   const items = { racks: [], fans: [], screens: [] };
-  for (const [at, n] of [[NODES.i, 4], [NODES.v, 3]]) for (let k = 0; k < n; k++) {
-    const r = shadows(rack.clone()); r.position.set(at.x + (k - (n - 1) / 2) * .62, 0, at.z - .9); scene.add(r); items.racks.push(r);
-    items.fans.push(r.getObjectByName('Fan'));
+  // in each hall, rows of racks across its width: the ones at the packet's stop are whole racks whose
+  // fans turn, the rest one instanced mesh per part of Shadow's rack (a few draw calls for the lot)
+  const crowd = [];
+  for (const [k, n] of [['i', 4], ['v', 3]]) {
+    const H = HALLS[k], at = NODES[k], span = H.w / 2 - .9;
+    for (const z of H.rows) for (let x = H.x - span; x <= H.x + span + .01; x += .62) {
+      const mid = z === H.rows[0] && Math.abs(x - at.x) < n * .31;
+      if (Math.abs(x - H.x) < .25 && z !== H.rows[0]) continue;   // an aisle down the middle, from the door
+      if (!mid) { crowd.push(v(x, 0, z)); continue; }
+      const r = shadows(rack.clone()); r.position.set(x, 0, z); scene.add(r); items.racks.push(r);
+      items.fans.push(r.getObjectByName('Fan'));
+    }
   }
+  scene.add(instanced(rack, crowd));
   const tw = shadows(tower.clone()); tw.position.set(NODES.b.x, 0, NODES.b.z - .4); scene.add(tw);
   const laptops = {};
   for (const [k, spot, turn] of [['a', SPOTS.tableA, .5], ['e', SPOTS.tableE, -.5]]) {
     const l = shadows(laptop.clone()); l.position.copy(spot).add(v(0, TABLE_Y, 0)); l.rotation.y = Math.PI + turn; l.scale.setScalar(.8); scene.add(l);
     laptops[k] = l; items.screens.push(l.getObjectByName('Screen'));
   }
-  // a canopy over the provider's racks
-  const canopy = new THREE.Mesh(new THREE.BoxGeometry(4.2, .15, 2.6), mat(0x3a3f48)); canopy.position.set(NODES.i.x, 2.6, NODES.i.z - .6); scene.add(canopy);
-  const canopy2 = canopy.clone(); canopy2.position.set(NODES.v.x, 2.6, NODES.v.z - .6); scene.add(canopy2);
 
-  const world = { scene, sun, laptops, items, router: box };
+  // the boxes a riding camera must stay over (the buildings, the awning, the halls' walls), r360
+  scene.updateMatrixWorld(true);
+  const obstacles = scene.children.filter(o => o.userData.solid).map(o => new THREE.Box3().setFromObject(o));
+  const world = { scene, sun, laptops, items, router: box, cables, obstacles };
   world.update = (dt, time) => {
     waves.userData.update(time);
     box.userData.led.material.emissiveIntensity = 1.5 + Math.sin(time * 9) * 1.2;

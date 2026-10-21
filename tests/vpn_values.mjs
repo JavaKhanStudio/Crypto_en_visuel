@@ -114,6 +114,9 @@ check('tunnel: Victor sees what the provider saw (the trust moves)', S('v', { tu
 check('tunnel: Bob sees the VPN\'s address, not the café\'s', N.sees('b', { tunnel: true }).from + ' ' + N.sees('b', {}).from, 'vpn cafe');
 check('no tunnel: nothing passes through the VPN', N.sees('v', {}).content, null);
 check('route through the tunnel', N.route(true).join(''), 'awivb');
+// Victor's other customers (step 12): documentation addresses (RFC 5737), example names (RFC 2606)
+check('other customers: RFC 5737 addresses, .example names', N.OTHERS.every(o => /^(192\.0\.2|198\.51\.100|203\.0\.113)\.\d{1,3}$/.test(o.addr) && o.name.endsWith('.example'))
+  && new Set(N.OTHERS.map(o => o.addr).concat(Object.values(N.ADDR))).size === N.OTHERS.length + 3, true);
 
 // THE WORDS: every address, byte group and count the story, the tags and the quiz write is the page's
 for (const [l, d] of Object.entries(DICTS)) {
@@ -127,6 +130,19 @@ for (const [l, d] of Object.entries(DICTS)) {
   check(`${l}: 14 steps, 5 chapters`, `${Object.keys(d.steps).length} ${d.ch.length}`, '14 5');
   check(`${l}: the quiz has 7 questions, each with its right answers inside the options`, QUIZ.length === 7 && QUIZ.every(q => q[l].o.length === 4 && q.correct.every(c => c < 4)), true);
 }
+// an episode cited by its name ({@3|« Les couleurs de Diffie-Hellman »}, r360) is spelled as the home page names it
+const { EPISODES } = await import('../xref.js');
+const fs = await import('node:fs');
+const home = fs.readFileSync(new URL('../home.js', import.meta.url), 'utf8');
+for (const [l, d] of Object.entries(DICTS)) {
+  let part = l === 'en' ? home.slice(home.indexOf('const en = {')) : home.slice(0, home.indexOf('const en = {'));
+  part = part.slice(part.indexOf('ep: {'));   // the episodes' titles, not the topic lists above them
+  for (const s of Object.values(d.steps)) for (const [, n, name] of s.p.matchAll(/\{@([\d.]+)\|[«‘]\s*(.+?)\s*[»’]\}/g)) {
+    const slug = EPISODES[n]?.[0], m = slug && part.match(new RegExp(`'?${slug}'?: \\[(['"])(.*?)\\1`));
+    check(`${l}: episode ${n} cited as « ${name} »`, name, m?.[2]);
+  }
+}
+
 // every key of the French dicts exists in English (a missing one would show French on the EN page)
 const keys = (o, p = '') => Object.entries(o).flatMap(([k, x]) => typeof x === 'object' && !Array.isArray(x) ? keys(x, p + k + '.') : [p + k]);
 const missing = keys(DICTS.fr).filter(k => !keys(DICTS.en).includes(k));

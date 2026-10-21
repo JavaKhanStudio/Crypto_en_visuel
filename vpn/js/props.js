@@ -1,6 +1,6 @@
 // The objects of the story, built from primitives: the envelopes that ride the cables (the address
 // written on the outside), the case the tunnel seals them in, the keys, the café's Wi-Fi box, its
-// bar tables, the buildings, the floating tags, and the characters. The servers and the
+// bar tables, the buildings, the open-top server halls, the floating tags, and the characters. The servers and the
 // laptops are Shadow's (assets/shapes, through lib/shapes.js), placed by world.js.
 // One unit is one metre: a person is 1.8 m, a table 75 cm high.
 import * as THREE from 'three';
@@ -11,25 +11,37 @@ const dark = mat(0x15110c, { roughness: 1 });
 export const box = (w, h, d, m, x = 0, y = 0, z = 0) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); b.castShadow = true; b.receiveShadow = true; return b; };
 
 // ---------- envelopes ----------
-// An envelope, 0.9 × 0.6, its face toward +z, the address on a tag above it. kind: 'plain' (paper),
-// 'locked' (the site's own lock on it: HTTPS), 'key' (a public key going out), 'sealed' (the tunnel's
-// gold case, larger, an inner envelope inside).
+// An envelope, 0.9 × 0.6, the address on a tag above it. kind: 'plain' (paper), 'locked' (the site's
+// own lock on it: HTTPS), 'key' (a public key going out), 'sealed' (the tunnel's gold case, larger, an
+// inner envelope inside). Its face always turns to the camera, it flutters a little as it rides, and
+// seen from far it grows so it never shrinks under about the size it has at 16 m (r360: seen whole,
+// the map's packets were a few pixels). userData.size scales it on top of that.
+const _p = new THREE.Vector3(), _q = new THREE.Quaternion();
 export function envelope(kind = 'plain') {
-  const g = new THREE.Group(), big = kind === 'sealed' ? 1.35 : 1;
+  const g = new THREE.Group(), card = new THREE.Group(), big = kind === 'sealed' ? 1.35 : 1;
   const paper = kind === 'sealed' ? mat(0xf2c24f, { metalness: .5, roughness: .35, emissive: 0x5a3c00, emissiveIntensity: .5 })
     : kind === 'key' ? mat(0x9fd0ff, { emissive: 0x1a3a66, emissiveIntensity: .6 }) : mat(0xf6f0e2, { emissive: 0x2a2a2a, emissiveIntensity: .4 });
-  const body = box(.9 * big, .6 * big, .06, paper); g.add(body);
+  const body = box(.9 * big, .6 * big, .06, paper); card.add(body);
   // the flap: a triangle on the face
   const flap = new THREE.Mesh(new THREE.CylinderGeometry(.33 * big, .33 * big, .02, 3), kind === 'sealed' ? mat(0xc79a2a, { metalness: .5 }) : mat(0xd9d0bc));
-  flap.rotation.set(Math.PI / 2, 0, Math.PI); flap.scale.set(1.36, 1, .55); flap.position.set(0, .14 * big, .04); g.add(flap);
+  flap.rotation.set(Math.PI / 2, 0, Math.PI); flap.scale.set(1.36, 1, .55); flap.position.set(0, .14 * big, .04); card.add(flap);
   if (kind === 'locked' || kind === 'sealed') {
     const lock = new THREE.Group(), m = mat(kind === 'sealed' ? 0x6b4a10 : 0xc9a227, { metalness: .6, roughness: .3 });
     lock.add(box(.2, .17, .06, m));
     const arch = new THREE.Mesh(new THREE.TorusGeometry(.065, .02, 6, 12, Math.PI), mat(0xb8bcc4, { metalness: .7 })); arch.position.y = .085; lock.add(arch);
-    lock.position.set(0, -.1 * big, .06); g.add(lock);
+    lock.position.set(0, -.1 * big, .06); card.add(lock);
   }
+  g.add(card);
   g.userData.tag = tag(); g.userData.tag.position.y = .62 * big; g.add(g.userData.tag);
-  g.userData.kind = kind;
+  g.userData.kind = kind; g.userData.size = 1;
+  // drawn first among its parts, the body sets the card's turn and size for this frame
+  body.onBeforeRender = (r, sc, cam) => {
+    const k = Math.min(4.5, Math.max(1, cam.position.distanceTo(g.getWorldPosition(_p)) / 16)) * g.userData.size;
+    card.scale.setScalar(k); g.userData.tag.position.y = .62 * big * k;
+    g.parent?.getWorldQuaternion(_q).invert().multiply(cam.quaternion); card.quaternion.copy(_q);
+    card.rotateZ(Math.sin(performance.now() / 260 + g.id) * .09);
+    card.updateMatrixWorld(true); g.userData.tag.updateMatrixWorld(true);
+  };
   return g;
 }
 
@@ -110,6 +122,23 @@ export function building(w, h, d, wall, { roof = 0x4a4f57, sign = null, windows 
     g.add(box(1.1, 1.1, .08, lit, x, y + .3, d / 2 + .02));
   }
   if (sign !== null) g.add(box(Math.min(w - 1, 6), .7, .12, mat(sign, { emissive: sign, emissiveIntensity: .25 }), 0, 2.75, d / 2 + .06));
+  return g;
+}
+// A server hall with no roof (r360): a floor, four low walls, a door in the front wall (+z) and a sign
+// over it, so that from above every rack inside shows. w × d, walls h high; racks are world.js's.
+export function hall(w, d, h, wall, sign) {
+  const g = new THREE.Group(), m = mat(wall), T = .25, door = 1.6;
+  g.add(box(w, .06, d, mat(0x8d9096, { roughness: .9 }), 0, .03, 0));
+  g.add(box(w, h, T, m, 0, h / 2, -d / 2 + T / 2));                                   // the back wall
+  for (const sx of [-1, 1]) g.add(box(T, h, d, m, sx * (w / 2 - T / 2), h / 2, 0));   // the sides
+  const half = (w - door) / 2;                                                        // the front, either side of the door
+  for (const sx of [-1, 1]) g.add(box(half, h, T, m, sx * (door + half) / 2, h / 2, d / 2 - T / 2));
+  g.add(box(door, .35, T, m, 0, h - .175, d / 2 - T / 2));                            // over the door
+  // a coping along the top of the walls: the cut edge reads as a wall, not a sheet
+  const cap = mat(0x5a5f68);
+  g.add(box(w + .1, .1, T + .1, cap, 0, h + .05, -d / 2 + T / 2), box(w + .1, .1, T + .1, cap, 0, h + .05, d / 2 - T / 2));
+  for (const sx of [-1, 1]) g.add(box(T + .1, .1, d, cap, sx * (w / 2 - T / 2), h + .05, 0));
+  g.add(box(Math.min(w / 2 - 2, 3.4), .5, .08, mat(sign, { emissive: sign, emissiveIntensity: .35 }), -(w / 4 + .4), h - .55, d / 2 + .04));   // a plate on the front wall
   return g;
 }
 // A café awning over the terrace, striped.

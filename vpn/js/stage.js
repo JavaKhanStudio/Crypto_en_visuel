@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { NODES, SPOTS, edge } from './world.js';
 import { envelope, tag, setTag, key, person, COLORS } from './props.js';
-import { ADDR, NAME, PUBLIC, KEY, hex, sees, route, opened, flipped, SEALED } from './net.js';
+import { ADDR, NAME, OTHERS, PUBLIC, KEY, hex, sees, route, opened, flipped, SEALED } from './net.js';
 import { burst, ring } from './fx.js';
 import { sfx } from './sound.js';
 import { t, raw } from './i18n.js';
@@ -39,6 +39,7 @@ const BASE = {
   keys: 0,                // 0 no keys; 1 each side has its pair, the public halves swapped; 2 both found the shared key
   parked: null,           // an envelope resting at a stop: { at, kind }
   dropped: false,         // the VPN threw the last packet away
+  crowd: null,            // step 12: how many of Victor's other customers' packets he has opened (null: not shown)
   card: 'none',
 };
 
@@ -120,7 +121,7 @@ export class Stage {
     this.tube.visible = st.tunnel;
     this.drawKeys();
     this.drawTags();
-    this.envs.clear();
+    this.envs.clear(); this.lightCables();
     this.focus.position.copy(NODES.a);
     if (st.parked) { const env = this.makeEnv(st.parked.kind, this.addrLabel('page')); env.position.copy(NODES[st.parked.at]).add(v(0, .5, 0)); this.envs.add(env); }
     this.redraw();
@@ -149,6 +150,8 @@ export class Stage {
       : [[w.twoPubs, '#fff'], [`${hex(PUBLIC.a, 4)}… ${hex(PUBLIC.v, 4)}…`, '#5fb0ff'], [w.noSecret, '#9aa3b5']];
     if (st.what === 'dns' && who !== 'v' && who !== 'b') return [[t('tag.asks', { name: NAME }), '#fff'], [t('tag.answer', { addr: ADDR.bob }), '#fff']];
     if (st.dropped && who === 'v') return [[w.badTag, '#ff8f9a'], [w.thrown, '#ff8f9a']];
+    if (st.crowd !== null && who === 'v') return [[w.crowd.head, '#fff'], [t('tag.crowd.line', { addr: ADDR.cafe, name: `${ADDR.bob} ${NAME}` }), '#ffb3bb'],
+      ...OTHERS.slice(0, st.crowd).map(o => [t('tag.crowd.line', o), '#ffb3bb']), [w.crowd.when, '#d9d2c0']];
     const s = sees(who, st), L = [];
     if (s.content === null) return [[w.nothing, '#9aa3b5']];
     if (s.from) L.push([t('tag.from', { addr: ADDR[s.from], who: w.place[s.from] }), '#fff']);
@@ -248,12 +251,17 @@ export class Stage {
   wait(s) { return this.tween(s, () => {}); }
 
   // one envelope from stop `from` to stop `to`, along the cable (or the air, from the laptop)
+  // It leaves a short wake of sparks in its colour, so the eye can follow it however far (r360).
   async hop(env, from, to) {
     const { curve, back } = edge(from, to), len = curve.getLength(), lift = v(0, .45, 0);
+    const col = { sealed: 0xffd66b, key: 0x5fb0ff, locked: 0x9fe39a }[env.userData.kind] ?? 0xfff3d6;
+    let since = 0, last = 0;
     return this.tween(Math.max(.5, len / SPEED), x => {
       const u = ease(x);
       env.position.copy(curve.getPointAt(back ? 1 - u : u)).add(lift);
       this.focus.position.copy(env.position);
+      since += x - last; last = x;
+      if (since * len > 1.2 && x < 1) { since = 0; burst(env.position.clone(), col, { count: 3, speed: .25, up: 0, gravity: 0, life: .7, size: .22 }); }
     });
   }
   // who watches at a stop: the Wi-Fi is Eve's when she sits at the café; elsewhere Eve, if she stands
@@ -302,10 +310,65 @@ export class Stage {
     return true;
   }
 
+  // Step 12 (r360): Alice's tunnel is not the only one that ends at Victor's. Her packet comes up the
+  // valley while the other customers' gold cases fly in from other towns; each one is opened at his
+  // racks, and his tag adds where it was going.
+  async crowd() {
+    const st = this.st; st.crowd = 0; this.watch = ['v'];
+    const alice = this.send(['v']);
+    const fly = async (o, k) => {
+      if (!await this.wait(1 + k * 1.3)) return false;
+      const env = this.makeEnv('sealed', [t('tag.to', { addr: ADDR.vpn, who: raw('tag.place').vpn })]);
+      const end = NODES.v.clone().add(v(0, .5, 0)), start = v(-14 + (k - 1) * 46, 18, -95);
+      const c = new THREE.QuadraticBezierCurve3(start, start.clone().lerp(end, .55).add(v(0, 14, 0)), end);
+      env.position.copy(start); this.envs.add(env); sfx.send();
+      if (!await this.tween(2.6, x => env.position.copy(c.getPointAt(ease(x))))) return false;
+      burst(end.clone(), 0xffd66b, { count: 40, speed: 3, size: .14 }); sfx.unlock(); this.envs.remove(env);
+      ring(NODES.v.clone().add(v(0, .5, 0)), 0xffd66b, { radius: 1.6, life: .8 });
+      if (!st.read.includes('v')) st.read.push('v');
+      st.crowd++; this.drawTags(); this.redraw();
+      return true;
+    };
+    const ok = await Promise.all([alice, ...OTHERS.map(fly)]);
+    return ok.every(Boolean);
+  }
+
+  // Step 3, the way a packet finds its road (r360): at each box it stops, the box reads the address
+  // (a tag says what it read and where it sends it), the cable it picks lights green, the others it
+  // could have taken flash red, and the envelope rides on. Bob's server finds its own address: it keeps it.
+  async routeRead() {
+    const st = this.st, w = raw('tag.route'), T = this.world.cables; this.envs.clear(); this.lightCables();
+    const env = this.makeEnv(st.https ? 'locked' : 'plain', this.addrLabel('page'));
+    env.position.copy(NODES.a).add(v(0, .5, 0)); this.envs.add(env); sfx.send();
+    const OUT = { w: { pick: 'wi', other: [], dir: 'i' }, i: { pick: 'ib', other: ['iv'], dir: 'b' } }, path = ['a', 'w', 'i', 'b'];
+    for (let k = 0; k + 1 < path.length; k++) {
+      if (!await this.hop(env, path[k], path[k + 1])) return false;
+      const at = path[k + 1], o = OUT[at], note = tag(); note.renderOrder = 25;
+      note.position.copy(NODES[at]).add(v(0, at === 'w' ? 1.6 : 2.6, 0)); this.envs.add(note);
+      ring(NODES[at].clone().add(v(0, .5, 0)), 0x9fe8ff, { radius: 1.4, life: .8 }); sfx.tick();
+      setTag(note, [[t('tag.route.read', { addr: ADDR.bob }), '#fff'], o ? [t('tag.route.via', { dir: w.dir[o.dir] }), '#5fe39a'] : [w.here, '#5fe39a']], '#9fe8ff', .019);
+      if (o) this.lightCables({ [o.pick]: 0x5fe39a, ...Object.fromEntries(o.other.map(e => [e, 0xff5a6a])) });
+      if (!await this.wait(1.3)) return false;
+      if (o) this.lightCables({ [o.pick]: 0x5fe39a });
+    }
+    sfx.arrive();
+    return true;
+  }
+  // light some cables (edge -> colour): a thick glowing sleeve over the thin cable, seen from far too
+  lightCables(lit = {}) {
+    this.glows ??= {};
+    for (const k of Object.keys(this.world.cables || {})) {
+      if (!lit[k]) { if (this.glows[k]) this.glows[k].visible = false; continue; }
+      this.glows[k] ??= this.scene.add(new THREE.Mesh(new THREE.TubeGeometry(edge(k[0], k[1]).curve, 160, .16, 8),
+        new THREE.MeshBasicMaterial({ transparent: true, opacity: .75, depthWrite: false }))).children.at(-1);
+      this.glows[k].material.color.setHex(lit[k]); this.glows[k].visible = true;
+    }
+  }
+
   // The name first: Alice's laptop asks the provider's name server where bob.example lives, in clear.
   async dns(watch = ['e', 'i']) {
     this.watch = watch; this.st.what = 'dns'; this.envs.clear();
-    const q = this.makeEnv('plain', this.addrLabel('dnsq')); q.scale.setScalar(.7); q.position.copy(NODES.a).add(v(0, .5, 0)); this.envs.add(q);
+    const q = this.makeEnv('plain', this.addrLabel('dnsq')); q.userData.size = .7; q.position.copy(NODES.a).add(v(0, .5, 0)); this.envs.add(q);
     for (const [f, to] of [['a', 'w'], ['w', 'i']]) { if (!await this.hop(q, f, to)) return false; if (!await this.stop(to)) return false; }
     setTag(q.userData.tag, this.addrLabel('dnsa'), '#e6dfcf', .017);
     for (const [f, to] of [['i', 'w'], ['w', 'a']]) { if (!await this.hop(q, f, to)) return false; if (!await this.stop(to, to === 'a')) return false; }
@@ -328,6 +391,31 @@ export class Stage {
       for (const at of new Set([fwd[k + 1], bwd[k + 1]])) if (at !== 'a') await this.stop(at, true);
     }
     this.envs.clear(); sfx.arrive();
+    return true;
+  }
+
+  // Step 8 at one side (r360): the other's public key, as it arrived, hangs over this side's own; it and
+  // the secret slide together, and the gold shared key comes out of them; the secret goes back home
+  // (it is not spent). Shown at Alice's, then at Victor's, the camera close on each.
+  async merge(who) {
+    const o = this.keys[who], other = who === 'a' ? 'v' : 'a', pub = key(0x5fb0ff), lab = pub.userData.tag;
+    pub.remove(lab); pub.scale.setScalar(KEY_SIZE); this.envs.add(pub, lab);
+    setTag(lab, [t('tag.pubOf.' + other), hex(other === 'a' ? PUBLIC.a : PUBLIC.v, 4) + '…'], '#5fb0ff', .016);
+    const home = this.keyAt(who, 'secret'), top = this.keyAt(who, 'shared'), from = this.keyAt(who, 'pub').add(v(0, 2.4, 0));
+    const place = (obj, p) => { obj.position.copy(p); if (obj.userData.tag) obj.userData.tag.position.copy(p).add(v(0, 1.2, 0)); };
+    place(pub, from); lab.position.copy(from).add(v(0, 1.2, 0)); pub.scale.setScalar(.01);
+    burst(from.clone(), 0x5fb0ff, { count: 20, speed: 2, size: .12 }); sfx.send();
+    if (!await this.tween(.5, x => pub.scale.setScalar(KEY_SIZE * ease(x) + .01))) return false;
+    if (!await this.wait(.6)) return false;
+    // the secret and the other's public key meet where the shared key will be
+    o.secret.userData.tag.visible = false; lab.visible = false;
+    if (!await this.tween(1.1, x => { const u = ease(x); place(o.secret, home.clone().lerp(top, u)); pub.position.copy(from.clone().lerp(top, u)); })) return false;
+    this.envs.remove(pub, lab);
+    o.shared.visible = true; o.shared.userData.tag.visible = true; o.shared.scale.setScalar(.01);
+    burst(top.clone(), 0xffd66b, { count: 50, speed: 3, size: .14 }); sfx.win();
+    if (!await this.tween(.7, x => o.shared.scale.setScalar(KEY_SIZE * ease(x) + .01))) return false;
+    if (!await this.tween(.8, x => place(o.secret, top.clone().lerp(home, ease(x))))) return false;
+    o.secret.userData.tag.visible = true;
     return true;
   }
 
