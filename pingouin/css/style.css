@@ -61,7 +61,20 @@ button.icon { padding: .4em .6em; }
 .chapters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
 .chapters button { font-size: 12px; padding: .25em .7em; border-radius: 999px; }
 .narration h2 { font: 600 22px/1.2 var(--serif); margin: 4px 0 6px; }
-.narration p { margin: 0; color: #e6dfcf; min-height: 3em; }
+.narration .step-text { color: #e6dfcf; min-height: 3em; }
+/* r174/r242: the step text's paragraphs and list (js/md.js); its colours are the card's: gold hex
+   bytes, red for what repeats or Eve changed, blue for the modes. A coloured value stays on one line. */
+.step-text p { margin: 0; }
+.step-text p + p, .step-text ul + p { margin-top: 6px; }
+.step-text p + ul { margin-top: 3px; }
+.step-text ul { margin: 0; padding-left: 1.25em; }
+.step-text li { margin: 2px 0; }
+.step-text li::marker { color: var(--muted); }
+.step-text strong { color: #fff; }
+.step-text span { white-space: nowrap; }
+.tone-g { color: #ffd84d; font-weight: 700; }
+.tone-r { color: #ff8f9a; font-weight: 700; }
+.tone-b { color: #9fd0ff; font-weight: 700; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .actions:empty { display: none; }
 /* r105/r135: the last step's doors out, a picture each; the next episode last, at the right, in gold */
