@@ -2,12 +2,13 @@
 name tags cut by the screen edge or under a bubble or panel. Serve the repo first (python3 -m http.server 8793).
   python3 tools/story_shot.py out/name 7 [--lang en] [--base http://localhost:8793/] [--page enigma-casse]   (r125, r151)
 A page whose bubbles have no tagBoxes() (enigma-casse) gets its tags projected here from every sprite with userData.text."""
-import argparse, sys
+import argparse, json, sys
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, 'tests')
 ap = argparse.ArgumentParser(); ap.add_argument('out'); ap.add_argument('step', type=int)
 ap.add_argument('--lang', default='fr'); ap.add_argument('--base', default='http://localhost:8793/'); ap.add_argument('--size', default='1440x860')
 ap.add_argument('--page', default='enigma-reglage')
+ap.add_argument('--try', dest='tries', default='', help='JSON [[px,py,pz,tx,ty,tz],...] camera spots, world units relative to machine e: each is jumped to after the action, shot as out-i.png, its tags listed (r351)')
 a = ap.parse_args()
 W, H = map(int, a.size.split('x'))
 src = open('tests/enigma-reglage_story.py').read()
@@ -36,4 +37,9 @@ with sync_playwright() as p:
     btn.click(); pg.wait_for_timeout(300); pg.wait_for_function(idle, timeout=180000); pg.wait_for_timeout(1200)
     pg.screenshot(path=a.out + '.png')
     print(a.out + '.png', 'tags:', pg.evaluate(TAGS) or 'all clear', 'errors:', errs or 'none')
+    for i, c in enumerate(json.loads(a.tries) if a.tries else []):
+        pg.evaluate('''c => { const T = demo.THREE, m = demo.stage.machines.e.position;
+          demo.rig.jump({ pos: m.clone().add(new T.Vector3(c[0], c[1], c[2])), target: m.clone().add(new T.Vector3(c[3], c[4], c[5])) }); }''', c)
+        pg.wait_for_timeout(600); pg.screenshot(path=f'{a.out}-{i}.png')
+        print(f'{a.out}-{i}.png', c, 'tags:', pg.evaluate(TAGS) or 'all clear')
     b.close()
