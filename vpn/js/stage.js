@@ -180,7 +180,9 @@ export class Stage {
       const col = '#' + new THREE.Color(COLORS[who]).getHexString();
       // on a phone pinTags may move a tag off its watcher and hide the places' names: its first line says whose it is (r344)
       const head = portrait() ? [[t('tag.head.' + who, { at: raw('sb').at[st.eve] }), col]] : [];
-      if (show) setTag(s, [...head, ...this.lines(who)], col, .019); else s.visible = false;
+      // step 12's crowd form is the longest tag: on a phone it is drawn larger, so its addresses read (r380)
+      const h = portrait() && who === 'v' && st.crowd !== null ? .023 : .019;
+      if (show) setTag(s, [...head, ...this.lines(who)], col, h); else s.visible = false;
       s.userData.want = show;
     }
     const p = raw('place');
