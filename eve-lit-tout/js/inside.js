@@ -25,6 +25,8 @@
 import * as THREE from 'three';
 import { t } from './i18n.js';
 import { CASTLE_A } from './world.js';
+import { SHOTS } from './camera.js';
+import { ZOOM, windowPath, roomArrival, setVeil } from '../../lib/zoom.js';
 import * as A from './aes.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
@@ -34,11 +36,12 @@ const span = (time, a, b) => ease(clamp01((time - a) / (b - a)));
 const hx = x => x.toString(16).padStart(2, '0');
 
 // the upper lit window of Alice's keep on the valley side (+z), y 9 above the plateau: the way in.
-// near: where the flight from the valley lands; deep: past the glass, where the veil has closed.
+// focus: the point behind the glass the zoom closes on (lib/zoom.js); normal: out through the window,
+// the line the camera ends on; near: where a mode switch leaves the camera, in front of the keep.
 const WINDOW = () => v(CASTLE_A.x, CASTLE_A.y + 9, 3.52);
 export const DOORS = {
-  a: () => ({ near: { pos: v(CASTLE_A.x + 3, CASTLE_A.y + 12.5, 16), target: WINDOW() },
-              deep: { pos: v(CASTLE_A.x + .05, CASTLE_A.y + 9.02, 3.75), target: v(CASTLE_A.x, CASTLE_A.y + 9, 0) } }),
+  a: () => ({ focus: v(CASTLE_A.x, CASTLE_A.y + 9, 0), normal: v(0, 0, 1),
+              near: { pos: v(CASTLE_A.x + 3, CASTLE_A.y + 12.5, 16), target: WINDOW() } }),
 };
 
 // ---------- what a room is made of ----------
@@ -300,12 +303,6 @@ export class Inside {
     this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix();
     if (this.room && this.room.portrait !== this.portrait) this.rebuild();
   }
-  // the screen goes to the window's warm light and back; resolves once it is covered (or clear)
-  cover(on, ms = 380) {
-    ms = this.instant ? 0 : ms;
-    this.veil.style.transitionDuration = ms + 'ms'; this.veil.classList.toggle('on', on);
-    return new Promise(r => setTimeout(r, ms));
-  }
   build(name, send) {
     const scene = new THREE.Scene(), machine = ROOMS[name](scene, send, this.portrait);
     return { name, send, scene, machine, portrait: this.portrait };
@@ -316,45 +313,48 @@ export class Inside {
     this.renderPass.scene = s; this.renderPass.camera = c; this.bubbles.camera = c;
     if (old && old !== room) old.scene.traverse(o => { o.geometry?.dispose(); [o.material].flat().forEach(m => { m?.map?.dispose(); m?.dispose?.(); }); });
   }
+  // r103 (Simon 21 Oct: « keep zooming while the veil appears »): one move from wherever the camera
+  // is to the glass, faster and faster in proportion, the veil on the same clock; the room camera
+  // then goes on closing in at the rate the valley camera had (lib/zoom.js)
   async enter(name, beat, send, live = () => true) {
-    const tok = ++this.token, door = DOORS.a(), fast = this.instant ? .001 : 1;
+    const tok = ++this.token, door = DOORS.a(); this.focus = door.focus;   // focus: what tools/zoom_trace.py measures to
     // the room is built and its shaders compiled during the flight, so the swap does not stall
     const room = this.build(name, send); room.machine.pose(beat, 0);
     const ready = this.renderer.compileAsync(room.scene, this.camera).catch(() => {});
-    // r158 (Simon: « keep zooming as you fade with the warm veil »): the flight to the window does
-    // not stop there; it hands its speed to a push through the glass that keeps gathering speed,
-    // and the veil rises on the push's second half, the camera still moving
-    const d1 = this.outer.camera.position.distanceTo(door.near.pos), d2 = door.near.pos.distanceTo(door.deep.pos);
-    const T1 = 1.8, T2 = 1.1, r = d1 > 1 ? Math.min(2, .5 * d2 * T1 / (d1 * T2)) : 0;
-    if (d1 > 1) await this.rig.fly(door.near, T1 * fast, { ease: k => k * k * (3 - 2 * k) + r * (k * k * k - k * k) });
-    if (tok !== this.token || !live()) return false;
-    const push = this.rig.fly(door.deep, T2 * fast, { ease: k => (k + k * k) / 2, lift: 0 });
-    await new Promise(r => setTimeout(r, this.instant ? 0 : 380));
-    await this.cover(true, 650); await push; await ready;
-    if (tok !== this.token || !live()) { this.cover(false); return false; }
+    // and its textures (the tiles' letters) go to the GPU during the flight too: uploaded at the swap,
+    // they froze the first room frame for a quarter second under the veil (tools/zoom_trace.py)
+    const maps = new Set(); room.scene.traverse(o => [o.material].flat().forEach(m => m?.map && maps.add(m.map)));
+    [...maps].forEach((m, i) => setTimeout(() => { if (tok === this.token) this.renderer.initTexture(m); }, 100 + i * 8));
+    const cam = this.outer.camera, from = { pos: cam.position.clone(), target: this.rig.controls.target.clone() };
+    const path = windowPath({ from, focus: door.focus, normal: door.normal });
+    this.zooming = { tok, live };
+    await this.rig.fly({ pos: door.focus, target: door.focus }, this.instant ? .001 : ZOOM.T,
+      { path: k => { setVeil(this.veil, ZOOM.veil(k)); return path(k); } });
+    await ready;
+    this.zooming = null;
+    if (tok !== this.token || !live()) { setVeil(this.veil, 0); return false; }
     this.swap(room); this.log.push(['in', performance.now()]);
-    this.beat(beat);
-    // the room camera arrives from further back and is still closing in as the veil lifts
-    this.fit(true); if (!this.instant) this.view.d *= 1.8;
+    this.beat(beat); this.fit(true);
+    if (this.instant) setVeil(this.veil, 0);
+    else this.arrival = { ...roomArrival(path.rate), tau: 0, out: false };
     this.update(0);
-    await this.cover(false, 600);
     return true;
   }
   beat(id) { if (!this.room) return; this.room.beat = id; this.time = this.instant ? this.room.machine.beats[id].end : 0; }
-  // out the way it came: the camera backs off as the veil rises, the valley comes back at the window
-  // and the camera flies on to shot, fast first
+  // out the way it came, the same move backwards: the room camera backs off faster and faster as the
+  // veil rises, then the valley camera pulls out of the window at that rate and slows onto shot
   async leave(shot) {
     if (!this.room) return;
-    const tok = ++this.token;
-    if (!shot) { this.swap(null); this.veil.classList.remove('on'); this.rig.jump(DOORS.a().near); return; }   // a mode switch: a cut
-    this.leaving = true;
-    await this.cover(true, 500);
-    this.leaving = false;
+    const tok = ++this.token, door = DOORS.a(); this.focus = door.focus;   // focus: what tools/zoom_trace.py measures to
+    this.arrival = null;
+    if (!shot) { this.swap(null); setVeil(this.veil, 0); this.rig.jump(door.near); return; }   // a mode switch: a cut
+    const to = typeof shot === 'string' ? SHOTS[shot] : shot;
+    const path = windowPath({ from: to, focus: door.focus, normal: door.normal });
+    if (!this.instant) await new Promise(res => { this.arrival = { ...roomArrival(path.rate), tau: 0, out: true, res }; });
     if (tok !== this.token) return;
     this.swap(null); this.log.push(['out', performance.now()]);
-    this.rig.jump(DOORS.a().deep);
-    this.cover(false, 600);
-    return this.rig.fly(shot, this.instant ? .001 : 2.8, { ease: k => 1 - (1 - k) * (1 - k) });
+    return this.rig.fly(to, this.instant ? .001 : ZOOM.T,
+      { path: k => { setVeil(this.veil, ZOOM.veil(1 - k)); return path(1 - k); } });
   }
   rebuild(send = this.room?.send) {
     if (!this.room) return;
@@ -394,13 +394,22 @@ export class Inside {
     if (now) { this.view.center.copy(c); this.view.d = d; }
   }
   update(dt) {
+    // a zoom in cut short (another step, another mode): its veil goes
+    if (this.zooming && (this.zooming.tok !== this.token || !this.zooming.live())) { this.zooming = null; setVeil(this.veil, 0); }
     if (!this.room) return;
     this.time += dt;
     const m = this.room.machine;
     m.pose(this.room.beat, this.time);
     this.fit();
     const k = this.instant ? 1 : 1 - Math.pow(SMOOTH, dt), w = this.want;
-    this.view.center.lerp(w.center, k); this.view.d += ((this.leaving ? w.d * 2.4 : w.d) - this.view.d) * (this.leaving ? 1 - Math.pow(.001, dt) : k);
+    this.view.center.lerp(w.center, k);
+    const a = this.arrival;
+    if (a) {   // the zoom's room side (lib/zoom.js): in, closing on the framing; out, backing off it
+      a.tau += dt / a.T;
+      this.view.d = w.d * (a.out ? a.back(a.tau) : a.factor(a.tau));
+      setVeil(this.veil, a.out ? a.backVeil(a.tau) : a.veil(a.tau));
+      if (a.tau >= 1) { this.arrival = null; a.res?.(); }
+    } else this.view.d += (w.d - this.view.d) * k;
     const c = this.view.center, d = this.view.d;
     this.camera.position.set(c.x + Math.sin(this.time * .25) * .02 * d, c.y + d * .14, c.z + d);
     this.camera.lookAt(c);

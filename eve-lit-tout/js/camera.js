@@ -36,13 +36,14 @@ export class CameraRig {
   // moves read as a swoop rather than a slide. Resolves when it lands.
   // opts.ease: another curve (r158: the push into a castle window speeds up, the way out slows down);
   // opts.lift: the arc's height (0: a straight push).
+  // opts.path: k (0..1, linear in time) -> { pos, target }, a move of its own (r103: lib/zoom.js windowPath).
   fly(shot, duration = 2.2, opts = {}) {
     const s = typeof shot === 'string' ? SHOTS[shot] : shot;
     this.follow = null;
     return new Promise(res => {
       const from = { pos: this.camera.position.clone(), target: this.controls.target.clone() };
       const lift = opts.lift ?? Math.min(40, from.pos.distanceTo(s.pos) * .18);
-      this.flight = { from, to: s, t: 0, duration, lift, res, ease: opts.ease || ease };
+      this.flight = { from, to: s, t: 0, duration, lift, res, ease: opts.ease || ease, path: opts.path };
     });
   }
 
@@ -63,10 +64,13 @@ export class CameraRig {
     const c = this.controls;
     if (this.flight) {
       const f = this.flight; f.t = Math.min(1, f.t + dt / f.duration);
-      const k = f.ease(f.t);
-      this.camera.position.lerpVectors(f.from.pos, f.to.pos, k);
-      this.camera.position.y += Math.sin(Math.PI * k) * f.lift;
-      c.target.lerpVectors(f.from.target, f.to.target, k);
+      if (f.path) { const p = f.path(f.t); this.camera.position.copy(p.pos); c.target.copy(p.target); }   // r103: lib/zoom.js
+      else {
+        const k = f.ease(f.t);
+        this.camera.position.lerpVectors(f.from.pos, f.to.pos, k);
+        this.camera.position.y += Math.sin(Math.PI * k) * f.lift;
+        c.target.lerpVectors(f.from.target, f.to.target, k);
+      }
       this.camera.lookAt(c.target);
       if (f.t >= 1) { this.flight = null; f.res(); }
       return;
