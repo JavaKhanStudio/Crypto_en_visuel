@@ -76,6 +76,17 @@ resize(); addEventListener('resize', resize);
 const sky = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: gradientTexture(page.gradients), depthWrite: false }));
 sky.renderOrder = -1; scene.add(sky);
 
+// ---------- the stage floor: planks at the front card's foot, seen only from the wings (r260) ----------
+// without it the side view shows the backcloth's pale foot between the cards; the cards stand in it as in slots
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), (() => {
+  const cv = document.createElement('canvas'); cv.width = 64; cv.height = 256;
+  const g = cv.getContext('2d');
+  for (let y = 0; y < 256; y += 16) { const f = .8 + .2 * Math.sin(y * 1.7); g.fillStyle = `rgb(${62 * f},${40 * f},${26 * f})`; g.fillRect(0, y, 64, 15); g.fillStyle = '#1a100a'; g.fillRect(0, y + 15, 64, 1); }
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(40, 400);
+  return new THREE.MeshBasicMaterial({ map: tex });
+})());
+floor.rotation.x = -Math.PI / 2; floor.scale.set(8000, 8000, 1); scene.add(floor);
+
 // ---------- the layers: a pool of tiles each, placed every frame ----------
 const strips = page.layers.map(l => {
   const mat = new THREE.MeshBasicMaterial({ map: l.texture, transparent: true, depthWrite: false });
@@ -158,6 +169,7 @@ function place(t) {
   persp.position.set(target.x + Math.sin(yaw) * r * back, target.y + Math.sin(pitch) * r * back, target.z + Math.cos(yaw) * r * back);
   persp.lookAt(target.x - swing * 60, target.y - swing * 4, target.z - swing * 90);
   curtain.visible = curtainOn && !flat && swing < .02;
+  floor.visible = !flat && swing > .02; floor.position.set(camX, 0, -D0 * 40);
   // the backcloth: screen-anchored, as the library anchors its gradients to the screen
   if (flat) { sky.position.set(WORLD_W / 2, worldH / 2, -99); sky.scale.set(WORLD_W, worldH, 1); sky.quaternion.identity(); }
   else {
