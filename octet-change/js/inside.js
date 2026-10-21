@@ -305,7 +305,7 @@ function hmacRoom(scene, pk, portrait) {
   const frames = {
     key: () => keysF,
     hmac: time => !portrait ? [...msgF, ...boxF, ...sealF(false), ...lockF, ...(time < 3.2 ? [keyHome, v(keyHome.x, keyHome.y + 3.6)] : [])]
-      : time < 2.0 ? keysF : time < 3.6 ? [keyHome, v(keyHome.x, keyHome.y + 1.8), ...boxF, ...lockF] : time < 5.6 ? [...msgF, ...boxF] : time < 9.0 ? [...boxF, ...sealF(false)] : [v(-3.5, Y0 - .4), v(3.5, Y0 - .4), ...sealF(false)],
+      : time < 2.0 ? keysF : time < 3.6 ? [keyHome, v(keyHome.x, keyHome.y + 1.8), ...boxF, ...lockF] : time < 5.6 ? [...msgF, ...boxF] : time < 9.0 ? [...boxF, ...sealF(false)] : [v(-3.5, Y0 + 2.2), v(3.5, Y0 + 2.2), ...sealF(false)],
     avalanche: time => !portrait ? [...msgF, ...boxF, ...lockF, ...sealF(true, true)]
       : time < 2.0 ? msgF : time < 5.9 ? [...msgF, ...boxF] : sealF(false, true),
   };
@@ -412,8 +412,10 @@ export class Inside {
   fit(now = false) {
     const pts = this.room.machine.frame(this.room.beat, this.time), box = new THREE.Box3().setFromPoints(pts);
     const c = box.getCenter(v(0, 0)), size = box.getSize(v(0, 0)), b = this.band();
-    // the top of the band is kept for the speaker's bubble, which points at the top of the frame
-    const room = Math.min(BUBBLE, b.h * .25); b.top += room; b.h -= room;
+    // the top of the band is kept for the speaker's bubble, which points at the top of the frame:
+    // the shown bubble's own height and its tail, as a phone's 2-3 lines outgrow BUBBLE (r356)
+    const said = [...document.querySelectorAll('.bubble.show')].reduce((m, e) => Math.max(m, e.offsetHeight + 16), 0);
+    const room = Math.min(Math.max(BUBBLE, said), b.h * .4); b.top += room; b.h -= room;
     const tan = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * 2, m = .9;
     const d = Math.max(size.y * b.H / (m * b.h), size.x * b.H / (m * b.w)) / tan + 2.2;
     this.want = { center: c, d, b, box };
