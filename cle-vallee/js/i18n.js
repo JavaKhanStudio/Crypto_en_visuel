@@ -56,6 +56,13 @@ const fr = {
     bobGets: 'Ce que Bob lit',
   },
 
+  // inside Alice's keep: OAEP and RSA at work on her two keys (inside.js); its colours are the card's
+  'in.aes': 'clé AES · 32 octets', 'in.mac': 'clé HMAC · 32 octets', 'in.one': '01 en bout de ligne : les clés suivent',
+  'in.zeros': '{n} octets à 00', 'in.lhash': 'SHA-256 du label vide · 32 octets', 'in.seed': 'la graine · 32 octets au hasard',
+  'in.mask1': '⊕ SHA-256 de la graine, étiré à {n} octets', 'in.mask2': '⊕ SHA-256 du bloc masqué',
+  'in.mseed': 'graine masquée', 'in.mdb': 'bloc masqué · {n} octets', 'in.em': 'EM · 256 octets, lus comme un seul nombre',
+  'in.pad': 'cadenas de Bob : n, e', 'in.lock': 'c = EM^65537 mod n', 'in.c': 'c, les clés fermées · 256 octets',
+
   // story
   ch: ['Les clés en clair', 'Le cadenas de Bob', 'Hybride', 'Le paquet'],
   steps: {
@@ -155,6 +162,12 @@ const en = {
     eveGets: 'What Eve gets', eveKeys: 'both keys, and the order: “{m}”', eveNothing: 'nothing: 256 bytes she cannot open',
     bobGets: 'What Bob reads',
   },
+
+  'in.aes': 'AES key · 32 bytes', 'in.mac': 'HMAC key · 32 bytes', 'in.one': '01 at the end of the line: the keys follow',
+  'in.zeros': '{n} bytes of 00', 'in.lhash': 'SHA-256 of the empty label · 32 bytes', 'in.seed': 'the seed · 32 random bytes',
+  'in.mask1': '⊕ SHA-256 of the seed, stretched to {n} bytes', 'in.mask2': '⊕ SHA-256 of the masked block',
+  'in.mseed': 'masked seed', 'in.mdb': 'masked block · {n} bytes', 'in.em': 'EM · 256 bytes, read as one number',
+  'in.pad': "Bob's padlock: n, e", 'in.lock': 'c = EM^65537 mod n', 'in.c': 'c, the locked keys · 256 bytes',
 
   ch: ['Keys in the clear', "Bob's padlock", 'Hybrid', 'The packet'],
   steps: {

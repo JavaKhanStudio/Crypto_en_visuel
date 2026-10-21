@@ -234,3 +234,8 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 #card .sizes span { padding: 2px 8px; border-radius: 6px; font: 600 12px var(--sans); color: #12151c; }
 #card .sizes .k { background: #c9a0f0; } #card .sizes .iv { background: #9fd3f0; } #card .sizes .ct { background: #f2c45a; } #card .sizes .mac { background: #8fd18a; }
 #card .sizes b { font: 700 12.5px "Courier New", monospace; } #card .sizes em { color: var(--muted); font-style: normal; }
+
+/* the zoom into a castle (r103): the screen fills with the window's warm light, then the room shows */
+#veil { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 380ms ease;
+  background: radial-gradient(circle at 50% 50%, #ffc070 0%, #d08a3a 28%, #6a3a12 70%, #1a0e06 100%); }
+#veil.on { opacity: 1; }

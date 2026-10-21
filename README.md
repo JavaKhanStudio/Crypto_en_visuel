@@ -92,7 +92,11 @@ Envoyées en clair, Eve les recopie à sa porte, déchiffre l'ordre, écrit 9H e
 valide : tout ce qui précède tombe. Bob envoie alors son cadenas ouvert, sa clé publique RSA-2048
 (RSA à la main d'abord : 5 × 11 = 55, e = 3, d = 27, 7 → 13 → 7) ; Eve le recopie en route, il
 ferme et n'ouvre pas. Alice ferme ses 64 octets de clés en RSA-OAEP (SHA-256, graine de 32 octets :
-mêmes clés, deux graines, deux blocs sans rapport), Bob les rouvre avec sa clé privée. Puis le
+mêmes clés, deux graines, deux blocs sans rapport), Bob les rouvre avec sa clé privée. « Alice ferme le cadenas » se passe dans le donjon d'Alice : la
+caméra entre par sa fenêtre, et un mur de 256 octets se monte sur les vrais octets (les deux clés,
+01, les zéros, le hachage du label, la graine), deux masques le balaient, puis EM entre dans la boîte
+où pend le cadenas ouvert de Bob, qui se ferme, et c en sort ; la caméra ressort à « Pourquoi OAEP »
+(`cle-vallee/js/inside.js`, vérifié par `tests/cle_inside.py`). Puis le
 chiffrement hybride (190 octets au plus par bloc, RSA lent), des clés neuves à chaque ordre, et le
 paquet complet ; la fin renvoie aux épisodes 2 (le cadenas) et 3 (Diffie-Hellman). 13 étapes en 4
 chapitres, un bac à sable (votre ordre ; les clés en clair ou fermées ; Eve lit ou change l'ordre),
