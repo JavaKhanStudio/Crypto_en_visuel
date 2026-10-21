@@ -79,11 +79,11 @@ export const STEPS = [
   { id: 's12', ch: 4, shot: 'bombe', state: RUN(1), go: async x => {
       x.apply(); if (!await x.stage.checkStops(.6)) return; x.say('e');
     } },
-  { id: 's13', ch: 5, shot: 'eveDrum', state: CLERK, go: async x => {
+  { id: 's13', ch: 5, shot: 'eveCheck', state: CLERK, go: async x => {
       x.apply(); if (!await x.stage.typeQuick('e', CIPHER, .45)) return;
       x.stage.st.msg = MSG1; x.stage.relabel(); x.say('e');
     } },
-  { id: 's14', ch: 5, shot: 'eveDrum', state: READ, go: async x => {
+  { id: 's14', ch: 5, shot: 'eveCheck', state: READ, go: async x => {
       x.apply(); const st = x.stage.st;
       if (!await x.stage.plug('e', FIXED.plugs)) return;
       st.rows = []; st.msg = null; st.pads.e = '';

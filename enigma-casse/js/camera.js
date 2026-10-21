@@ -26,6 +26,8 @@ export const SHOTS = {
   // Eve's side: her machine on her desk, its drum taken out; the slate behind; the bombe at her right
   eveMachine: machineShot('e'),
   eveDrum:  drumShot('e'),
+  // the check (steps 13-14): the drum further left, the entry wheel's tag clear of the corner card's path table (r151)
+  eveCheck: drumShot('e', 1),
   slate:    { pos: v(7, 25, 4), target: v(7, 17.4, -42) },
   bombe:    { pos: v(18, 17, 6), target: v(30, 11, -38) },
   eveWide:  { pos: v(6, 30, 34), target: v(8, 14, -40) },
