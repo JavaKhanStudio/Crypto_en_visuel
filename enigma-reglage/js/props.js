@@ -98,6 +98,14 @@ export function rotor(name) {
   const band = new THREE.Mesh(new THREE.CylinderGeometry(R * 1.005, R * 1.005, THICK.rotor * .7, 52, 1, true), new THREE.MeshStandardMaterial({ color: 0x3b3329, roughness: .5, transparent: true, opacity: .9, side: THREE.DoubleSide }));
   band.rotation.z = Math.PI / 2; spin.add(band);
   const letters = rimLetters(R * 1.03, .13); spin.add(letters);
+  // the same letters again, flat on the right face and upright, read when the rotor is turned to
+  // face the camera (machine setFlat, r202); hidden until then
+  const faceLetters = new THREE.Group(), faceGeo = new THREE.PlaneGeometry(.12, .12);
+  faceLetters.userData.letters = [...A].map((c, j) => {
+    const p = new THREE.Mesh(faceGeo, new THREE.MeshBasicMaterial({ map: letterTex(c), transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+    p.position.copy(at(h + .03, R * 1.2, j * STEP)); p.rotation.y = Math.PI / 2; faceLetters.add(p); return p;
+  });
+  faceLetters.visible = false; spin.add(faceLetters);
   // the serrated thumbwheel on the left, the one the operator turns through the lid
   const wheel = new THREE.Mesh(new THREE.CylinderGeometry(R * 1.12, R * 1.12, .05, 26, 1), mat(0x6d6658, { metalness: .6, roughness: .4, transparent: true }));
   wheel.rotation.z = Math.PI / 2; wheel.position.x = -h - .03; spin.add(wheel);
@@ -109,7 +117,7 @@ export function rotor(name) {
   const dot = new THREE.Mesh(new THREE.SphereGeometry(.035, 10, 8), new THREE.MeshBasicMaterial({ color: 0xff3347, toneMapped: false }));
   dot.position.copy(at(h + .02, R * .86, 0)); core.add(dot);
   const wm = new THREE.LineBasicMaterial({ color: 0xb08a50, transparent: true, opacity: .35, depthWrite: false });
-  Object.assign(g.userData, { spin, core, body, band, wheel, letters, notch, dot, wires: [], wireMat: wm, half: h, kind: 'rotor', ring: 0 });
+  Object.assign(g.userData, { spin, core, body, band, wheel, letters, faceLetters, notch, dot, wires: [], wireMat: wm, half: h, kind: 'rotor', ring: 0 });
   g.userData.setName = n => {
     const u = g.userData; u.name = n;
     for (const l of u.wires) { core.remove(l); l.geometry.dispose(); }
@@ -161,6 +169,9 @@ export const SLOTS = ['L', 'M', 'R'];   // left, middle, right
 export const DRUM = ['ref', 'L', 'M', 'R', 'entry'];
 export const PACKED = { ref: -.66, L: -.34, M: -.04, R: .26, entry: .58 };
 export const APART = { ref: -4.8, L: -2.4, M: 0, R: 2.4, entry: 4.6 };
+// the three rotors taken out of the spread drum and turned to show their right face, side by side
+// in front of it (machine setFlat, r202): offsets from APART_C, machine frame
+export const FLAT = { L: new THREE.Vector3(-4.4, 3.4, 2.6), M: new THREE.Vector3(0, 3.4, 2.6), R: new THREE.Vector3(4.4, 3.4, 2.6) };
 // the plugboard's sockets, in the machine's frame: three rows on the front face, like the keys
 export const SOCKET_Y = [.64, .43, .22], FRONT = 1.52;
 export const socketAt = ch => { const r = KEYBOARD.findIndex(row => row.includes(ch)); return new THREE.Vector3(rowX(r, KEYBOARD[r].indexOf(ch)), SOCKET_Y[r], FRONT); };
@@ -250,7 +261,20 @@ export function machine() {
     }
     const x0 = drum.ref.position.x, x1 = drum.entry.position.x;
     axle.position.copy(c).setX((x0 + x1) / 2); axle.scale.set(.6 + lift, (x1 - x0) * 1.05, .6 + lift);
+    placeFlat();
   };
+  // f = 0: the rotors in the drum; 1: out in front of it, each turned a quarter so its right face
+  // (contacts, red dot, the letters laid flat) faces the front. On top of setApart.
+  g.userData.flat = 0;
+  const placeFlat = () => {
+    const f = smooth(0, 1, g.userData.flat);
+    for (const id of SLOTS) {
+      const o = drum[id], u = o.userData;
+      o.position.lerp(APART_C.clone().add(FLAT[id]), f); o.rotation.y = -Math.PI / 2 * f;
+      u.faceLetters.visible = f > 0; for (const l of u.faceLetters.userData.letters) l.material.opacity = f;
+    }
+  };
+  g.userData.setFlat = f => { g.userData.flat = f; g.userData.setApart(g.userData.apart); };
   g.userData.out = out;
   g.userData.setApart(0);
   return g;

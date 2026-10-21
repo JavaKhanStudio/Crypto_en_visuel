@@ -14,6 +14,7 @@ export const CABLES = 'BS CZ DN ER FI GU HO KW LM QY';
 export const CABLED = { ...BARE, plugs: CABLES };            // 5.1's machine and the cables
 export const DAY = { ...CABLED, rings: 'AAB' };              // and the right rotor's ring on B
 export const START = 'ADU', PLAIN = 'OUI';
+const NEW_WIRE = 0x7fd8ff;
 const O_BARE = press('O', 'AAA'), O_CAB = press('O', 'AAA', CABLED), F_BACK = press('F', 'AAA', CABLED), O_RING = press('O', 'AAA', DAY);
 const MSG = type(PLAIN, START, DAY), CIPHER = MSG.map(r => r.lamp).join(''), BOB = type(CIPHER, START, DAY);
 const full = recs => recs.map(rec => ({ rec, n: SEGS }));
@@ -21,12 +22,11 @@ const MSG_A = { plain: PLAIN, cipher: CIPHER, from: START }, MSG_B = { plain: CI
 
 const CLOSED = {};
 const OPEN = { apart: { a: 1 } };
-const BARE_DONE = { ...OPEN, pos: { a: 'AAB' }, lit: { a: 'T' }, shown: [{ m: 'a', rec: O_BARE, n: SEGS }], rows: full([O_BARE]) };
+const BARED = { ...OPEN, pos: { a: 'AAB' } };   // after the bare press: its path has faded (r202)
 const CAB = { apart: { a: 1 }, set: { a: CABLED } };
 const CAB_PRESSED = { ...CAB, pos: { a: 'AAB' }, down: { a: 'O' }, shown: [{ m: 'a', rec: O_CAB, n: 4 }], rows: [{ rec: O_CAB, n: 4 }] };
 const CAB_DONE = { ...CAB, pos: { a: 'AAB' }, lit: { a: 'F' }, shown: [{ m: 'a', rec: O_CAB, n: SEGS }], rows: full([O_CAB]) };
-const BACK_DONE = { ...CAB, pos: { a: 'AAB' }, lit: { a: 'O' }, ghost: [{ m: 'a', rec: O_CAB }], shown: [{ m: 'a', rec: F_BACK, n: SEGS }], rows: full([O_CAB, F_BACK]) };
-const RING = { ...CAB, rows: full([O_CAB]) };
+const RING = { ...CAB, flat: { a: 1 }, rows: full([O_CAB]) };   // the three rotors out, face on (r202)
 const RINGED = { apart: { a: 1 }, set: { a: DAY }, ghost: [{ m: 'a', rec: O_CAB }], rows: full([O_CAB]) };
 const DAY_SET = { apart: { a: 1 }, set: { a: DAY } };
 const AFTER = n => ({ apart: { a: 1 }, set: { a: DAY }, pos: { a: MSG[n - 1].pos }, ghost: [], shown: [{ m: 'a', rec: MSG[n - 1], n: SEGS }],
@@ -44,26 +44,31 @@ const END = READ;
 export const STEPS = [
   { id: 's1', ch: 0, shot: 'intro', orbit: .02, state: CLOSED, say: ['a', 'b', 'e'] },
   { id: 's2', ch: 0, shot: 'plugDrum', state: OPEN, go: async x => {
-      x.apply(); if (!await x.stage.pressKey('a', 'O')) return; await x.stage.current('a', SEGS); x.say('a');
+      x.apply(); if (!await x.stage.pressKey('a', 'O')) return; await x.stage.current('a', SEGS, 2.2); x.say('a');
     } },
-  { id: 's3', ch: 1, shot: 'plugboard', state: BARE_DONE, go: async x => {
-      x.apply(); x.stage.clearPaths(); x.stage.st.shown = []; x.stage.st.rows = []; x.stage.release('a');
-      if (!await x.stage.plug('a', CABLES)) return; x.say('a');
+  { id: 's3', ch: 1, shot: 'plugboard', state: BARED, fade: true, go: async x => {
+      x.apply(); if (!await x.stage.plug('a', CABLES)) return; x.say('a');
     } },
   { id: 's4', ch: 1, shot: 'plugDrum', state: CAB, go: async x => {
-      x.apply(); if (!await x.stage.pressKey('a', 'O')) return; await x.stage.current('a', 4); x.say('a');
+      x.apply(); if (!await x.stage.pressKey('a', 'O')) return; await x.stage.current('a', 4, 1.3); x.say('a');
     } },
   { id: 's5', ch: 1, shot: 'plugDrum', state: CAB_PRESSED, go: async x => {
       x.apply(); await x.stage.current('a', SEGS); x.say('a');
     } },
   { id: 's6', ch: 1, shot: 'plugDrum', state: CAB_DONE, go: async x => {
-      x.apply(); await x.stage.release('a');
-      x.stage.st.ghost = [{ m: 'a', rec: O_CAB }]; x.stage.st.shown = []; x.stage.redrawPaths();
-      if (!await x.stage.turnTo('a', 'AAA', 1)) return;
-      if (!await x.stage.pressKey('a', 'F')) return; await x.stage.current('a', SEGS); x.say('a');
+      x.apply(); await x.stage.release('a'); x.stage.fadePaths(.6);
+      if (!await x.stage.turnTo('a', 'AAA', .8)) return;
+      if (!await x.stage.pressKey('a', 'F')) return; await x.stage.current('a', SEGS, 1.8); x.say('a');
     } },
-  { id: 's7', ch: 2, shot: 'ring', state: RING, go: async x => {
-      x.apply(); if (!await x.stage.turnRing('a', 'R', 'B')) return; x.say('a');
+  { id: 's7', ch: 2, shot: 'flat', state: RING, go: async x => {
+      // the left and middle rings stay on A; the right one turns, and the wire facing H goes with
+      // its core, leaving its trace (r202)
+      x.apply(); const H = 7;
+      if (!await x.stage.showDot('a', 'L') || !await x.stage.showDot('a', 'M') || !await x.stage.showDot('a', 'R')) return;
+      x.stage.markWire('a', 'R', H); if (!await x.stage.wait(.8)) return;
+      x.stage.markWire('a', 'R', H, true);
+      if (!await x.stage.turnRing('a', 'R', 'B')) return;
+      x.stage.markWire('a', 'R', H, false, NEW_WIRE); x.say('a');   // the wire now facing H, in its own colour
     } },
   { id: 's8', ch: 2, shot: 'plugDrum', state: RINGED, go: async x => {
       x.apply(); if (!await x.stage.pressKey('a', 'O')) return; await x.stage.current('a', SEGS); x.say('a');
@@ -124,16 +129,23 @@ export class Story {
 
   go(i) {
     i = Math.max(0, Math.min(STEPS.length - 1, i));
+    const from = this.i;
     this.i = i; this.seen = false; const tok = ++this.token, step = STEPS[i], c = this.ctx;
     location.hash = 'story=' + (i + 1);
     c.bubbles.clear(); this.said.clear();
     c.stage.speed = c.instant ? 50 : 1;
-    // a drum that opens or closes between two steps does it during the flight, never in one frame
+    // a drum that opens or closes between two steps does it during the flight, never in one frame;
+    // so do rotors taken out flat or put back (r202)
     const was = Object.fromEntries(Object.entries(c.stage.machines).map(([k, m]) => [k, m.userData.apart]));
+    const wasFlat = Object.fromEntries(Object.entries(c.stage.machines).map(([k, m]) => [k, m.userData.flat]));
+    // a step marked fade, reached by Suivant, lets the last step's paths fade out instead of cutting them (r202)
+    if (step.fade && from === i - 1 && c.stage.st) c.stage.fadePaths();
     c.stage.apply(this.state());
     if (!c.instant) for (const [k, m] of Object.entries(c.stage.machines)) {
       const e = m.userData.apart;
       if (Math.abs(was[k] - e) > .01) { m.userData.setApart(was[k]); c.stage.apart(k, e, 2.2); }
+      const f = m.userData.flat;
+      if (Math.abs(wasFlat[k] - f) > .01) { m.userData.setFlat(wasFlat[k]); c.stage.flat(k, f, 2.2); }
     }
     c.rig.setOrbit(0);
     c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => {

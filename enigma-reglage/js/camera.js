@@ -19,7 +19,8 @@ export const SHOTS = {
   // the plugboard on the front face, close; the drum with the plugboard under it; the box of rotors above the drum
   plugboard: { pos: M('a').add(v(.5, 1.7, 5.6)), target: M('a').add(v(0, .45, 1.5)) },
   plugDrum: { pos: M('a').add(v(6, 8.4, 17)), target: M('a').add(v(1.8, 2.5, .2)) },
-  ring:     { pos: M('a').add(v(5.1, 11.5, 10.1)), target: M('a').add(v(2.2, 5.2, -.3)) },   // pulled back (r125): 'réflecteur B' and 'entrée' clear of the edge and the card
+  flat:     { pos: M('a').add(v(.6, 10.2, 19.5)), target: M('a').add(v(.6, 7.2, 2.3)) },   // the three rotors out of the drum, face on (r202)
+  flatPhone: { pos: M('a').add(v(0, 7.6, 27)), target: M('a').add(v(0, 4.2, 2.3)) },   // the same in portrait, the row above the panel
   rack:     { pos: M('a').add(v(1.9, 10.5, 24)), target: M('a').add(v(.9, 6.6, -.5)) },   // panned (r125): rotor V's tag clear of the wider en count card
   sandbox:  { pos: M('a').add(v(1.2, 6.4, 17)), target: M('a').add(v(-2, 2.6, .4)) },   // the drum to the right of the sandbox panel
   eve:      { pos: v(PLACES.e.desk.x + 8, 32, PLACES.e.desk.z + 52), target: v(PLACES.e.desk.x - 4, 14, PLACES.e.desk.z - 2) },
@@ -41,7 +42,8 @@ export class CameraRig {
   // Fly to a shot (name or {pos,target}). The path arcs upward a little so long
   // moves read as a swoop rather than a slide. Resolves when it lands.
   fly(shot, duration = 2.2) {
-    const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+    // a shot may have a portrait version, <name>Phone (r202)
+    const s = typeof shot === 'string' ? (innerWidth < innerHeight && SHOTS[shot + 'Phone']) || SHOTS[shot] : shot;
     return new Promise(res => {
       const from = { pos: this.camera.position.clone(), target: this.controls.target.clone() };
       const lift = Math.min(40, from.pos.distanceTo(s.pos) * .18);

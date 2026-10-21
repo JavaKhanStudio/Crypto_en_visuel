@@ -42,10 +42,14 @@ export class Stage {
     const S = this.scene;
     this.people = {};
     for (const k of ['a', 'e', 'b']) { const p = person(k); p.position.copy(PLACES[k].person).setY(FLOOR); p.rotation.y = k === 'e' ? 1.25 : .8; S.add(p); this.people[k] = p; }
-    this.machines = {}; this.names = {};
+    this.machines = {}; this.names = {}; this.faces = [];
     for (const k of ['a', 'b']) {
       const m = machine(); m.position.copy(PLACES[k].desk).add(v(0, TOP_Y, .5)); S.add(m); this.machines[k] = m;
       this.names[k] = Object.fromEntries(DRUM.map(id => { const l = label(); S.add(l); return [id, l]; }));
+      // over each rotor turned flat, an unseen square the speech bubbles keep off (r202)
+      m.userData.faces = Object.fromEntries(SLOTS.map(id => {
+        const f = new THREE.Sprite(new THREE.SpriteMaterial({ colorWrite: false, depthWrite: false })); f.visible = false; S.add(f); this.faces.push(f); return [id, f];
+      }));
       const light = new THREE.PointLight(0xffc04a, 0, 6, 1.5); S.add(light); m.userData.lampLight = light;
     }
     // the box of five rotors, spread above Alice's machine when the story counts the orders
@@ -79,14 +83,16 @@ export class Stage {
   // msg: { plain, cipher, from } under the table, once a whole message is typed
   apply(st) {
     this.token++;
-    this.st = { set: { a: BARE, b: BARE }, rack: 0, count: null, pos: { a: 'AAA', b: 'AAA' }, apart: { a: 0, b: 0 }, down: {}, lit: {}, shown: [], ghost: [], rows: [], card: 'a', pads: {}, msg: null, hot: -1, tally: null, ...st };
+    this.st = { set: { a: BARE, b: BARE }, rack: 0, count: null, pos: { a: 'AAA', b: 'AAA' }, apart: { a: 0, b: 0 }, flat: { a: 0, b: 0 }, down: {}, lit: {}, shown: [], ghost: [], rows: [], card: 'a', pads: {}, msg: null, hot: -1, tally: null, ...st };
     st = this.st;
-    for (const key of ['set', 'pos', 'apart', 'down', 'lit', 'pads']) st[key] = { ...st[key] };
+    for (const key of ['set', 'pos', 'apart', 'flat', 'down', 'lit', 'pads']) st[key] = { ...st[key] };
+    st.flat = { a: 0, b: 0, ...st.flat };
+    this.unmark();
     for (const k of ['a', 'b']) st.set[k] = { ...BARE, ...st.set[k] };
     st.pos = { a: 'AAA', b: 'AAA', ...st.pos }; st.apart = { a: 0, b: 0, ...st.apart };
     st.shown = st.shown.map(s => ({ ...s })); st.rows = st.rows.map(r => ({ ...r })); st.ghost = [...st.ghost];
     for (const [k, m] of Object.entries(this.machines)) {
-      m.userData.setApart(st.apart[k] ?? 0);
+      m.userData.flat = st.flat[k]; m.userData.setApart(st.apart[k] ?? 0);
       this.setSetting(k, st.set[k]);
       this.setRotors(k, st.pos[k]);
       for (const [ch, key] of Object.entries(m.userData.keys)) key.position.y = 1 - (st.down[k] === ch ? .08 : 0);
@@ -142,7 +148,9 @@ export class Stage {
     for (const k of ['a', 'b']) {
       for (const id of DRUM) {
         const tag = this.names[k][id], i = SLOTS.indexOf(id);
-        const text = i >= 0 ? `${this.machines[k].userData.drum[id].userData.name} · ${this.windowLetter(k, id)}` : raw('part')[id];
+        // turned flat (r202), a rotor's tag says its ring instead of its window
+        const r = this.machines[k].userData.drum[id]?.userData, flat = this.machines[k].userData.flat > .5;
+        const text = i < 0 ? raw('part')[id] : flat ? `${r.name} · ${raw('ringWord')} ${A[r.ring]}` : `${r.name} · ${this.windowLetter(k, id)}`;
         if (text !== tag.userData.text) setLabel(tag, text, i >= 0 ? '#ffd84d' : '#c9b48a', .5);
       }
     }
@@ -161,11 +169,15 @@ export class Stage {
   }
   windowLetter(k, id) { const r = this.machines[k].userData.drum[id].userData; return A[((Math.round(-r.spin.rotation.x / STEP) % 26) + 26) % 26]; }
   placeNames(k) {
-    const m = this.machines[k], d = m.userData.drum, s = d.R.scale.x;
+    const m = this.machines[k], d = m.userData.drum, s = d.R.scale.x, fl = m.userData.flat;
     for (const id of DRUM) {
       const tag = this.names[k][id], f = Math.min(1, Math.max(0, (m.userData.out[id] - .6) / .4));   // a part's tag fades in as it settles
-      tag.position.copy(d[id].getWorldPosition(new THREE.Vector3())).add(v(0, R * s + (SLOTS.includes(id) ? .75 : 1.25), 0));
-      tag.material.opacity = f; tag.visible = f > 0;
+      // over a rotor turned flat, clear of the letters laid round its face
+      const up = SLOTS.includes(id) ? .75 + (R * .3 * s + .35) * fl : 1.25;
+      tag.position.copy(d[id].getWorldPosition(new THREE.Vector3())).add(v(0, R * s + up, 0));
+      tag.material.opacity = SLOTS.includes(id) ? f : f * (1 - fl); tag.visible = tag.material.opacity > 0;   // with the rotors out, the plate and reflector say nothing
+      const face = m.userData.faces[id];
+      if (face) { face.visible = fl > .5; face.position.copy(d[id].getWorldPosition(new THREE.Vector3())); face.scale.setScalar(R * 2.6 * s); }
     }
   }
 
@@ -259,6 +271,22 @@ export class Stage {
   }
   clearPaths() {
     for (const g of [this.paths, this.tags]) for (const o of [...g.children]) { g.remove(o); o.geometry?.dispose(); o.material.map?.dispose(); o.material.dispose(); }
+  }
+  // The paths and their letters drawn now fade out and go, whatever happens next (a new step's
+  // apply() does not cut it short): st.shown and st.ghost are emptied at once.
+  fadePaths(dur = .8) {
+    const g = new THREE.Group(); this.scene.add(g);
+    for (const src of [this.paths, this.tags]) for (const o of [...src.children]) { src.remove(o); g.add(o); o.material.transparent = true; o.userData.o0 = o.material.opacity; o.material.depthWrite = false; }
+    this.st.shown = []; this.st.ghost = [];
+    let x = 0;
+    const tick = dt => {
+      x = Math.min(1, x + dt * Math.min(this.speed, 5) / dur);
+      for (const o of g.children) o.material.opacity = o.userData.o0 * (1 - x);
+      if (x < 1) return;
+      this.tickers.delete(tick); this.scene.remove(g);
+      for (const o of g.children) { o.geometry?.dispose(); o.material.map?.dispose(); o.material.dispose(); }
+    };
+    this.tickers.add(tick);
   }
   // every path in st.shown and st.ghost, drawn whole
   redrawPaths() {
@@ -450,6 +478,45 @@ export class Stage {
     }
     this.st.set[k] = { ...this.st.set[k], plugs }; this.relabel();
     return true;
+  }
+
+  // Take the three rotors out of the spread drum and turn them to face the front (f = 1), or put
+  // them back (f = 0) (r202).
+  async flat(k, f = 1, dur = 2.2) {
+    const m = this.machines[k].userData, f0 = m.flat;
+    const ok = await this.tween(dur, x => m.setFlat(f0 + (f - f0) * ease(x)));
+    if (!ok) return false;
+    this.st.flat[k] = f; this.relabel();
+    return true;
+  }
+  // In rotor `slot`, the wire that faces fixed contact `c` now, drawn thick: a child of the core, so
+  // it turns with the ring (r202). ghost: a faint copy that stays where it is when the core turns.
+  markWire(k, slot, c, ghost = false, color = GOLD) {
+    const u = this.machines[k].userData.drum[slot].userData, j = ((c + u.pos - u.ring) % 26 + 26) % 26;
+    const pts = wirePoints(j, A.indexOf(ROTORS[u.name].wiring[j]), u.half), curve = new Poly(pts);
+    const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, ghost ? .014 : .022, 6, false),
+      new THREE.MeshBasicMaterial({ color, toneMapped: false, transparent: ghost, opacity: ghost ? .45 : 1, depthWrite: !ghost }));
+    mesh.renderOrder = 5;
+    if (ghost) { mesh.rotation.x = u.core.rotation.x; u.spin.add(mesh); } else u.core.add(mesh);
+    this.marks.push(mesh);
+    // and the letter laid on the face at that contact, gold
+    const l = u.faceLetters.userData.letters[(c + u.pos) % 26]; l.material.color.set(color); this.marks.push({ letter: l });
+    return mesh;
+  }
+  unmark() {
+    for (const o of this.marks || []) {
+      if (o.letter) { o.letter.material.color.set(0xffffff); continue; }
+      o.parent?.remove(o); o.geometry.dispose(); o.material.dispose();
+    }
+    this.marks = [];
+  }
+  // The red dot of rotor `slot` swells a moment: here is its ring setting.
+  async showDot(k, slot, dur = 1) {
+    const dot = this.machines[k].userData.drum[slot].userData.dot;
+    sfx.tick();
+    const ok = await this.tween(dur, x => dot.scale.setScalar(1 + 1.6 * Math.sin(Math.PI * x)));
+    dot.scale.setScalar(1);
+    return ok;
   }
 
   // Turn the ring of slot `slot` to letter `to`: the core and its wires turn against the letters,

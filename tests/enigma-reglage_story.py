@@ -76,6 +76,7 @@ with sync_playwright() as p:
         .concat(['topbar', 'modes', 'lang', 'sound', 'card', 'story'].map(id => document.getElementById(id))
           .filter(e => e && !e.classList.contains('hidden') && e.offsetHeight).map(e => [e.id, box(e)]));
       for (const t of demo.bubbles.tagBoxes()) {
+        if (t.text === undefined) continue;     // a flat rotor's face (r202): bubbles keep off it, but it is no tag
         if (t.x + t.w < 0 || t.x > W || t.y + t.h < 0 || t.y > H) continue;     // a tag wholly out of the shot is not shown
         if (t.x < 0 || t.y < 0 || t.x + t.w > W || t.y + t.h > H) out.push(`'${t.text}' cut by the screen edge`);
         for (const [n, o] of over) if (cut(t, o)) out.push(`'${t.text}' under ${n}`);

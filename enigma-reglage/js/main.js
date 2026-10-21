@@ -55,7 +55,7 @@ addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
 const bubbles = new Bubbles(camera); bubbles.instant = instant;
-bubbles.avoid = () => [...Object.values(stage.names.a), ...Object.values(stage.names.b), ...Object.values(stage.rackTags), stage.rackSum];
+bubbles.avoid = () => [...Object.values(stage.names.a), ...Object.values(stage.names.b), ...Object.values(stage.rackTags), stage.rackSum, ...stage.faces];
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
