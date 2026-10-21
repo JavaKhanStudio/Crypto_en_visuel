@@ -106,7 +106,7 @@ export const STEPS = [
     // r105/r132: the last step is the doors out, each with its picture; the next episode is last, at the right
     doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
-      { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
+      { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', perLang: true, go: x => x.mode('quiz') },
       { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../scytale/vignette.jpg', clip: 'img/door-next.mp4', href: '../scytale/' }] },
 ];
@@ -172,15 +172,17 @@ export class Story {
     // the animation has played (it works all along). The last step's buttons are not animations.
     this.el.actions.innerHTML = ''; this.el.play?.remove(); this.el.play = null;
     this.el.actions.classList.toggle('doors', !!step.doors);
+    // r182/r211: a door whose picture is words (the quiz) has one file per language, door-quiz.<lang>.*
+    const inLang = (d, f) => d.perLang && lang !== 'fr' ? f.replace(/\.\w+$/, `.${lang}$&`) : f;
     for (const d of step.doors || []) {
       const [name, what] = s.doors[d.k], a = document.createElement('a');
       a.className = 'door' + (d.k === 'next' ? ' next' : '');
-      a.innerHTML = `<span class="pic"><img src="${d.img}" alt=""></span><b>${name}</b><span>${what}</span>`;
+      a.innerHTML = `<span class="pic"><img src="${inLang(d, d.img)}" alt=""></span><b>${name}</b><span>${what}</span>`;
       // r105 (Simon): on hover, a 4 s clip of where the door leads loops; it stops where it is when the
       // pointer leaves and goes on from there. A phone has no hover: it keeps the picture.
       if (d.clip && matchMedia('(hover: hover)').matches) {
         const v = document.createElement('video');
-        Object.assign(v, { src: d.clip, muted: true, loop: true, playsInline: true, preload: 'none' });
+        Object.assign(v, { src: inLang(d, d.clip), muted: true, loop: true, playsInline: true, preload: 'none' });
         v.addEventListener('playing', () => v.classList.add('on'), { once: true });
         a.firstChild.appendChild(v);
         a.onmouseenter = () => v.play().catch(() => {}); a.onmouseleave = () => v.pause();
