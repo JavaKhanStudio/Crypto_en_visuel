@@ -552,7 +552,10 @@ export class Stage {
     const g = this.slateG;
     for (const o of [...g.children]) { g.remove(o); o.geometry?.dispose(); o.material.map?.dispose(); o.material.dispose(); }
     const sl = this.st.slate;
-    if (sl) {
+    // on a phone held upright the menu's steps (8-9) frame the loop close, and the rows above it
+    // (places, cipher, crib) could only peek half-cut between the top controls: they are left out (r355)
+    const rows = !(innerWidth < innerHeight && this.st.panel === 'menu' && this.st.menu);
+    if (sl && rows) {
       const L = sl.cipher.length, k = sl.k, whole = Number.isInteger(k), hit = whole ? clashes(sl.cipher, sl.crib, k) : [];
       for (let i = 0; i < L; i++) {
         const mark = sl.marks?.[i], num = this.tag(this.slateAt(this.colX(i, L), 13.6), String(i + 1), mark === 'out' ? '#ff4d5e' : mark === 'ok' ? '#5fe39a' : '#6d7a74', .62, mark === 'out' ? 'rgba(120,20,30,.9)' : mark === 'ok' ? 'rgba(20,90,50,.9)' : undefined);
@@ -585,7 +588,7 @@ export class Stage {
         g.add(tube);
         g.add(this.tag(curve.getPoint(.5).add(v(0, 0, .05)), String(l.i + 1), hot ? '#ffd84d' : '#9fb4c8', numH));
         // the link's column on the cipher, when the crib is shown: a faint thread up to it
-        if (sl && Number.isInteger(sl.k) && li === n - 1 && mn.n != null && mn.n < mn.links.length + 1) {
+        if (sl && rows && Number.isInteger(sl.k) && li === n - 1 && mn.n != null && mn.n < mn.links.length + 1) {
           const top = this.slateAt(this.colX(l.i, L), 8.8);
           g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(top, curve.getPoint(.5)), 4, .04, 4, false), new THREE.MeshBasicMaterial({ color: 0xffd84d, transparent: true, opacity: .5, toneMapped: false })));
         }
