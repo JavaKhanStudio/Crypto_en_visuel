@@ -4,7 +4,9 @@ loops »): one per door, filmed at 1280×720 real speed through the CDP screenca
 their own time, so the 4 s cut lands where the script marked it), cut to 4 s, cropped like
 tools/door_thumbs.py and scaled to 384×216 H.264, saved as <slug>/img/door-<name>.mp4. The next
 episode's clip (door-next.mp4) is shot in that episode, from --next and --next-hash, the DOM
-panels hidden as in tools/vignette.py; it stays in this episode's folder. Needs ffmpeg with libx264. Serve the repo root first
+panels hidden as in tools/vignette.py; it stays in this episode's folder. The quiz clip is all words,
+so it is shot once per language (r182): door-quiz.mp4 in French, door-quiz.en.mp4 with ?lang=en (the
+episode's story.js marks that door perLang to pick it). Needs ffmpeg with libx264. Serve the repo root first
 (python3 -m http.server 8793), or pass --base.
 
     tools/door_clips.py deux-generaux --next eve-lit-tout --next-hash '#story=2' [--only next]
@@ -31,6 +33,7 @@ ap.add_argument("--sandbox-keys", default="", help="type these letters on #sb-ke
 ap.add_argument("--sandbox-pre", default="", help="a comma list clicked before the clip starts (eve-lit-tout: « en clair », so Eve reads the order)")
 ap.add_argument("--sandbox-eval", default="", help="JS run before the clip starts (diffie-hellman: demo.stage.speed=1.7, the sandbox's own speed, which ?instant=1 sets to 50)")
 ap.add_argument("--sandbox-click", default="#sb-burst", help="the sandbox buttons the clip presses, a comma list clicked in turn over the 4 s (eve-lit-tout: #sb-send; cadenas: #sb-lock,#sb-send)")
+ap.add_argument("--quiz-langs", default="fr,en", help="the quiz clip's languages: fr is door-quiz.mp4, another door-quiz.<lang>.mp4 (r182)")
 ap.add_argument("--box", action="append", default=[], help="name=x0,y0,x1,y1: crop that door elsewhere (16:9), as tools/door_thumbs.py")
 a = ap.parse_args()
 BOX = {n: tuple(int(v) for v in xy.split(",")) for n, xy in (b.split("=") for b in a.box)}
@@ -56,8 +59,8 @@ def sandbox(pg):
     return t, BOX.get("sandbox", (0, 90, 640, 450))
 
 
-def quiz(pg):
-    pg.goto(f"{a.base}{a.slug}/?instant=1#quiz"); pg.wait_for_function(ready, timeout=60000)
+def quiz(pg, lang="fr"):
+    pg.goto(f"{a.base}{a.slug}/?instant=1&lang={lang}#quiz"); pg.wait_for_function(ready, timeout=60000)
     # the student reads question 1 and hesitates between two WRONG options, never pressing
     # « Vérifier »: check() paints the right option green even on a wrong pick (r139)
     right = pg.evaluate("async () => (await import(new URL('js/quiz-data.js', location.href))).QUIZ[0].correct")
@@ -91,8 +94,10 @@ def nxt(pg):
     return t, (0, 0, W, H)
 
 
-doors = {"sandbox": sandbox, "quiz": quiz, "home": home, "next": nxt}
-only = [k for k in a.only.split(",") if k] or list(doors)
+doors = {"sandbox": sandbox, "home": home, "next": nxt}
+for l in a.quiz_langs.split(","):
+    doors["quiz" if l == "fr" else f"quiz.{l}"] = lambda pg, l=l: quiz(pg, l)
+only = [k for k in doors if k.split(".")[0] in a.only.split(",")] if a.only else list(doors)
 with sync_playwright() as p, tempfile.TemporaryDirectory() as tmp:
     # the machine's GPU (about 50 fps at 1280×720); SwiftShader's 6 fps would make a slideshow
     b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"])

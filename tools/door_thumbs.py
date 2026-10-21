@@ -14,6 +14,7 @@ from PIL import Image
 ap = argparse.ArgumentParser()
 ap.add_argument("slug")
 ap.add_argument("--base", default="http://localhost:8793/")
+ap.add_argument("--only", default="", help="comma list of sandbox,quiz,quiz.en,home")
 ap.add_argument("--box", action="append", default=[], help="name=x0,y0,x1,y1: crop that door elsewhere (16:9)")
 a = ap.parse_args()
 here = os.path.dirname(os.path.abspath(__file__))
@@ -21,17 +22,21 @@ here = os.path.dirname(os.path.abspath(__file__))
 doors = {
     "sandbox": (a.slug + "/", "#sandbox", (0, 90, 640, 450)),
     "quiz": (a.slug + "/", "#quiz", (280, 130, 1000, 535)),
+    "quiz.en": (a.slug + "/", "#quiz", (280, 130, 1000, 535)),   # r182: the quiz is all words, one picture per language
     "home": ("", "", (0, 0, 1280, 720)),
 }
 for b in a.box:
     name, xy = b.split("=")
-    doors[name] = doors[name][:2] + (tuple(int(v) for v in xy.split(",")),)
+    for n in [n for n in doors if n.split(".")[0] == name]:
+        doors[n] = doors[n][:2] + (tuple(int(v) for v in xy.split(",")),)
+if a.only: doors = {n: v for n, v in doors.items() if n in a.only.split(",")}
 os.makedirs(f"{a.slug}/img", exist_ok=True)
 with tempfile.TemporaryDirectory() as tmp:
     for name, (page, hsh, box) in doors.items():
         raw = os.path.join(tmp, name)
+        q = "?instant=1&lang=" + (name.split(".")[1] if "." in name else "fr") if page else ""
         subprocess.run([sys.executable, os.path.join(here, "shoot.py"), raw, "--base", a.base, "--page", page,
-                        "--hash", hsh, "--query", "?instant=1" if page else "", "--size", "1280x720"], check=True)
+                        "--hash", hsh, "--query", q, "--size", "1280x720"], check=True)
         Image.open(raw + ".png").convert("RGB").crop(box).resize((320, 180), Image.LANCZOS) \
             .save(f"{a.slug}/img/door-{name}.jpg", quality=82)
         print(f"{a.slug}/img/door-{name}.jpg")
