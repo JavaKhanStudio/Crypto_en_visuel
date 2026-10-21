@@ -12,6 +12,8 @@ panels hidden as in tools/vignette.py; it stays in this episode's folder. Needs 
     tools/door_clips.py eve-lit-tout --next octet-change --next-hash '#story=3' --sandbox-pre 'input[value=plain]' --sandbox-click '#sb-send' --box sandbox=0,0,1280,720
     tools/door_clips.py cadenas --next diffie-hellman --next-hash '#story=4' --sandbox-click '#sb-lock,#sb-send'
     tools/door_clips.py diffie-hellman --next scytale --next-hash '#story=2' --sandbox-eval 'demo.stage.speed=1.7' --sandbox-click '#sb-run' --box sandbox=340,84,1080,500
+    tools/door_clips.py scytale --next enigma --next-hash '#story=2' --sandbox-eval 'demo.stage.speed=1.7' --sandbox-click '#sb-run' --box sandbox=345,190,825,460
+    tools/door_clips.py pingouin --next sel --next-hash '#story=7' --sandbox-click '#sb-encrypt,#sb-send' --box sandbox=340,40,992,407
 """
 import argparse, base64, os, subprocess, tempfile, time
 from playwright.sync_api import sync_playwright
@@ -78,7 +80,9 @@ def home(pg):
 
 def nxt(pg):
     pg.goto(f"{a.base}{a.next}/{a.next_hash}"); pg.wait_for_function(ready, timeout=60000)
-    pg.wait_for_timeout(2600); pg.click("#play"); pg.evaluate(hide); pg.wait_for_timeout(200)
+    # the panels go before the click (r135: the clip's first frame is the last one before it, which showed them)
+    pg.wait_for_timeout(2600); pg.evaluate(hide); pg.wait_for_timeout(1000)
+    pg.evaluate("document.getElementById('play').click()"); pg.wait_for_timeout(200)
     # the clip is the step's ride, from the click (in eve-lit-tout: the rider reaches Eve's gate)
     t = time.time(); pg.wait_for_timeout(SEC * 1000 + 300)
     return t, (0, 0, W, H)

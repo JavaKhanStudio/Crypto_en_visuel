@@ -3,7 +3,7 @@
 // Next and the chapter chips always land somewhere consistent), flies the camera, pins its
 // bubbles, and offers buttons. auto: the step's action plays by itself once the camera has
 // landed (its button replays it).
-import { t, raw, onLang } from './i18n.js';
+import { t, raw, lang, onLang } from './i18n.js';
 
 const N = 99;   // « every letter written »: write() stops at the end of the message
 const BLANK = { strip: { on: null, at: 'a', written: 0 } };
@@ -51,7 +51,12 @@ export const STEPS = [
       x.say('b'); x.celebrate();
     }, go2: x => x.stage.st.strip.on === 'b' ? x.stage.next('b') : null },
   { id: 's11', ch: 4, shot: 'wide', state: READ, say: ['a', 'e'] },
-  { id: 's12', ch: 4, shot: 'wide', orbit: .02, state: READ, go: x => x.mode('sandbox'), go2: x => x.mode('quiz') },
+  // r105/r133: the last step is the doors out, each with its picture; the next episode is last, at the right
+  { id: 's12', ch: 4, shot: 'wide', orbit: .02, state: READ, doors: [
+      { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
+      { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
+      { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'next', img: '../enigma/vignette.jpg', clip: 'img/door-next.mp4', href: '../enigma/' }] },
 ];
 
 export class Story {
@@ -109,6 +114,23 @@ export class Story {
     // a step's animation takes Suivant's place at the right; Suivant waits beside it, grey, until
     // the animation has played (it works all along). The last step's buttons are not animations.
     this.el.actions.innerHTML = ''; this.el.play?.remove(); this.el.play = null;
+    this.el.actions.classList.toggle('doors', !!step.doors);
+    for (const d of step.doors || []) {
+      const [name, what] = s.doors[d.k], a = document.createElement('a');
+      a.className = 'door' + (d.k === 'next' ? ' next' : '');
+      a.innerHTML = `<span class="pic"><img src="${d.img}" alt=""></span><b>${name}</b><span>${what}</span>`;
+      // r105 (Simon): on hover, a 4 s clip of where the door leads loops; it stops where it is when the
+      // pointer leaves and goes on from there. A phone has no hover: it keeps the picture.
+      if (d.clip && matchMedia('(hover: hover)').matches) {
+        const v = document.createElement('video');
+        Object.assign(v, { src: d.clip, muted: true, loop: true, playsInline: true, preload: 'none' });
+        v.addEventListener('playing', () => v.classList.add('on'), { once: true });
+        a.firstChild.appendChild(v);
+        a.onmouseenter = () => v.play().catch(() => {}); a.onmouseleave = () => v.pause();
+      }
+      if (d.href) a.href = d.href + '?lang=' + lang; else { a.href = '#'; a.onclick = e => { e.preventDefault(); d.go({ mode: m => this.ctx.setMode(m) }); }; }
+      this.el.actions.appendChild(a);
+    }
     const anim = step.go && this.i < STEPS.length - 1;
     for (const key of ['go', 'go2']) {
       if (!step[key]) continue;

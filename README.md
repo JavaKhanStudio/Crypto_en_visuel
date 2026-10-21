@@ -171,6 +171,9 @@ de 4 lettres par tour, soit 4 lignes de 5 (ATTAQ, UEZDE, MAINA, LAUBE) et la ban
 AUMLTEAATZIUADNBQEAE. Eve essaie un bâton de 3 lettres par tour (ALAZABA, UTAIDQE, METUNE) puis
 de 5 (AEIB…), Bob relit avec le sien. 12 étapes en 5 chapitres, un bac à sable (votre message,
 le bâton d'Alice et celui de relecture, de 2 à 6 lettres par tour), un quiz de 6 questions.
+La dernière étape ouvre quatre portes en image (bac à sable, quiz, tous les épisodes, puis
+l'épisode 5 Enigma en or à droite), chacune avec un extrait de 4 s au survol
+(`tests/last_doors.py scytale 12 enigma`).
 L'arithmétique est seule dans `scytale/js/scytale.js` ; la bandelette (`scytale/js/strip.js`) est
 un ruban dont chaque point est placé à chaque image : à plat, en hélice sur un bâton, roulé sur
 la tête du messager. Le tableau en haut à droite (`card.js`) garde à chaque lettre la couleur de
