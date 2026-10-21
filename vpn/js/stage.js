@@ -219,6 +219,8 @@ export class Stage {
       p.visible = !b || (b.x >= 0 && b.x + b.w <= W && !taken.some(o => hits(b, o)));
       if (b && p.visible) taken.push(b);
     }
+    // step 12: the customers' addresses stay over them, so Victor's tag goes around them (r374)
+    for (const c of this.customers) { const b = c.tag.visible && this.screenBox(c.tag, cam); if (b) taken.push(b); }
     for (const k of order) {
       const s = this.tags[k]; s.center.set(.5, k === 'i' ? .5 : 1);
       const b = this.screenBox(s, cam);

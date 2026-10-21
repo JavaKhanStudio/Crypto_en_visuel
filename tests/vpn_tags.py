@@ -22,8 +22,9 @@ MEASURE = """() => {
   for (const [k, s] of Object.entries(st.places)) if (s.visible && s.material.opacity > .05) { const b = st.screenBox(s, cam); if (b) out.push({ name: 'place ' + k, kind: 'place', ...b }); }
   const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story'].map(id => document.getElementById(id))
     .filter(el => el && !el.classList.contains('hidden') && el.offsetHeight).map(el => box(el, '#' + el.id));
+  const customers = st.customers.filter(c => c.tag.visible).map((c, k) => ({ name: 'customer ' + k, ...st.screenBox(c.tag, cam) }));
   const bubbles = [...document.querySelectorAll('#bubbles .bubble.show')].map(el => box(el, 'bubble ' + el.querySelector('.who').textContent));
-  return { labels: out, others: [...walls, ...bubbles] };
+  return { labels: out, others: [...walls, ...bubbles, ...customers] };
 }"""
 over = lambda a, b: min(a["x"] + a["w"], b["x"] + b["w"]) - max(a["x"], b["x"]) > 1 and min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]) > 1
 bad = []
