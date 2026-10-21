@@ -56,8 +56,9 @@ const fr = {
       a: 'Un bon HMAC ne suffit pas : encore faut-il le comparer sans fuite.',
       e: 'Je n’ai rien cassé. J’ai seulement chronométré un == trop pressé.' },
     s10: { t: 'À vous',
-      p: "Dans le bac à sable, choisissez le message qu’Eve veut faire passer et le garde en service (== pressé ou compare_digest en temps constant), puis lancez l’attaque : comptez les essais et regardez les barres de temps. Ensuite, le quiz : 6 questions.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz' },
+      p: "Dans le bac à sable, choisissez le message qu’Eve veut faire passer et le garde en service (== pressé ou compare_digest en temps constant), puis lancez l’attaque : comptez les essais et regardez les barres de temps. Ensuite, le quiz : 6 questions. Puis la suite : un chiffre qui tourne sa clé comme une roue, et les traces qu’il laisse en trahissent la longueur.",
+      doors: { sandbox: ['Bac à sable', 'Le message d’Eve, == ou compare_digest, et l’attaque'], quiz: ['Quiz', 'Six questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 9 · La roue et le caillou ▶', 'La clé de Vigenère trahit sa longueur'] } },
   },
   card: {
     title: 'HMAC - La timing attack',
@@ -146,8 +147,9 @@ const en = {
       a: 'A good HMAC is not enough: it still has to be compared without a leak.',
       e: 'I broke nothing. I only timed a == that was in too much of a hurry.' },
     s10: { t: 'Your turn',
-      p: "In the sandbox, pick the order Eve wants through and the guard on duty (the hasty == or constant-time compare_digest), then launch the attack: count the tries and watch the time bars. Then the quiz: 6 questions.",
-      go: 'Try the sandbox', go2: 'Take the quiz' },
+      p: "In the sandbox, pick the order Eve wants through and the guard on duty (the hasty == or constant-time compare_digest), then launch the attack: count the tries and watch the time bars. Then the quiz: 6 questions. Then what comes next: a cipher that turns its key like a wheel, and the tracks it leaves give the key's length away.",
+      doors: { sandbox: ['Sandbox', 'Eve’s order, == or compare_digest, and the attack'], quiz: ['Quiz', 'Six questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 9 · The Wheel and the Stone ▶', 'The Vigenère key gives its length away'] } },
   },
   card: {
     title: 'HMAC - The timing attack',

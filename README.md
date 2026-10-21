@@ -287,7 +287,9 @@ l'attaque) et un quiz de 6 questions. `garde/js/hmac.js` est un vrai SHA-256 (FI
 vrai HMAC-SHA256 (RFC 2104), calculés dans la page. `tests/garde_values.mjs` les compare à
 `node:crypto` et aux valeurs de Python (`node tests/garde_values.mjs`), `tests/garde_story.py`
 clique chaque bouton de l'histoire et du bac à sable et vérifie le verdict du garde, le registre
-de Bob, le préfixe retrouvé par Eve et ses barres de temps.
+de Bob, le préfixe retrouvé par Eve et ses barres de temps. La dernière étape ouvre quatre
+portes en image (bac à sable, quiz, tous les épisodes, puis l'épisode 9 en or à droite), chacune
+avec un extrait de 4 s au survol (`tests/last_doors.py garde 10 kasiski`).
 
 ## Épisode 9 — La roue et le caillou
 

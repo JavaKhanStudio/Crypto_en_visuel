@@ -14,6 +14,8 @@ panels hidden as in tools/vignette.py; it stays in this episode's folder. Needs 
     tools/door_clips.py diffie-hellman --next scytale --next-hash '#story=2' --sandbox-eval 'demo.stage.speed=1.7' --sandbox-click '#sb-run' --box sandbox=340,84,1080,500
     tools/door_clips.py sel --next garde --next-hash '#story=5' --sandbox-pre '#sb-signup' --sandbox-eval 'new Promise(r=>setTimeout(r,2500)).then(()=>{demo.stage.speed=1.5})' --sandbox-click '#sb-steal' --box sandbox=360,110,1280,628
     tools/door_clips.py scytale --next enigma --next-hash '#story=2' --sandbox-eval 'demo.stage.speed=1.7' --sandbox-click '#sb-run' --box sandbox=345,190,825,460
+    tools/door_clips.py garde --next kasiski --next-hash '#story=4' --sandbox-eval "demo.stage.speed=6; document.getElementById('card').style.visibility='hidden'" --sandbox-click '#sb-run' --box sandbox=345,86,1105,513
+      (garde's sandbox still is this clip's first frame: ffmpeg -i garde/img/door-sandbox.mp4 -frames:v 1 -vf scale=320:180, the card hidden)
     tools/door_clips.py pingouin --next sel --next-hash '#story=7' --sandbox-click '#sb-encrypt,#sb-send' --box sandbox=348,96,992,458
 """
 import argparse, base64, os, subprocess, tempfile, time
