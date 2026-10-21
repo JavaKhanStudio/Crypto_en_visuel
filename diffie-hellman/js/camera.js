@@ -23,6 +23,10 @@ export const SHOTS = {
   bobClose: near(PLACES.b.table, .2, 7.6, 9, 1.4, -.8),
 };
 
+// On a portrait screen a table's close shot pans a little right and steps back a little, so the
+// right-hand pot's tag (« ROUGE (secret) · a = 6 ») stays whole on a 390px phone (r257).
+const PORTRAIT_CLOSE = { pan: .5, back: 1.08 };
+
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 export class CameraRig {
@@ -37,7 +41,7 @@ export class CameraRig {
   // Fly to a shot (name or {pos,target}). The path arcs upward a little so long
   // moves read as a swoop rather than a slide. Resolves when it lands.
   fly(shot, duration = 2.2) {
-    const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+    const s = this.resolve(shot);
     this.follow = null;
     return new Promise(res => {
       const from = { pos: this.camera.position.clone(), target: this.controls.target.clone() };
@@ -48,9 +52,18 @@ export class CameraRig {
 
   // Cut straight to a shot, no flight (used by screenshots and reduced motion).
   jump(shot) {
-    const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+    const s = this.resolve(shot);
     this.flight = null; this.follow = null;
     this.camera.position.copy(s.pos); this.controls.target.copy(s.target); this.camera.lookAt(s.target);
+  }
+
+  // a shot by name or as given; a close shot is refitted on a portrait screen
+  resolve(shot) {
+    if (typeof shot !== 'string') return shot;
+    const s = SHOTS[shot];
+    if (!shot.endsWith('Close') || this.camera.aspect >= 1) return s;
+    const target = s.target.clone(); target.x += PORTRAIT_CLOSE.pan;
+    return { pos: target.clone().add(s.pos.clone().sub(s.target).multiplyScalar(PORTRAIT_CLOSE.back)), target };
   }
 
   // Ride behind an object (a messenger) until stopFollow() or another fly().
