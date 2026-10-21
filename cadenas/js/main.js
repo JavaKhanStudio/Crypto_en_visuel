@@ -13,7 +13,9 @@ import { initFx, updateFx, fireworks } from './fx.js';
 import { Bubbles } from './bubbles.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
-import { Quiz } from './quiz.js';
+import { Quiz } from '../../lib/quiz.js';
+import { QUIZ } from './quiz-data.js';
+import * as i18n from './i18n.js';
 import { sfx } from './sound.js';
 import { setLang, applyStatic } from './i18n.js';
 
@@ -63,7 +65,7 @@ const ctx = { world, stage, rig, bubbles, toast, instant, celebrate, setMode: m 
   onEnd: () => fireworks(new THREE.Vector3(0, -10, -4), [0xffc24d, 0x4da3ff, 0xffffff], 14) };
 const story = new Story(ctx);
 const sandbox = initSandbox(ctx);
-const quiz = new Quiz(ctx);
+const quiz = new Quiz(ctx, QUIZ, i18n);
 
 // ---------- modes ----------
 const panels = { story: document.getElementById('story'), sandbox: document.getElementById('sandbox'), quiz: document.getElementById('quiz') };

@@ -13,7 +13,9 @@ import { initFx, updateFx, fireworks } from './fx.js';
 import { Bubbles } from './bubbles.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
-import { Quiz } from './quiz.js';
+import { Quiz } from '../../lib/quiz.js';
+import { QUIZ } from './quiz-data.js';
+import * as i18n from './i18n.js';
 import { sfx } from './sound.js';
 import { renderCard } from './card.js';
 import { clean } from './scytale.js';
@@ -67,7 +69,7 @@ const ctx = { world, stage, rig, bubbles, toast, instant, celebrate, message, se
   onEnd: () => fireworks(new THREE.Vector3(0, -6, -4), [0xffd66b, 0xff8a5c, 0x5fd1ff, 0xffd84d, 0x9be37a], 14) };
 const story = new Story(ctx);
 const sandbox = initSandbox(ctx);
-const quiz = new Quiz(ctx);
+const quiz = new Quiz(ctx, QUIZ, i18n);
 
 // ---------- modes ----------
 const panels = { story: document.getElementById('story'), sandbox: document.getElementById('sandbox'), quiz: document.getElementById('quiz') };
