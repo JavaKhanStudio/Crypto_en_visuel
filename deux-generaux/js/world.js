@@ -38,7 +38,7 @@ export function heightAt(x, z) {
 }
 
 // ---------- materials ----------
-const M = {
+export const M = {
   stone: new THREE.MeshStandardMaterial({ color: 0xc9c0ad, roughness: .92, flatShading: true }),
   darkStone: new THREE.MeshStandardMaterial({ color: 0x7a7468, roughness: .95, flatShading: true }),
   wood: new THREE.MeshStandardMaterial({ color: 0x5a3a22, roughness: .9, flatShading: true }),
@@ -158,7 +158,7 @@ function wall(len, h, t, { stone = M.stone, trim = M.stone, spiky = false } = {}
 
 // A flag whose vertices are waved every frame in update().
 const flags = [];
-function flag(color, w = 4, h = 2.4) {
+export function flag(color, w = 4, h = 2.4) {
   const g = new THREE.Group();
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(.08, .1, 6, 6), M.wood);
   pole.position.y = 3; g.add(pole);

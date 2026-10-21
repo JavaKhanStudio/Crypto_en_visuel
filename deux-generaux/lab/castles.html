@@ -1,0 +1,104 @@
+<!doctype html>
+<!-- r192 lab: the episode's own valley (js/world.js, Eve's city and the Eye in the middle) with the two keeps swapped for the
+     prototypes of js/castles.js: humans (a white city of tiers) and elves (towers and a mallorn). Nothing here is in the episode.
+     Query: ?set=old|new  ?west=human|elf (which one is Alice's)  ?view=over|a|b|gateA|gateB|both  ?dawn=0..1   (tools/shoot.py --page deux-generaux/lab/castles.html) -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two Generals: castles of Middle-earth (lab)</title>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0f2c; color: #e6e9f2; font: 14px system-ui, sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #ui { position: fixed; left: 12px; top: 12px; display: flex; flex-wrap: wrap; gap: 6px; max-width: calc(100vw - 24px); }
+  #ui div { display: flex; gap: 4px; background: #141a33cc; padding: 5px; border-radius: 8px; align-items: center; }
+  #ui span { color: #9aa3c5; padding: 0 4px; }
+  button { background: #252d52; color: #e6e9f2; border: 1px solid #39437a; border-radius: 6px; padding: 4px 9px; font: inherit; cursor: pointer; }
+  button.on { background: #e8b84a; color: #1b1405; border-color: #e8b84a; }
+  #who { position: fixed; left: 12px; bottom: 12px; background: #141a33cc; padding: 6px 10px; border-radius: 8px; color: #c8cde0; }
+</style></head><body>
+<canvas id="scene"></canvas>
+<div id="ui">
+  <div><span>castles</span><button data-k="set" data-v="old">today's keeps</button><button data-k="set" data-v="new">Middle-earth</button></div>
+  <div><span>Alice (west, blue)</span><button data-k="west" data-v="human">humans</button><button data-k="west" data-v="elf">elves</button></div>
+  <div><span>view</span><button data-k="view" data-v="over">valley</button><button data-k="view" data-v="a">Alice</button><button data-k="view" data-v="b">Bob</button><button data-k="view" data-v="gateA">gate A</button><button data-k="view" data-v="gateB">gate B</button></div>
+  <div><span>sky</span><button data-k="dawn" data-v="0">night</button><button data-k="dawn" data-v="1">dawn</button></div>
+</div>
+<div id="who"></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { buildWorld, CASTLE_A, CASTLE_B } from '../js/world.js';
+import { SHOTS } from '../js/camera.js';
+import { buildHumanCastle, buildElfCastle } from '../js/castles.js';
+
+const q = new URLSearchParams(location.search);
+const st = { set: q.get('set') || 'new', west: q.get('west') || 'elf', view: q.get('view') || 'over', dawn: q.get('dawn') || '0' };
+
+// the renderer exactly as js/main.js sets it, so the castles are judged in the episode's own light
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(45, 1, .5, 1500);
+const world = buildWorld(scene);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .75, .55, .82));
+composer.addPass(new OutputPass());
+const controls = new OrbitControls(camera, canvas);
+Object.assign(controls, { enableDamping: true, dampingFactor: .07, maxPolarAngle: Math.PI * .47, minDistance: 8, maxDistance: 320 });
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); composer.setSize(w, h);
+  camera.aspect = w / h; camera.fov = w < h ? 65 : 45; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+const v = (x, y, z) => new THREE.Vector3(x, y, z);
+const VIEWS = {
+  over: SHOTS.both, a: SHOTS.castleA, b: SHOTS.castleB,
+  // the gates, a little wider than the episode's gateB shot, which was framed on the old keep
+  gateA: { pos: v(-40, 20, 28), target: v(CASTLE_A.x + 4, CASTLE_A.y + 6, 0) },
+  gateB: { pos: v(40, 20, 28), target: v(CASTLE_B.x - 4, CASTLE_B.y + 6, 0) },
+};
+
+// the old keeps stay in the scene, hidden, so 'today' and 'Middle-earth' flip without a rebuild
+const made = { human: {}, elf: {} };
+const build = { human: buildHumanCastle, elf: buildElfCastle };
+function castle(kind, team) {
+  if (!made[kind][team]) {
+    const c = build[kind](team, team === 'a' ? 0 : Math.PI);
+    c.position.copy(team === 'a' ? CASTLE_A : CASTLE_B); scene.add(c); made[kind][team] = c;
+  }
+  return made[kind][team];
+}
+function apply() {
+  const fresh = st.set === 'new', east = st.west === 'elf' ? 'human' : 'elf';
+  world.castleA.visible = world.castleB.visible = !fresh;
+  for (const k of ['human', 'elf']) for (const t of ['a', 'b']) if (made[k][t]) made[k][t].visible = false;
+  if (fresh) { castle(st.west, 'a').visible = true; castle(east, 'b').visible = true; }
+  const s = VIEWS[st.view]; camera.position.copy(s.pos); controls.target.copy(s.target); controls.update();
+  world.setDawn(+st.dawn);
+  for (const b of document.querySelectorAll('#ui button')) b.classList.toggle('on', st[b.dataset.k] === b.dataset.v);
+  document.getElementById('who').textContent = fresh ? `Alice (west): ${st.west === 'elf' ? 'elves' : 'humans'} · Bob (east): ${east === 'elf' ? 'elves' : 'humans'} · Eve: the black city` : 'today\'s twin keeps';
+}
+document.getElementById('ui').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  st[b.dataset.k] = b.dataset.v; apply();
+});
+apply();
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), .05);
+  world.update(dt, clock.elapsedTime); controls.update(); composer.render();
+});
+// for tools/shoot.py: ready once the first frames are drawn
+window.demo = { world, st, apply, ready: false };
+requestAnimationFrame(() => requestAnimationFrame(() => { window.demo.ready = true; }));
+</script>
+</body></html>
