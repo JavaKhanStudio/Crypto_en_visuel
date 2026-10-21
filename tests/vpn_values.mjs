@@ -1,6 +1,7 @@
 // r209: the VPN episode's crypto, checked. vpn/js/x25519.js and vpn/js/aead.js against the RFC
 // vectors (RFC 7748 §5.2 and §6.1, RFC 8439 §2.4.2, §2.5.2 and §2.8.2), against node:crypto on random
-// inputs, and the episode's demo values, written out so the story can quote them. node tests/vpn_values.mjs
+// inputs, and the episode's demo values (vpn/js/net.js), written out so the story can quote them; then
+// who sees what, and every figure the story, the tags and the quiz write. node tests/vpn_values.mjs
 import crypto from 'node:crypto';
 import { x25519, publicKey, shared } from '../vpn/js/x25519.js';
 import { chacha20, poly1305, seal, open } from '../vpn/js/aead.js';
@@ -9,7 +10,7 @@ const EXPECT = {
   pa: '1c92aa0d76e6a22a5dbec1c61bee6304d144e71f36409ee5e87c0585ce288d11',
   pv: '6fa2577284e724745477fbc0867651d3c35215ef7e2716aae2410128657e6d1d',
   k: 'c9f819a03b476ba12d235eaa0b4fb3b25b60c8cfa6c573a6b398291b8821d357',
-  sealed: '064413492f6d877e650d823b80e28acc806126ae084ebfea 0d1c53a7b1c738e3ae9ed1e131707964' };
+  sealed: '411859143a3ec62d7b58d468dd 10a635ffb0be9ed5d34621c57d8159b7' };
 
 let bad = 0;
 const hex = b => Buffer.from(b).toString('hex');
@@ -66,36 +67,70 @@ check('deck stream, counter 0', hex(chacha20(dk, 0, dn, new Uint8Array(8))), 'e5
 const v = seal(dk, dn, new TextEncoder().encode('VIREMENT'));
 check('deck key, VIREMENT sealed', hex(v.ct) + ' ' + hex(v.tag), '14d122a55d2739a0 a86cf41c4308b56e66ca9d2958d99814');
 
-// THE EPISODE'S DEMO (r197): Alice's and the VPN server's secrets, 32 bytes each, the shared secret,
-// and one packet for Bob sealed under it. The episode uses the shared secret directly as the
-// packet key; its story says WireGuard first mixes several such secrets through a hash.
+// THE EPISODE'S DEMO (r197): the page's own values, from vpn/js/net.js (Alice's and the VPN server's
+// secrets, the shared secret, the inner envelope's address line sealed under it), each redone here by
+// node:crypto. The episode uses the shared secret directly as the packet key; its story says WireGuard
+// first mixes several such secrets through a hash.
+globalThis.location = { search: '' };
+globalThis.localStorage = { getItem: () => null, setItem() {} };
+const N = await import('../vpn/js/net.js');
+const { DICTS } = await import('../vpn/js/i18n.js');
+const { plain } = await import('../vpn/js/md.js');
+const { QUIZ } = await import('../vpn/js/quiz-data.js');
 const enc = s => new TextEncoder().encode(s);
-const ALICE = enc('alice-garde-ce-secret-pour-elle!'), VPN = enc('le-serveur-vpn-garde-le-sien-!!!');
-check('demo secrets are 32 bytes', `${ALICE.length} ${VPN.length}`, '32 32');
-const pa = publicKey(ALICE), pv = publicKey(VPN), k1 = shared(ALICE, pv), k2 = shared(VPN, pa);
-check('demo: both sides find the same secret', hex(k1), hex(k2));
-const NONCE = new Uint8Array(12);   // WireGuard's nonce is a packet counter: 4 zero bytes, then the counter on 8 bytes (0 for the first)
-const PACKET = enc('vers bob.example : GET /');
-const sealed = seal(k1, NONCE, PACKET);
-console.log('    alice public ', hex(pa), '\n    vpn public   ', hex(pv), '\n    shared       ', hex(k1),
-  '\n    packet ct    ', hex(sealed.ct), '\n    packet tag   ', hex(sealed.tag));
-check('demo: alice public', hex(pa), EXPECT.pa);
-check('demo: vpn public', hex(pv), EXPECT.pv);
-check('demo: shared secret', hex(k1), EXPECT.k);
-check('demo: sealed packet', hex(sealed.ct) + ' ' + hex(sealed.tag), EXPECT.sealed);
-const nodeK = crypto.diffieHellman({ privateKey: jwk(ALICE), publicKey: crypto.createPublicKey(jwk(VPN)) });
-const nc = crypto.createCipheriv('chacha20-poly1305', nodeK, NONCE, { authTagLength: 16 });
-const nct = Buffer.concat([nc.update(PACKET), nc.final()]);
+check('demo secrets are 32 bytes', `${N.SECRET.a.length} ${N.SECRET.v.length}`, '32 32');
+check('demo: alice public', hex(N.PUBLIC.a), EXPECT.pa);
+check('demo: vpn public', hex(N.PUBLIC.v), EXPECT.pv);
+check('demo: both sides find the same secret', hex(N.KEY.a) + ' ' + hex(N.KEY.v), EXPECT.k + ' ' + EXPECT.k);
+check('demo: the packet is the inner envelope\'s address line, Bob\'s', new TextDecoder().decode(N.PACKET), N.ADDR.bob);
+check('demo: sealed packet', hex(N.SEALED.ct) + ' ' + hex(N.SEALED.tag), EXPECT.sealed);
+const nodeK = crypto.diffieHellman({ privateKey: jwk(N.SECRET.a), publicKey: crypto.createPublicKey(jwk(N.SECRET.v)) });
+const nc = crypto.createCipheriv('chacha20-poly1305', nodeK, N.NONCE, { authTagLength: 16 });
+const nct = Buffer.concat([nc.update(N.PACKET), nc.final()]);
 check('demo: node:crypto finds the same secret and sealed packet', hex(nodeK) + ' ' + hex(nct) + ' ' + hex(nc.getAuthTag()), EXPECT.k + ' ' + EXPECT.sealed);
-check('demo: the VPN server opens it', new TextDecoder().decode(open(k2, NONCE, sealed.ct, sealed.tag) ?? new Uint8Array()), 'vers bob.example : GET /');
-// one byte flipped on the way: the tag no longer matches, the packet is thrown away
-for (const at of [0, 9, PACKET.length - 1]) {
-  const t = Uint8Array.from(sealed.ct); t[at] ^= 1;
-  check(`demo: byte ${at} flipped -> rejected`, open(k2, NONCE, t, sealed.tag), null);
+check('demo: the VPN server opens it', new TextDecoder().decode(N.opened(N.SEALED.ct) ?? new Uint8Array()), N.ADDR.bob);
+check('demo: tagOf() is the seal the server recomputes', hex(N.tagOf(N.SEALED.ct)), hex(N.SEALED.tag));
+// one bit flipped on the way (the story's): the recomputed seal differs, the packet is thrown away
+const f = N.flipped();
+check(`demo: byte ${N.FLIP} flipped is 3a -> 3b`, hex(N.SEALED.ct.slice(N.FLIP, N.FLIP + 1)) + ' ' + hex(f.slice(N.FLIP, N.FLIP + 1)), '3a 3b');
+check('demo: flipped -> rejected', N.opened(f), null);
+const dn2 = crypto.createDecipheriv('chacha20-poly1305', nodeK, N.NONCE, { authTagLength: 16 }); dn2.setAuthTag(Buffer.from(N.SEALED.tag)); dn2.update(f);
+let nodeRejects = false; try { dn2.final(); } catch { nodeRejects = true; }
+check('demo: node:crypto rejects the flipped packet too', nodeRejects, true);
+check('demo: recomputed seal differs from the one sent', hex(N.tagOf(f)) !== hex(N.SEALED.tag), true);
+for (const at of [0, 9, N.PACKET.length - 1]) {
+  const t = Uint8Array.from(N.SEALED.ct); t[at] ^= 1;
+  check(`demo: byte ${at} flipped -> rejected`, N.opened(t), null);
 }
-const t2 = Uint8Array.from(sealed.tag); t2[0] ^= 0x80;
-check('demo: tag changed -> rejected', open(k2, NONCE, sealed.ct, t2), null);
-check('demo: another key -> rejected', open(shared(enc('eve-essaie-avec-sa-propre-cle!!!'), pv), NONCE, sealed.ct, sealed.tag), null);
+check('demo: another key -> rejected', open(shared(enc('eve-essaie-avec-sa-propre-cle!!!'), N.PUBLIC.v), N.NONCE, N.SEALED.ct, N.SEALED.tag), null);
+check('demo: sealed size', N.SIZE.sealed, 29);
+
+// WHO SEES WHAT (sees()): the story's claims, place by place
+const S = (w, p) => JSON.stringify(N.sees(w, p));
+check('no tunnel, HTTP: Eve reads the content', N.sees('e', { https: false }).content, 'clear');
+check('no tunnel, HTTPS: Eve and the provider see Bob\'s address and the name, not the content', S('e', {}) === S('i', {}) && N.sees('e', {}).to === 'bob' && N.sees('e', {}).name && N.sees('e', {}).content === 'locked', true);
+check('tunnel: Eve and the provider see only the VPN\'s address', ['e', 'i'].map(w => N.sees(w, { tunnel: true })).every(s => s.to === 'vpn' && !s.name && s.content === 'sealed'), true);
+check('tunnel: Victor sees what the provider saw (the trust moves)', S('v', { tunnel: true }), S('i', {}));
+check('tunnel: Bob sees the VPN\'s address, not the café\'s', N.sees('b', { tunnel: true }).from + ' ' + N.sees('b', {}).from, 'vpn cafe');
+check('no tunnel: nothing passes through the VPN', N.sees('v', {}).content, null);
+check('route through the tunnel', N.route(true).join(''), 'awivb');
+
+// THE WORDS: every address, byte group and count the story, the tags and the quiz write is the page's
+for (const [l, d] of Object.entries(DICTS)) {
+  const text = Object.values(d.steps).map(s => plain(s.p) + ' ' + Object.entries(s).filter(([k]) => k.length === 1).map(([, x]) => x).join(' ')).join(' ');
+  const addrs = new Set(text.match(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g));
+  check(`${l}: every address written is one of the map's`, [...addrs].every(a => Object.values(N.ADDR).includes(a)), true);
+  check(`${l}: the shared key quoted (c9 f8 19 a0) is the computed one`, text.includes('c9 f8 19 a0') && hex(N.KEY.a).startsWith('c9f819a0'), true);
+  check(`${l}: the flipped byte quoted (3a, 3b) is the computed one`, text.includes('3a') && text.includes('3b') && f[N.FLIP] === 0x3b, true);
+  check(`${l}: the seal is 16 bytes and the secrets 32`, /16[ -](octets|bytes?)/.test(text) && /32[ -](octets|bytes?)/.test(text) && N.SEALED.tag.length === 16, true);
+  check(`${l}: the name is bob.example`, text.includes(N.NAME), true);
+  check(`${l}: 14 steps, 5 chapters`, `${Object.keys(d.steps).length} ${d.ch.length}`, '14 5');
+  check(`${l}: the quiz has 7 questions, each with its right answers inside the options`, QUIZ.length === 7 && QUIZ.every(q => q[l].o.length === 4 && q.correct.every(c => c < 4)), true);
+}
+// every key of the French dicts exists in English (a missing one would show French on the EN page)
+const keys = (o, p = '') => Object.entries(o).flatMap(([k, x]) => typeof x === 'object' && !Array.isArray(x) ? keys(x, p + k + '.') : [p + k]);
+const missing = keys(DICTS.fr).filter(k => !keys(DICTS.en).includes(k));
+check('every French key has its English', missing.join(', '), '');
 
 console.log(bad ? `${bad} BAD` : 'all ok');
 process.exit(bad ? 1 : 0);
