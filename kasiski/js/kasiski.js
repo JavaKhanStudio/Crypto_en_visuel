@@ -50,12 +50,12 @@ export function columns(cipher, L) {
 export const CIPHER = vigenere(TEXT, KEY);
 
 // ---------- the wheel ----------
-// Lengths in centimetres, so every division is exact. A car tyre of 2 m around (a 205/55 R16: 1.99 m)
-// with a stone in its tread prints a mark every 200 cm, but the road shows it only where it is muddy.
+// Lengths in centimetres, so every division is exact. A cart wheel of 2 m around (64 cm across: 2.01 m)
+// with a stone under its iron tyre prints a mark every 200 cm, but the road shows it only where it is muddy.
 // MUD: the turns whose mark lands in mud; GRAVEL: marks left by loose gravel, in their own puddles.
 export const WHEEL = { C: 200, start: -4000, turns: 40,
   mud: [0, 2, 5, 7, 12, 15, 17, 22, 25, 27, 32, 35, 37], gravel: [-1230, 2160] };   // 3.7 m after turn 12, 7.6 m after turn 27
-// the candidates: a car tyre is 1.5 m to 4 m around, by half metres
+// the candidates: a wheel 1.5 m to 4 m around, by half metres
 export const CANDIDATES = [150, 200, 250, 300, 350, 400];
 
 // The marks Eve finds on the road, in order: { x (cm), kind: 'stone' | 'gravel' }, for a wheel of

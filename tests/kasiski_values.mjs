@@ -38,9 +38,9 @@ eq(cols.map(c => c.top).join(''), 'PIQSR', 'column tops P I Q S R');
 eq(cols.map(c => c.key).join(''), 'LEMON', 'minus E: LEMON');
 eq([cols[0].n, cols[0].col.length], [17, 80], 'P comes up 17 times in 80 in column 1');
 eq(K.repeats(K.CIPHER).filter(r => r.b + 3 <= 96).length, 11, 'inside the lane (0..95): 11 repeats');
-// the tyre: 205/55 R16 -> rim 16 in, sidewall 55 % of 205 mm
-const circ = Math.PI * (16 * 25.4 + 2 * .55 * 205) / 1000;
-ok(Math.abs(circ - 2) < .02, `a 205/55 R16 is ${circ.toFixed(3)} m around: about 2 m`);
+// the cart wheel (r252): about 2 m around is a wheel of 64 cm across, a true size for a small cart
+const circ = Math.PI * .64;
+ok(Math.abs(circ - 2) < .02, `a 64 cm cart wheel is ${circ.toFixed(3)} m around: about 2 m`);
 
 // ---------- the wheel ----------
 const g = K.gaps(K.track(K.WHEEL)), gd = g.map(x => x.d);
