@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 from PIL import Image
 
 BASE = "http://localhost:8793/"
-EPISODES = sys.argv[1:] or ["deux-generaux", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "kasiski", "vpn"]
+EPISODES = sys.argv[1:] or ["deux-generaux", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "kasiski", "vpn", "aes-interieur"]
 MEASURE = """() => {
   const box = (el, name) => { const r = el.getBoundingClientRect(); return { name, x: r.left, y: r.top, w: r.width, h: r.height }; };
   const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz'].map(id => document.getElementById(id))

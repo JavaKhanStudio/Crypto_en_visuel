@@ -27,7 +27,7 @@ ap.add_argument("--real-speed", action="store_true", help="no ?instant=1, so a s
 a = ap.parse_args()
 out = a.out or f"{a.slug}/vignette.jpg"
 W, H = 1280, 720
-hide = "for(const s of ['#topbar','#story','#sandbox','#quiz','#card','#bubbles','#toast','#loading'])" \
+hide = "for(const s of ['#topbar','#story','#sandbox','#quiz','#card','#bubbles','#toast','#loading','#credit'])" \
        "{const e=document.querySelector(s); if(e) e.style.display='none';}"
 with sync_playwright() as p:
     b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])

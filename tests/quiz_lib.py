@@ -12,7 +12,7 @@ from playwright.sync_api import sync_playwright
 BASE = "http://localhost:8793/"
 EPISODES = sys.argv[1:] or ["deux-generaux", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet",
     "encore-des-tours", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse",
-    "pingouin", "sel", "garde", "kasiski", "vpn"]
+    "pingouin", "sel", "garde", "kasiski", "vpn", "aes-interieur"]
 fails = []
 
 def check(name, ok):

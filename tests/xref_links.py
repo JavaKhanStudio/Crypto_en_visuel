@@ -11,7 +11,7 @@ import os, re, sys
 from playwright.sync_api import sync_playwright
 
 base = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
-EPISODES = ["eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours"]
+EPISODES = ["eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "aes-interieur"]
 RX = re.compile(r"[ÉéEe]pisode \d+(?:\.\d+)?(?!\d)")
 fails = []
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
