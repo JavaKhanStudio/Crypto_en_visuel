@@ -74,7 +74,8 @@ export function buildWorld(scene) {
   people.a.position.set(X.alice, 0, 2); people.a.rotation.y = .5;
   people.e.position.set(X.eve, 0, 4); people.e.rotation.y = .45;
   people.g.position.set(X.booth + 3, 0, -6); people.g.rotation.y = 0;
-  people.b.position.set(X.desk + 9, 0, -9); people.b.rotation.y = -.4;
+  // r188: beside his desk, not behind the ledger's stand, which hid him
+  people.b.position.set(X.desk + 15, 0, -1); people.b.rotation.y = -.7;
   for (const p of Object.values(people)) scene.add(p);
 
   const world = { scene, booth: bth, board: brd, gate: gt, desk, chart: ch, watch, people };
