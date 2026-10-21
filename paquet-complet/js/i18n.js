@@ -83,6 +83,14 @@ const fr = {
     ['os.urandom', 'un hasard imprévisible pour les clés et l’IV, neuf à chaque message ; jamais le module random'],
   ],
 
+  // inside Bob's keep: his three moves on the real packet (inside.js); its colours are the card's
+  'in.ek': 'clés fermées · 256 octets', 'in.priv': 'clé privée de Bob', 'in.unlock': 'c^d mod n, puis OAEP retiré',
+  'in.aes': 'clé AES · 32 octets', 'in.mac': 'clé HMAC · 32 octets', 'in.msg': 'IV ‖ chiffré · 48 octets',
+  'in.tag': 'le sceau du paquet', 'in.mine': 'le sceau que Bob recalcule', 'in.sealOk': '✔ 32 octets sur 32 égaux : on peut déchiffrer',
+  'in.sealBad': '✖ égaux à la même place : {n} sur 32 · rejeté', 'in.dec': 'avec la clé AES et l’IV', 'in.unpad': 'padding retiré : {n} octets de valeur {n}',
+  'in.flip': 'changé par Eve', 'in.shut': 'AES reste fermé : rien n’est déchiffré', 'in.first': 'L’erreur : déchiffrer d’abord',
+  'in.pad': 'ce qu’AES rend des octets d’Eve · padding {pad}',
+
   // story
   ch: ['Côté Alice', 'Côté Bob', 'L’octet d’Eve', 'Le code'],
   steps: {
@@ -208,6 +216,13 @@ const en = {
     ['compare_digest', 'constant time: how long it takes does not give away where the seals differ (episode 8, the guard)'],
     ['os.urandom', 'unpredictable randomness for the keys and the IV, fresh for every message; never the random module'],
   ],
+
+  'in.ek': 'locked keys · 256 bytes', 'in.priv': "Bob's private key", 'in.unlock': 'c^d mod n, then OAEP removed',
+  'in.aes': 'AES key · 32 bytes', 'in.mac': 'HMAC key · 32 bytes', 'in.msg': 'IV ‖ ciphertext · 48 bytes',
+  'in.tag': "the packet's seal", 'in.mine': 'the seal Bob recomputes', 'in.sealOk': '✔ 32 bytes of 32 equal: decrypting is safe',
+  'in.sealBad': '✖ equal at the same place: {n} of 32 · rejected', 'in.dec': 'with the AES key and the IV', 'in.unpad': 'padding removed: {n} bytes of value {n}',
+  'in.flip': 'changed by Eve', 'in.shut': 'AES stays shut: nothing is decrypted', 'in.first': 'The mistake: decrypting first',
+  'in.pad': "what AES gives from Eve's bytes · padding {pad}",
 
   ch: ["Alice's side", "Bob's side", "Eve's byte", 'The code'],
   steps: {

@@ -251,3 +251,8 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 #card .why { display: grid; grid-template-columns: 8.2em 1fr; gap: 4px 10px; margin-top: 6px; font-size: 12px; line-height: 1.35; }
 #card .why b { font: 700 11.5px ui-monospace, Menlo, monospace; color: #ffd27a; }
 #sandbox .bricks { display: grid; grid-template-columns: 1fr 1fr; margin-left: 22px; }
+
+/* the zoom into a castle (r103): the screen fills with the window's warm light, then the room shows */
+#veil { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 380ms ease;
+  background: radial-gradient(circle at 50% 50%, #ffc070 0%, #d08a3a 28%, #6a3a12 70%, #1a0e06 100%); }
+#veil.on { opacity: 1; }

@@ -111,10 +111,15 @@ Les quatre briques dans l'ordre, et ce que les étudiants construisent. Côté A
 le paquet se monte brique par brique devant son château : trois tirages neufs (`os.urandom`),
 chiffrer l'ordre (PKCS7 souligné, AES-256-CBC), sceller IV ‖ chiffré (HMAC-SHA256), fermer clé AES ‖
 clé HMAC au cadenas de Bob (RSA-2048-OAEP). Le paquet traverse (336 octets, Eve n'ouvre rien) ; côté
-Bob, trois gestes : ouvrir les clés, vérifier le sceau, seulement alors déchiffrer. Eve change le 1er
+Bob, trois gestes : ouvrir les clés, vérifier le sceau, seulement alors déchiffrer, dans son donjon :
+la caméra entre par sa fenêtre, et les vrais octets passent par trois machines (les clés fermées dans
+RSA-2048 avec sa clé privée, IV ‖ chiffré dans HMAC-SHA256 et son sceau comparé octet par octet à
+celui du paquet, puis seulement AES-256-CBC, le padding retiré, l'ordre lu). Eve change le 1er
 octet du chiffré : rejeté sans être déchiffré ; un octet changé dans chacune des quatre briques,
 rejeté chaque fois ; pourquoi vérifier avant de déchiffrer (ce que Bob aurait déchiffré, l'oracle de
-padding, `compare_digest`). Puis le code : les quatre fichiers et leurs fonctions, la scène de
+padding, `compare_digest`), de nouveau dans le donjon de Bob : sur le paquet d'Eve la lampe passe au
+rouge et AES reste fermé, puis l'erreur, déchiffrer d'abord, montre ce qu'AES rend des octets d'Eve
+(`paquet-complet/js/inside.js`, vérifié par `tests/paquet_inside.py`). Puis le code : les quatre fichiers et leurs fonctions, la scène de
 `main.py` rejouée par deux cavaliers dans un terminal (« Bonjour Bob ! », puis « ALERTE : HMAC
 invalide »), les choix que le README justifie ; la fin renvoie aux épisodes 1.2, 1.3 et 1.4. 14
 étapes en 4 chapitres, un bac à sable (votre ordre ; Eve laisse passer ou change l'octet de votre
