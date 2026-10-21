@@ -307,16 +307,17 @@ avec un extrait de 4 s au survol (`tests/last_doors.py garde 10 kasiski`).
 
 ## Épisode 9 — La roue et le caillou
 
-L'attaque de Kasiski contre Vigenère, d'abord par une image : un caillou coincé dans le pneu
-d'Alice (205/55 R16, pris à 2 m de tour) marque la boue à chaque tour ; Eve ne voit que la trace,
-mesure les écarts (4, 6, 10 m, jamais 2 m), écarte le gravier qui brouille (3,7 et 2,3 m, 7,6 et
-2,4 m) et garde le plus long pas qui divise le plus d'écarts : 2 m en divise 10 sur 14. Puis le
+L'attaque de Kasiski contre Vigenère, d'abord par une image : un caillou coincé sous le bandage
+de fer d'une roue de la charrette d'Alice (2 m de tour) frappe le sol à chaque tour, et seule la
+boue des flaques garde la marque ; Eve ne voit que la trace, mesure les écarts (4, 6, 10 m, jamais
+2 m), avec deux gravillons enfoncés par la roue qu'elle ne peut pas trier et qui brouillent (3,7 et
+2,3 m, 7,6 et 2,4 m), et garde le plus long pas qui divise le plus d'écarts : 2 m en divise 10 sur 14. Puis le
 chiffre : la clé LEMON sur une roue à cinq faces roule sur un paragraphe français de 399 lettres ;
 « LA MEME LETTRE », deux fois à 30 lettres d'écart, donne deux fois PMARXIXSGEVQ. Eve relève les
 trigrammes qui reviennent, 48 distances : 5 en divise 44 (les 4 autres, 37, 76, 86, 154, sont du
 hasard), 2 en divise 36 ; puis cinq colonnes, cinq César, E le plus fréquent : L, E, M, O, N.
 12 étapes en 5 chapitres, un bac à sable (le tour de roue et le gravier, ou votre propre clé),
-un quiz de 8 questions. `node tests/kasiski_values.mjs` refait le chiffrement et le compte et
+un quiz de 6 questions. `node tests/kasiski_values.mjs` refait le chiffrement et le compte et
 vérifie les chiffres écrits dans l'histoire ; `tests/kasiski_story.py` clique chaque bouton.
 
 ## Épisode 10 — Le tunnel
