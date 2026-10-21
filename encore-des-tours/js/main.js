@@ -14,6 +14,7 @@ import { CameraRig } from './camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from './messenger.js';
 import { Bubbles } from './bubbles.js';
+import { Inside } from './inside.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
 import { Quiz } from '../../lib/quiz.js';
@@ -44,7 +45,7 @@ const rig = new CameraRig(camera, canvas);
 if (instant) { const fly = rig.fly.bind(rig); rig.fly = shot => fly(shot, .001); }
 
 const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
+const renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
 composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .75, .55, .82));
 composer.addPass(new OutputPass());
 
@@ -52,11 +53,16 @@ function resize() {
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false); composer.setSize(w, h);
   camera.aspect = w / h; camera.fov = w < h ? 65 : 45; camera.updateProjectionMatrix();
+  inside?.resize(camera.aspect, camera.fov);
 }
+let inside;
 addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
 const bubbles = new Bubbles(camera); bubbles.instant = instant;
+// steps 5-6 (Alice signs, Bob checks) and 11-12 (AES-GCM, Eve's byte) happen inside the keeps, in rooms
+// where the machines run on the real bytes (r103, r162)
+inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant }); resize();
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
@@ -133,7 +139,7 @@ function resetWorld() {
   riders.clear(); bubbles.clear(); rig.stopFollow();
 }
 
-const ctx = { world, rig, bubbles, toast, instant, ride, wait, showcase, resetWorld, renderCard, mode: () => mode, setMode: m => setMode(m),
+const ctx = { world, rig, bubbles, inside, toast, instant, ride, wait, showcase, resetWorld, renderCard, mode: () => mode, setMode: m => setMode(m),
   onAnswer: right => { right ? sfx.win() : sfx.lose(); if (right) fireworks(new THREE.Vector3(0, 0, 0), [0xffd27a, 0x5fe39a], 3); },
   onEnd: () => fireworks(new THREE.Vector3(0, 0, 0), [0xffd27a, 0x4da3ff, 0xffc24d, 0xffffff], 16) };
 const story = new Story(ctx);
@@ -166,6 +172,7 @@ function setMode(m, opts = {}) {
   document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
   rig.setOrbit(0); story.token++; sandbox.token++; resetWorld();
   showcase();   // leaving a mode cancels its running ride
+  if (m !== 'story') inside.leave();
   if (m === 'story') story.go(opts.step ?? story.i);
   if (m === 'sandbox') { location.hash = 'sandbox'; sandbox.enter(); }
   if (m === 'quiz') {
@@ -193,7 +200,8 @@ function loop() {
   for (const m of riders) if (!m.paused) m.update(dt, time);
   for (const f of tickers) f(dt, time);
   updateFx(dt);
-  rig.update(dt);
+  inside.update(dt);
+  if (!inside.active) rig.update(dt);
   bubbles.update(dt);
   composer.render();
   requestAnimationFrame(loop);
@@ -206,4 +214,4 @@ else if (h === 'sandbox' || h === 'quiz') setMode(h);
 else setMode('story', { step: Math.max(0, Math.min(STEPS.length - 1, (parseInt(h.split('=')[1]) || 1) - 1)) });
 loop();
 document.getElementById('loading').classList.add('done');
-window.demo = { THREE, scene, camera, world, rig, story, sandbox, quiz, setMode, riders, said, ready: true };
+window.demo = { THREE, scene, camera, world, rig, inside, story, sandbox, quiz, setMode, riders, said, ready: true };

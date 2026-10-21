@@ -45,14 +45,16 @@ export const STEPS = [
   { id: 'forge', ch: 0, shot: 'city', view: 'forge', show: ['e', FOUR, FOUR], say: ['e'] },
   { id: 'forged', ch: 0, shot: 'both', view: 'bobForged', go: async x => { await x.ride('forged'); } },
   { id: 'who', ch: 0, shot: 'castleB', view: 'who', show: ['b', FOUR, FOUR], say: ['b'] },
-  { id: 'sign', ch: 1, shot: 'castleA', view: 'sign', show: ['a', SIGNED], say: ['a'] },
-  { id: 'verify', ch: 1, shot: 'castleB', view: 'verify', show: ['b', SIGNED], say: ['b'] },
+  // r103/r162: Alice signs inside her keep and Bob checks inside his, on the real bytes (inside.js):
+  // one zoom into Alice's keep, a cut through to Bob's, out at 'evilSig'. The same for AES-GCM below.
+  { id: 'sign', ch: 1, shot: 'castleA', view: 'sign', show: ['a', SIGNED], say: ['a'], inside: 'sign' },
+  { id: 'verify', ch: 1, shot: 'castleB', view: 'verify', show: ['b', SIGNED], say: ['b'], inside: 'verify' },
   { id: 'evilSig', ch: 1, shot: 'both', view: 'evilSig', go: async x => { await x.ride('forgedSig'); } },
   { id: 'replay', ch: 2, shot: 'both', view: 'replay', go: async x => { await x.ride('replay'); } },
   { id: 'num', ch: 2, shot: 'castleA', view: 'num', show: ['a', ALL], say: ['a'] },
   { id: 'replayNum', ch: 2, shot: 'both', view: 'replayNum', go: async x => { await x.ride('replayNum'); } },
-  { id: 'gcm', ch: 3, shot: 'castleA', view: 'gcm', show: ['a', ['iv', 'ct', 'tag']], say: ['a'] },
-  { id: 'gcmEve', ch: 3, shot: 'castleB', view: 'gcmEve', show: ['b', ['iv', 'ct', 'tag'], 'ct'], say: ['b'] },
+  { id: 'gcm', ch: 3, shot: 'castleA', view: 'gcm', show: ['a', ['iv', 'ct', 'tag']], say: ['a'], inside: 'gcm' },
+  { id: 'gcmEve', ch: 3, shot: 'castleB', view: 'gcmEve', show: ['b', ['iv', 'ct', 'tag'], 'ct'], say: ['b'], inside: 'gcmEve' },
   { id: 'final', ch: 4, shot: 'castleA', view: 'final', show: ['a', ALL], say: ['a'] },
   { id: 'end', ch: 4, shot: 'overview', orbit: .06, view: 'play', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'),
     link: ['../paquet-complet/', '../octet-change/', '../cle-vallee/'] },
@@ -66,7 +68,7 @@ export class Story {
       chapters: document.getElementById('chapters'), prev: document.getElementById('prev'), next: document.getElementById('next') };
     this.el.prev.onclick = () => this.go(this.i - 1);
     this.el.next.onclick = () => this.go(this.i + 1);
-    onLang(() => { this.render(true); this.card(); });
+    onLang(() => { if (STEPS[this.i].inside) this.ctx.inside.rebuild(packets()); this.render(true); this.card(); });
   }
 
   // what the corner card shows at this step: the view and the story's packets
@@ -81,10 +83,23 @@ export class Story {
     c.showcase(...(step.show || []));
     this.card();
     c.rig.setOrbit(0);
-    c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
     this.render();
+    if (step.inside) return this.enter(step, tok);
+    // out of a room, the camera backs out of its keep's window and flies on to the step's shot
+    const out = c.inside.active;
+    Promise.resolve(out ? c.inside.leave(step.shot) : c.rig.fly(step.shot, c.instant ? 0.001 : 2.2))
+      .then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
     // bubbles appear once the camera has mostly arrived
-    setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : 1300);
+    setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : out ? 2000 : 1300);
+  }
+
+  // a step inside a keep: it zooms in through the window from wherever the camera is (so #story=5
+  // straight into it enters too); from the other keep's room of the chapter, it cuts through to this one
+  async enter(step, tok) {
+    const c = this.ctx, live = () => tok === this.token, room = c.inside.room;
+    if (room && room.name === step.inside) c.inside.beat(step.id);
+    else if (!await (room ? c.inside.cut(step.inside, step.id, packets(), live) : c.inside.enter(step.inside, step.id, packets(), live))) return;
+    setTimeout(() => { if (live()) for (const s of step.say || []) this.say(s, undefined, () => c.inside.anchor()); }, c.instant ? 0 : 900);
   }
 
   say(who, text, anchor) {
@@ -118,7 +133,7 @@ export class Story {
     (step.link || []).forEach((href, k) => this.el.actions.insertAdjacentHTML('beforeend', `<a class="button" href="${href}?lang=${lang}">${s.link[k]}</a>`));
     this.el.next.classList.toggle('primary', !anim || this.seen);
     if (!this.seen) this.el.next.classList.remove('shine');
-    if (langOnly) for (const s2 of step.say || []) this.say(s2);
+    if (langOnly) for (const s2 of step.say || []) this.say(s2, undefined, step.inside ? () => this.ctx.inside.anchor() : undefined);
   }
 
   // the step's animation has played: Suivant takes the gold back and shines once to call the eye

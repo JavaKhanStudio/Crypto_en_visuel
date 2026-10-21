@@ -136,6 +136,13 @@ Bob est public : Eve fabrique un paquet entier (« JE SUIS ALICE, DONNE-MOI LE C
 propres clés, et Bob l'accepte, car le HMAC prouve « quelqu'un qui a la clé » et c'est l'expéditeur
 qui la tire. Alice signe le paquet (RSA-PSS, SHA-256, sel de 32 octets, sa propre paire RSA-2048) ;
 Bob vérifie avec sa clé publique avant d'ouvrir quoi que ce soit ; Eve signe avec sa clé : rejeté.
+La signature se passe dans les donjons : la caméra entre par la fenêtre d'Alice, où le paquet passe
+dans SHA-256, puis PSS monte un bloc de 256 octets (l'empreinte, le sel, un masque) que sa clé
+privée change en signature ; elle traverse ensuite chez Bob, où la clé publique d'Alice rend le bloc
+et où l'empreinte recalculée tombe sous celle qu'il porte, octet pour octet. Même chose pour
+AES-GCM : chez Alice, les compteurs, le flux, le chiffré, GHASH et le tag ; chez Bob, l'octet
+d'Eve, un tag qui ne correspond plus, InvalidTag et pas un octet de l'ordre
+(`encore-des-tours/js/inside.js`, vérifié par `tests/tours_inside.py`).
 Puis le rejeu : Eve garde la copie d'un vrai paquet signé et la renvoie le lendemain, acceptée ; un
 numéro sous la signature (n° 42, Bob retient le plus grand reçu) l'arrête, et changer 42 en 43
 casse la signature. AES-256-GCM chiffre et scelle d'un geste (InvalidTag, le piège du nonce

@@ -103,6 +103,21 @@ const fr = {
     sbSig: 'Bob vérifie la signature', sbNum: 'Bob vérifie le numéro', sbNone: 'Bob ne vérifie que le sceau',
   },
 
+  // inside the keeps (inside.js): Alice signs and Bob checks (chapter 2), AES-GCM and Eve's byte
+  // (chapter 4); the colours are the card's
+  'in.zeros8': '8 octets à 00', 'in.digest': 'l’empreinte SHA-256 du paquet · 32 octets', 'in.salt': 'le sel · 32 octets au hasard',
+  'in.h': 'H = SHA-256(8 × 00 ‖ empreinte ‖ sel)', 'in.bc': 'bc : la fin du bloc', 'in.dbZeros': '{n} octets à 00',
+  'in.one': '01 : le sel suit', 'in.dbSalt': 'le sel', 'in.masked': 'masqué · {n} octets', 'in.mask': '⊕ SHA-256 de H, étiré à {n} octets',
+  'in.em': 'le bloc PSS · 256 octets, lus comme un seul nombre', 'in.priv': 'd : la clé privée d’Alice', 'in.signCalc': 'signature = bloc^d mod n',
+  'in.sig': 'la signature · 256 octets', 'in.sigGot': 'la signature reçue · 256 octets', 'in.pub': 'n, e = 65537 : la clé publique d’Alice',
+  'in.verCalc': 'bloc = signature^e mod n', 'in.unmask': '⊕ SHA-256 de H : le sel réapparaît',
+  'in.key': 'la clé AES · 32 octets', 'in.nonce': 'le nonce · 12 octets', 'in.ctr': 'nonce ‖ compteur 2, puis 3', 'in.zero': '16 octets à 00',
+  'in.ctr1': 'nonce ‖ compteur 1', 'in.ks': 'le flux : AES des compteurs', 'in.order': '⊕ l’ordre · {n} octets', 'in.ct': 'le chiffré · {n} octets',
+  'in.nopad': 'pas de padding : la longueur de l’ordre', 'in.hkey': 'H = AES(clé, 16 × 00) : la clé de GHASH', 'in.s': 'GHASH du chiffré · 16 octets',
+  'in.ej0': '⊕ AES(nonce ‖ 1)', 'in.tag': 'le tag · 16 octets', 'in.ctGot': 'le chiffré reçu', 'in.flip': 'Eve a changé le 1er octet',
+  'in.mineTag': 'le tag que Bob recalcule', 'in.diff': '{d} octets sur 16 diffèrent', 'in.invalid': 'InvalidTag',
+  'in.nothing': 'l’ordre : pas un octet n’est rendu',
+
   // story
   ch: ['Le faux paquet', 'La signature', 'Le rejeu', 'AES-GCM', 'À votre tour'],
   steps: {
@@ -249,6 +264,19 @@ const en = {
     sbReplay: 'Eve sends the copy of no. {k} again',
     sbSig: 'Bob checks the signature', sbNum: 'Bob checks the number', sbNone: 'Bob checks the seal only',
   },
+
+  'in.zeros8': '8 bytes of 00', 'in.digest': 'the packet’s SHA-256 digest · 32 bytes', 'in.salt': 'the salt · 32 random bytes',
+  'in.h': 'H = SHA-256(8 × 00 ‖ digest ‖ salt)', 'in.bc': 'bc: the block’s end', 'in.dbZeros': '{n} bytes of 00',
+  'in.one': '01: the salt follows', 'in.dbSalt': 'the salt', 'in.masked': 'masked · {n} bytes', 'in.mask': '⊕ SHA-256 of H, stretched to {n} bytes',
+  'in.em': 'the PSS block · 256 bytes, read as one number', 'in.priv': 'd: Alice’s private key', 'in.signCalc': 'signature = block^d mod n',
+  'in.sig': 'the signature · 256 bytes', 'in.sigGot': 'the signature received · 256 bytes', 'in.pub': 'n, e = 65537: Alice’s public key',
+  'in.verCalc': 'block = signature^e mod n', 'in.unmask': '⊕ SHA-256 of H: the salt shows again',
+  'in.key': 'the AES key · 32 bytes', 'in.nonce': 'the nonce · 12 bytes', 'in.ctr': 'nonce ‖ counter 2, then 3', 'in.zero': '16 bytes of 00',
+  'in.ctr1': 'nonce ‖ counter 1', 'in.ks': 'the stream: AES of the counters', 'in.order': '⊕ the order · {n} bytes', 'in.ct': 'the ciphertext · {n} bytes',
+  'in.nopad': 'no padding: the order’s length', 'in.hkey': 'H = AES(key, 16 × 00): GHASH’s key', 'in.s': 'GHASH of the ciphertext · 16 bytes',
+  'in.ej0': '⊕ AES(nonce ‖ 1)', 'in.tag': 'the tag · 16 bytes', 'in.ctGot': 'the ciphertext received', 'in.flip': 'Eve changed the 1st byte',
+  'in.mineTag': 'the tag Bob recomputes', 'in.diff': '{d} of 16 bytes differ', 'in.invalid': 'InvalidTag',
+  'in.nothing': 'the order: not one byte given back',
 
   ch: ['The forged packet', 'The signature', 'The replay', 'AES-GCM', 'Your turn'],
   steps: {
