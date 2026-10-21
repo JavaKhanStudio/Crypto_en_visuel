@@ -16,8 +16,16 @@ function inline(parent, text) {
   if (at < text.length) parent.append(text.slice(at));
 }
 
+// non-breaking spaces (r178): a number keeps its unit (2 m, 5 lettres), « 30 = 5 × 6 » stays whole,
+// and a French : ; ? ! » (and the space after «) never starts or ends a line alone. Applied when
+// rendering, so the source and plain() keep ordinary spaces for the values test.
+export const tie = src => src
+  .replace(/(\d\}?) (?=(?:\{[grb]\|)?(?:k?m|cm|lettres?|letters?|R\d+)\b)/g, '$1\u00a0')
+  .replace(/ ([=×+]) /g, '\u00a0$1\u00a0')
+  .replace(/ ([:;?!»])/g, '\u00a0$1').replace(/« /g, '«\u00a0');
+
 export function render(el, src) {
-  el.replaceChildren();
+  el.replaceChildren(); src = tie(src);
   for (const block of src.split(/\n\s*\n/)) {
     // within a block, a run of "- " lines is a list; the lines around it are paragraphs
     let p = null, ul = null;
