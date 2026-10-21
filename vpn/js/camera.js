@@ -56,10 +56,10 @@ SHOTS.seenCafe = SHOTS.seen;
 SHOTS.keysBothPhone = forPhone(SHOTS.keys);
 // step 3 on a phone: down the street from the café's end, the café near, the provider, then Bob's far
 SHOTS.routePhone = { pos: v(-68, 24, 4), target: v(-4, -12, -5) };
-// step 12 on a phone: Victor's hall from due south, so his customers at the doors on both sides stay in the narrow view (r367),
-// aimed low enough that his bubble and, under it, his crowd tag (the widest of the episode) both fit over the step panel,
-// the tag between his customers' addresses (r374)
-SHOTS.vpnCrowdPhone = { pos: v(-13.5, 50, -2), target: v(-13.5, -50, -40) };
+// step 12 on a phone: Victor's hall with his three customers in the narrow view (r367), aimed low enough that his bubble
+// and, under it, his crowd tag (the widest of the episode) both fit over the step panel (r374). From the south-east, not
+// due south: from there the customer behind his hall stood under his bubble (r379); now each address has its own room.
+SHOTS.vpnCrowdPhone = { pos: v(9, 46, -16.5), target: v(-20.3, -70, -37) };
 SHOTS.seenCafePhone = { pos: v(-26, 53, 60), target: v(-26, -16, -4) };
 const pick = shot => {
   const s = typeof shot === 'string' ? SHOTS[shot] : shot;
