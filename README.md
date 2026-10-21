@@ -266,7 +266,9 @@ le navigateur), un quiz de 7 questions. `sel/js/hash.js` est un vrai MD5 et un v
 tables de Blowfish sont calculées depuis les décimales de pi) ; le bac à sable lance bcrypt dans
 un worker (`sel/js/worker.js`). `tests/sel_values.mjs` les compare aux diapos, à la RFC 1321 et à
 la bibliothèque bcrypt de Python (`node tests/sel_values.mjs`), `tests/sel_story.py` clique chaque
-bouton de l'histoire et du bac à sable et vérifie la base, la copie d'Eve et son compteur.
+bouton de l'histoire et du bac à sable et vérifie la base, la copie d'Eve et son compteur. La
+dernière étape ouvre quatre portes en image (bac à sable, quiz, tous les épisodes, puis l'épisode
+8 en or à droite), chacune avec un extrait de 4 s au survol (`tests/last_doors.py sel 13 garde`).
 
 ## Épisode 8 — Le garde trop pressé (HMAC, timing attack)
 

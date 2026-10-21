@@ -75,8 +75,9 @@ const fr = {
       p: "Contre les mots de passe, l’attaquant ne casse aucune fonction : il vole la base, puis il joue sur le temps. Le sel lui interdit de précalculer ; la lenteur de bcrypt, ou d’Argon2id, lui interdit d’aller vite. Il ne lui reste que les mots de passe vraiment faibles. L’ordre de préférence : Argon2id, puis bcrypt, puis scrypt ; jamais un SHA seul.",
       a: 'Un sel, un hachage lent… et un vrai mot de passe.', e: 'Je n’ai cassé ni MD5 ni bcrypt. J’ai seulement compté.' },
     s13: { t: 'À vous',
-      p: "Dans le bac à sable, choisissez les mots de passe d’Alice et de Bob, avec ou sans sel, en MD5 ou en bcrypt, puis laissez Eve voler la base : elle cherche dans sa table, puis estime le temps qu’il lui faudrait pour essayer tous les mots de passe de la même forme. Le bac à sable mesure aussi bcrypt sur votre machine. Ensuite, le quiz : 7 questions.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz' },
+      p: "Dans le bac à sable, choisissez les mots de passe d’Alice et de Bob, avec ou sans sel, en MD5 ou en bcrypt, puis laissez Eve voler la base : elle cherche dans sa table, puis estime le temps qu’il lui faudrait pour essayer tous les mots de passe de la même forme. Le bac à sable mesure aussi bcrypt sur votre machine. Ensuite, le quiz : 7 questions. Puis la suite : un garde qui compare un badge lettre par lettre, et l’attaquant qui, encore une fois, ne casse rien : il chronomètre.",
+      doors: { sandbox: ['Bac à sable', 'Vos mots de passe, avec ou sans sel, en MD5 ou en bcrypt'], quiz: ['Quiz', 'Sept questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 8 · Le garde trop pressé ▶', 'Un badge vérifié lettre par lettre'] } },
   },
   sb: {
     title: 'Bac à sable',
@@ -170,8 +171,9 @@ const en = {
       p: "Against passwords, the attacker breaks no function: they steal the database, then play on time. The salt stops them precomputing; the slowness of bcrypt, or Argon2id, stops them going fast. All they have left are the truly weak passwords. The order of preference: Argon2id, then bcrypt, then scrypt; never a bare SHA.",
       a: 'A salt, a slow hash… and a real password.', e: 'I broke neither MD5 nor bcrypt. I only counted.' },
     s13: { t: 'Your turn',
-      p: "In the sandbox, pick Alice’s and Bob’s passwords, with or without salt, with MD5 or bcrypt, then let Eve steal the database: she looks in her table, then works out how long it would take her to try every password of the same shape. The sandbox also measures bcrypt on your machine. Then the quiz: 7 questions.",
-      go: 'Try the sandbox', go2: 'Take the quiz' },
+      p: "In the sandbox, pick Alice’s and Bob’s passwords, with or without salt, with MD5 or bcrypt, then let Eve steal the database: she looks in her table, then works out how long it would take her to try every password of the same shape. The sandbox also measures bcrypt on your machine. Then the quiz: 7 questions. Then what comes next: a guard who checks a badge letter by letter, and an attacker who, once again, breaks nothing: they time it.",
+      doors: { sandbox: ['Sandbox', 'Your passwords, salted or not, with MD5 or bcrypt'], quiz: ['Quiz', 'Seven questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 8 · The Hasty Guard ▶', 'A badge checked letter by letter'] } },
   },
   sb: {
     title: 'Sandbox',

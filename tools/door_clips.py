@@ -12,6 +12,7 @@ panels hidden as in tools/vignette.py; it stays in this episode's folder. Needs 
     tools/door_clips.py eve-lit-tout --next octet-change --next-hash '#story=3' --sandbox-pre 'input[value=plain]' --sandbox-click '#sb-send' --box sandbox=0,0,1280,720
     tools/door_clips.py cadenas --next diffie-hellman --next-hash '#story=4' --sandbox-click '#sb-lock,#sb-send'
     tools/door_clips.py diffie-hellman --next scytale --next-hash '#story=2' --sandbox-eval 'demo.stage.speed=1.7' --sandbox-click '#sb-run' --box sandbox=340,84,1080,500
+    tools/door_clips.py sel --next garde --next-hash '#story=5' --sandbox-pre '#sb-signup' --sandbox-eval 'new Promise(r=>setTimeout(r,2500)).then(()=>{demo.stage.speed=1.5})' --sandbox-click '#sb-steal' --box sandbox=360,110,1280,628
     tools/door_clips.py scytale --next enigma --next-hash '#story=2' --sandbox-eval 'demo.stage.speed=1.7' --sandbox-click '#sb-run' --box sandbox=345,190,825,460
     tools/door_clips.py pingouin --next sel --next-hash '#story=7' --sandbox-click '#sb-encrypt,#sb-send' --box sandbox=340,40,992,407
 """
