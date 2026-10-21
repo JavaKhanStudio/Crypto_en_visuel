@@ -1,7 +1,8 @@
 // Episode 1's two castles in Middle-earth's manner (r192 prototype, wired by d7/r262: Alice gets the
 // humans, Bob the elves). Humans: a white city of tiers on its hill, a rock spur splitting it, a
-// citadel tower and a white tree on top. Elves: no walls, slender towers with leaf spires, arches
-// between them, a golden mallorn in the middle. Tried close up in lab/castles.html.
+// citadel tower and a white tree on top. Elves: Caras Galadhon (d8, r345), a hill of golden
+// mallorns with talans, a white wall and a green hedge round it, two slim towers at the gate.
+// Tried close up in lab/castles.html.
 // Contract (the old keeps'): the gate faces local +x, about 9 m out, where the road ends;
 // userData { team, flag, glow }; the team colour sits on the flag, the roofs or spires and the ring
 // of light at the foot, so the story's colour code (Alice blue, Bob gold) holds.
@@ -92,9 +93,13 @@ export function buildHumanCastle(team, facing) {
   return g;
 }
 
-// ---------- elves: towers in a wood ----------
+// ---------- elves: Caras Galadhon, the city of trees ----------
+// d8 (r345, Simon's pick B): Lórien, not Rivendell. The great mallorn in the middle, a ring of
+// smaller ones round it, each with its talans (lit platforms on the trunk); a white wall and a
+// green hedge close the hill; of the stone towers only the two at the gate stay, gold-spired.
 const IVORY = mat(0xeee6d2, { roughness: .6 }), IVORY_TRIM = mat(0xcfc5ad, { roughness: .6 });
 const BARK = mat(0xc9c8c0, { roughness: .9 }), GOLD_LEAF = new THREE.MeshStandardMaterial({ color: 0xf0c45a, emissive: 0x7a5410, emissiveIntensity: .45, roughness: .8, flatShading: true });
+const GRASS = mat(0x4f7a3e, { roughness: 1 }), HEDGE = mat(0x2f5a2c, { roughness: 1 });
 const STAR = glowMat(0xcfe8ff, 2.6);
 
 // a leaf-shaped spire: swells, then draws to a long point
@@ -115,40 +120,65 @@ function elfTower(g, x, z, h, r, roof) {
   return t;
 }
 
+// The mallorns, all drawn together: each { x, z, s } is a tree of height 21 s standing on y0.
+// Silver trunk, talans at .38 and .64 of the height with a ring of lanterns, the crown in three
+// flat storeys as a mallorn holds its leaves, wide at the bottom.
+function mallorns(g, trees, y0) {
+  const trunks = [], talans = [], lamps = [], crown = [];
+  trees.forEach(({ x, z, s }, i) => {
+    const H = 21 * s;
+    trunks.push([x, y0 + H / 2, z, i, s * s, s, s * s]);   // the small ones slimmer still, or they read as columns
+    for (const [f, r] of [[.38, 3.4], [.64, 2.6]]) {
+      talans.push([x, y0 + f * H, z, 0, s, 1, s]);
+      for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2 + i; lamps.push([x + Math.cos(a) * r * s, y0 + f * H + .3, z + Math.sin(a) * r * s]); }
+    }
+    for (const [f, R, n] of [[.72, 5.2, 22], [.86, 4, 16], [.98, 2.6, 10]]) {
+      const m = Math.max(5, Math.round(n * s));
+      for (let k = 0; k < m; k++) { const a = k / m * Math.PI * 2 + f * 9 + i, rr = R * s * (.45 + .55 * ((k * 7) % 5) / 4); crown.push([x + Math.cos(a) * rr, y0 + f * H + ((k * 3) % 4) * .3 * s, z + Math.sin(a) * rr, a, s, .45 * s, s]); }
+    }
+  });
+  many(g, new THREE.CylinderGeometry(.6, 1.5, 21, 10), BARK, trunks.length, k => trunks[k]);
+  many(g, new THREE.CylinderGeometry(3.4, 3.4, .22, 24), IVORY_TRIM, talans.length, k => talans[k]);
+  many(g, new THREE.SphereGeometry(.13, 8, 6), STAR, lamps.length, k => lamps[k], false);
+  many(g, new THREE.IcosahedronGeometry(1.25, 0), GOLD_LEAF, crown.length, k => crown[k]);
+}
+
 export function buildElfCastle(team, facing) {
   const color = COLORS[team], g = new THREE.Group();
   const roof = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), .3), metalness: .55, roughness: .35, emissive: color, emissiveIntensity: .12, flatShading: true });
-  // two low terraces, the upper one toward the back, a carved rim
-  add(g, new THREE.CylinderGeometry(9.3, 9.6, 5.2, 40), IVORY_TRIM, 0, -2.6 + .9, 0);
-  add(g, new THREE.CylinderGeometry(6.2, 6.4, 1.2, 36), IVORY, -2.4, 1.5, 0);
-  many(g, new THREE.CylinderGeometry(.1, .1, .7, 6), IVORY, 48, k => { const a = k / 48 * Math.PI * 2; return Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < .2 ? [0, -9, 0] : [Math.cos(a) * 9.1, 1.25, Math.sin(a) * 9.1]; });
-  add(g, new THREE.TorusGeometry(9.1, .08, 4, 64, Math.PI * 2 - .5), IVORY, 0, 1.62, 0).rotation.set(Math.PI / 2, 0, .25);
-  // the mallorn: silver trunk, a talan with lanterns, three storeys of golden leaves
-  const tx = -2.4;
-  add(g, new THREE.CylinderGeometry(.6, 1.5, 21, 10), BARK, tx, 10.5, 0);
-  for (const [y, r] of [[8, 3.4], [13.5, 2.6]]) {
-    add(g, new THREE.CylinderGeometry(r, r, .22, 24), IVORY_TRIM, tx, y, 0);
-    many(g, new THREE.SphereGeometry(.13, 8, 6), STAR, 10, k => { const a = k / 10 * Math.PI * 2; return [tx + Math.cos(a) * r, y + .3, Math.sin(a) * r]; }, false);
+  // the hill: a carved base reaching down so the slope never shows under it, grass on top, a mound toward the back
+  const G = .9;
+  add(g, new THREE.CylinderGeometry(9.3, 9.6, 5.2, 40), IVORY_TRIM, 0, G - 2.6, 0);
+  add(g, new THREE.CylinderGeometry(9.32, 9.32, .1, 40), GRASS, 0, G + .05, 0);
+  add(g, new THREE.CylinderGeometry(5.6, 7.2, 1, 32), GRASS, -1.4, G + .5, 0);
+  // the white wall round the hill, open at the gate (+x), and the green hedge outside it
+  const WR = 8.1, gap = .32, n = 44;
+  many(g, new THREE.BoxGeometry(1.2, 1.5, .45), IVORY, n, k => {
+    const a = k / n * Math.PI * 2;
+    return Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < gap ? [0, -9, 0] : [Math.cos(a) * WR, G + .75, Math.sin(a) * WR, -a + Math.PI / 2];
+  });
+  many(g, new THREE.BoxGeometry(1.25, .14, .6), IVORY_TRIM, n, k => {
+    const a = k / n * Math.PI * 2;
+    return Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < gap ? [0, -9, 0] : [Math.cos(a) * WR, G + 1.55, Math.sin(a) * WR, -a + Math.PI / 2];
+  });
+  const hedge = [];
+  for (let k = 0; k < 70; k++) {
+    const a = k / 70 * Math.PI * 2;
+    if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < gap + .06) continue;
+    hedge.push([Math.cos(a) * 8.85, G + .55 + (k % 3) * .08, Math.sin(a) * 8.85, a * 3, 1, .8 + (k % 2) * .15, 1]);
   }
-  // the crown in three flat storeys, as a mallorn holds its leaves, wide at the bottom
-  const crown = [];
-  for (const [y, R, n] of [[15.2, 5.2, 22], [18, 4, 16], [20.6, 2.6, 10]])
-    for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2 + y, rr = R * (.45 + .55 * ((k * 7) % 5) / 4); crown.push([tx + Math.cos(a) * rr, y + ((k * 3) % 4) * .3, Math.sin(a) * rr, a, 1, .45, 1]); }
-  many(g, new THREE.IcosahedronGeometry(1.25, 0), GOLD_LEAF, crown.length, k => crown[k]);
+  many(g, new THREE.IcosahedronGeometry(.62, 0), HEDGE, hedge.length, k => hedge[k]);
+  // the great mallorn on the mound, and a ring of smaller ones, none in the way of the gate
+  const trees = [{ x: -1.4, z: 0, s: 1 }];
+  for (const [a, r, s] of [[.95, 5.2, .62], [1.75, 5.6, .7], [2.55, 5.4, .66], [3.3, 5.3, .72], [-2.55, 5.4, .66], [-1.75, 5.6, .7], [-.95, 5.2, .62]])
+    trees.push({ x: -1.4 + Math.cos(a) * r, z: Math.sin(a) * r, s });
+  mallorns(g, trees, G + 1);
+  // the great mallorn's boughs, out from under its first storey
   for (const a of [.6, 2.5, 4.4]) {
-    const b = add(g, new THREE.CylinderGeometry(.12, .3, 5, 6), BARK, tx + Math.cos(a) * 2, 15, Math.sin(a) * 2);
+    const b = add(g, new THREE.CylinderGeometry(.12, .3, 5, 6), BARK, -1.4 + Math.cos(a) * 2, G + 1 + 15, Math.sin(a) * 2);
     b.rotation.set(Math.sin(a) * .9, 0, -Math.cos(a) * .9);
   }
-  // five towers in a crescent toward the gate, arches between them
-  const TW = [[ 1.2, 5.3, 9, .7], [ .55, 6.8, 12, .8], [0, 7.1, 14, .9], [-.55, 6.8, 12, .8], [-1.2, 5.3, 9, .7]]
-    .map(([a, r, h, w]) => ({ x: Math.cos(a) * r + .4, z: Math.sin(a) * r * 1.15, h, w }));
-  TW.forEach(t => { t.tip = elfTower(g, t.x, t.z, t.h, t.w, roof).userData.tip; });
-  for (let i = 0; i < TW.length - 1; i++) {
-    const p = TW[i], q = TW[i + 1], d = Math.hypot(q.x - p.x, q.z - p.z);
-    const a = add(g, new THREE.TorusGeometry(d / 2, .14, 6, 20, Math.PI), IVORY_TRIM, (p.x + q.x) / 2, 4.2, (p.z + q.z) / 2);
-    a.rotation.y = -Math.atan2(q.z - p.z, q.x - p.x);
-  }
-  // the gate: two slim pillars and a pointed arch, open, a lantern under its point
+  // the gate: two slim pillars and a pointed arch, open, a lantern under its point, a gold-spired tower either side
   const W = 1.7, SPRING = 4.9;
   for (const z of [-W, W]) add(g, new THREE.CylinderGeometry(.2, .26, 4, 8), IVORY, 9.2, SPRING - 2, z);
   for (const s of [-1, 1]) {
@@ -157,8 +187,9 @@ export function buildElfCastle(team, facing) {
     arc.rotation.set(0, -Math.PI / 2, s > 0 ? 0 : Math.PI * 2 / 3);
   }
   add(g, new THREE.SphereGeometry(.22, 10, 8), STAR, 9.2, SPRING + 1.73 * W - .7, 0, false);
-  // the flag on the tallest tower
-  const top = TW[2], f = flag(color); f.position.set(top.x, top.tip - .4, top.z); f.scale.setScalar(.55); g.add(f);
+  for (const z of [-3, 3]) elfTower(g, 8, z, 7, .62, roof);
+  // the flag on a pole out of the great mallorn's top storey, its cloth clear of the gold leaves it would vanish into
+  const f = flag(color); f.position.set(-1.4, G + 1 + 21 * .98 + .6, 0); f.scale.setScalar(.6); g.add(f);
   const glow = ring(g, color, 10.2);
   g.rotation.y = facing;
   g.userData = { team, flag: f, glow };

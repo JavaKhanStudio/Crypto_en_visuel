@@ -6,9 +6,10 @@ import { t, raw, lang, onLang } from './i18n.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import { wait } from './sim.js';
 
+// a and b above their flags: the white city's flag tops out at +28.5, the great mallorn's at +27.7 (r345)
 const anchors = {
-  a: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y + 27, 0),
-  b: new THREE.Vector3(CASTLE_B.x, CASTLE_B.y + 27, 0),
+  a: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y + 31, 0),
+  b: new THREE.Vector3(CASTLE_B.x, CASTLE_B.y + 31, 0),
   e: new THREE.Vector3(CITY.x, 27, CITY.z),
   n: new THREE.Vector3(CITY.x, 44, CITY.z),
 };
