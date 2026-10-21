@@ -12,6 +12,7 @@ import { ADDR, NAME, PUBLIC, KEY, hex, sees, route, opened, flipped, SEALED } fr
 import { burst, ring } from './fx.js';
 import { sfx } from './sound.js';
 import { t, raw } from './i18n.js';
+import { portrait } from './camera.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -163,7 +164,10 @@ export class Stage {
     for (const who of WATCHERS) {
       const s = this.tags[who], show = st.read.includes(who);
       if (who !== 'i') s.position.copy(this.people[who].position).add(v(0, .9, 0));   // over the body: the bubble goes over the head
-      if (show) setTag(s, this.lines(who), '#' + new THREE.Color(COLORS[who]).getHexString(), .019); else s.visible = false;
+      const col = '#' + new THREE.Color(COLORS[who]).getHexString();
+      // on a phone pinTags may move a tag off its watcher and hide the places' names: its first line says whose it is (r344)
+      const head = portrait() ? [[t('tag.head.' + who, { at: raw('sb').at[st.eve] }), col]] : [];
+      if (show) setTag(s, [...head, ...this.lines(who)], col, .019); else s.visible = false;
       s.userData.want = show;
     }
     const p = raw('place');
@@ -188,8 +192,9 @@ export class Stage {
     const order = [...this.st.read].reverse().filter(k => this.tags[k]?.userData.want);
     for (const s of Object.values(this.tags)) { s.userData.pin = null; if (s.userData.want !== undefined) s.visible = s.userData.want; }
     for (const p of Object.values(this.places)) p.visible = true;
+    if (phone !== this.phone) { this.phone = phone; this.drawTags(); }   // the tags' first line comes and goes with a phone
     if (!phone) return;
-    const GAP = 4, R = 80, W = innerWidth, H = innerHeight;
+    const GAP = 4, R = 110, W = innerWidth, H = innerHeight;
     const hits = (a, b) => Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) + GAP > 0 && Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) + GAP > 0;
     // a place's name a card, a bubble or another name covers, or the screen's edge cuts, is hidden; the
     // others are in the tags' way

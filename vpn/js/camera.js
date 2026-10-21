@@ -38,7 +38,7 @@ export function forPhone(s, back = 1.6, low = .24) {
 }
 // On a phone 'seen' looks up the map from the south-west, so the four watchers stand apart on the
 // narrow view, over the step panel, each with room for its tag below it (r226; pinTags places them)
-SHOTS.seenPhone = { pos: v(-70, 95, 82), target: v(2, -44, -4) };
+SHOTS.seenPhone = { pos: v(-74, 92, 78), target: v(0, -50, -4) };
 // step 13 (Alice: nobody at the café reads where she goes): on a desktop 'seen'; on a phone the café,
 // where Alice's bubble and Eve's tag both find room over the step panel, taller there
 SHOTS.seenCafe = SHOTS.seen;

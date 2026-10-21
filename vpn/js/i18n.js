@@ -17,6 +17,7 @@ const fr = {
   place: { cafe: 'Le café', isp: 'Le fournisseur d’accès', vpn: 'Serveur VPN · autre ville', bob: 'Le site de Bob' },
   tag: {
     place: { cafe: 'le café', bob: 'Bob', vpn: 'le VPN' },
+    head: { e: 'Eve, {at}', i: 'Le fournisseur d’accès', v: 'Victor, au VPN', b: 'Bob, sur son site' },   // a phone's first line: whose tag (r344)
     from: 'de {addr} ({who})', to: 'vers {addr} ({who})',
     clear: 'lit : {c}', pw: 'user=alice&pass=soleil42', reads: 'lit la demande',
     locked: 'contenu : fermé (HTTPS)', sealed: 'scellé : {n} octets illisibles', when: 'l’heure, la taille',
@@ -116,6 +117,7 @@ const en = {
   place: { cafe: 'The café', isp: 'The internet provider', vpn: 'VPN server · another town', bob: 'Bob’s site' },
   tag: {
     place: { cafe: 'the café', bob: 'Bob', vpn: 'the VPN' },
+    head: { e: 'Eve, {at}', i: 'The internet provider', v: 'Victor, at the VPN', b: 'Bob, at his site' },
     from: 'from {addr} ({who})', to: 'to {addr} ({who})',
     clear: 'reads: {c}', pw: 'user=alice&pass=soleil42', reads: 'reads the request',
     locked: 'content: closed (HTTPS)', sealed: 'sealed: {n} unreadable bytes', when: 'the time, the size',

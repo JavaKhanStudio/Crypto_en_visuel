@@ -4,17 +4,19 @@
 Serve the repo first (python3 -m http.server 8793). At 390x844 (?instant=1), fr then en, walks the
 steps where the watchers' tags show (stage.js pinTags) and measures, in screen pixels, each shown
 watcher tag and place name against the others, the page's walls (bubbles.js WALLS), the speech
-bubbles and the screen's edge. The tag each step's words are about must be among those shown.
+bubbles and the screen's edge. The tag each step's words are about must be among those shown, and
+every shown tag's first line must say whose it is (r344).
     tests/vpn_tags.py [base]"""
 import sys
 from playwright.sync_api import sync_playwright
 
 BASE = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
 MUST = {11: "b", 12: "v", 13: "e"}   # step: the watcher whose tag the step is about
+HEAD = {"fr": {"e": "Eve", "i": "Le fournisseur", "v": "Victor", "b": "Bob"}, "en": {"e": "Eve", "i": "The internet provider", "v": "Victor", "b": "Bob"}}
 MEASURE = """() => {
   const st = demo.stage, cam = demo.camera, out = [];
   const box = (el, name) => { const r = el.getBoundingClientRect(); return { name, x: r.left, y: r.top, w: r.width, h: r.height }; };
-  for (const [k, s] of Object.entries(st.tags)) if (s.visible) { const b = st.screenBox(s, cam); if (b) out.push({ name: 'tag ' + k, kind: 'tag', ...b }); }
+  for (const [k, s] of Object.entries(st.tags)) if (s.visible) { const b = st.screenBox(s, cam); if (b) out.push({ name: 'tag ' + k, kind: 'tag', head: JSON.parse(s.userData.key)[0][0][0], ...b }); }
   for (const [k, s] of Object.entries(st.places)) if (s.visible && s.material.opacity > .05) { const b = st.screenBox(s, cam); if (b) out.push({ name: 'place ' + k, kind: 'place', ...b }); }
   const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story'].map(id => document.getElementById(id))
     .filter(el => el && !el.classList.contains('hidden') && el.offsetHeight).map(el => box(el, '#' + el.id));
@@ -42,6 +44,9 @@ with sync_playwright() as p:
                     bad.append(f"{lang} step {n}: {a['name']} runs off the screen")
                 for b in [x for j, x in enumerate(L) if j != i] + m["others"]:
                     if over(a, b): bad.append(f"{lang} step {n}: {a['name']} on {b['name']}")
+            for a in L:   # r344: on a phone a tag may leave its watcher and the places' names may hide, so its first line names it
+                if a["kind"] == "tag" and not a["head"].startswith(HEAD[lang][a["name"][4:]]):
+                    bad.append(f"{lang} step {n}: {a['name']} does not say whose it is (first line: {a['head']})")
             shown = [a["name"][4:] for a in L if a["kind"] == "tag"]
             if n in MUST and MUST[n] not in shown: bad.append(f"{lang} step {n}: tag {MUST[n]} not shown (shown: {shown})")
             print(f"{lang} step {n}: tags {' '.join(shown) or '-'}")
