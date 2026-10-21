@@ -14,14 +14,16 @@
 </style></head><body>
 <h1>Shadow's items in three.js, beside Godot</h1>
 <p>Each item twice: first rebuilt in three.js from the exported JSON (lib/shapes.js), then Godot's own render of it, same camera and light. Drag the three.js picture to turn the item; double-click it to put it back.</p>
+<p><label><input type="checkbox" id="anim"> Animate as Shadow's ItemView does (fans turn, LEDs flicker and breathe, the screen pulses: lib/shapes.js animate)</label>. ?anim=1 starts it, ?t=SECONDS freezes it at that time for a shot.</p>
 <div id="items"></div>
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { loadShape, countParts } from '../../lib/shapes.js';
+import { loadShape, countParts, animate } from '../../lib/shapes.js';
 const V = await (await fetch('../../tools/godot_bridge/views.json')).json();
 const lin = a => new THREE.Color().setRGB(...a, THREE.LinearSRGBColorSpace);
 window.labReady = 0;
+const q = new URLSearchParams(location.search), views = [];
 for (const [item, c] of Object.entries(V.items)) {
   const row = document.createElement('div'); row.className = 'row';
   row.innerHTML = `<figure><canvas></canvas><figcaption>three.js · ${item} · <span class="n"></span></figcaption></figure>
@@ -40,6 +42,13 @@ for (const [item, c] of Object.entries(V.items)) {
   const ctl = new OrbitControls(cam, canvas); ctl.target.set(...c.target); ctl.update(); ctl.saveState();
   canvas.ondblclick = () => ctl.reset();
   const draw = () => r.render(scene, cam); ctl.addEventListener('change', draw); draw();
+  views.push({ shape, draw });
   window.labReady++;
 }
+// r218: one clock for every item; window.labAt(t) poses them all at t seconds (tools/godot_bridge/anim_strip.py)
+const box = document.getElementById('anim'); box.checked = q.has('anim') || q.has('t');
+window.labAt = t => { for (const v of views) { animate(v.shape, t); v.draw(); } };
+const t0 = performance.now();
+const tick = () => { if (box.checked && !q.has('t')) window.labAt((performance.now() - t0) / 1000); requestAnimationFrame(tick); };
+if (q.has('t')) window.labAt(+q.get('t')); else tick();
 </script></body></html>
