@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""r176 roll-outs are layout only (slides:D2): every step text's plain() (js/md.js markup stripped)
-must equal its text at a reference commit.  python3 tests/md_words_unchanged.py enigma <rev>"""
+"""For an r176 roll-out that only lays the text out: every step text's plain() (js/md.js markup stripped)
+must equal its text at a reference commit.  python3 tests/md_words_unchanged.py enigma <rev>
+Skip it where the text is reworded on purpose: Simon on r238 (21 Oct), « Changing the text is the
+point, to keep it readable », so scytale's step texts were reworded into lists (r287)."""
 import re, subprocess, sys
 
 ep, rev = sys.argv[1], sys.argv[2]
