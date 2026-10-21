@@ -17,7 +17,7 @@ const recap = { guard: 'cd', msg: MSG_E, table: { kind: 'recap' } };
 export const STEPS = [
   // r219 (Simon's pick B): a phone has room above the panel for one bubble, so there the three
   // speak in turns, each bubble replacing the one before; the desktop keeps all three at once
-  { id: 's1', ch: 0, shot: 'intro', orbit: .02, state: code, say: ['a', 'b', 'e'], turns: ['a', 'e', 'b'] },
+  { id: 's1', ch: 0, shot: 'intro', orbit: .02, state: code, say: ['a', 'g', 'e'], turns: ['a', 'e', 'g'] },
   { id: 's2', ch: 0, shot: 'booth', state: code, go: async x => {
       x.apply(); const r = await x.stage.present('a', MSG_A, MAC_A); if (!r) return;
       await x.fly('gate'); if (!await x.stage.answer(r)) return; x.say('a');

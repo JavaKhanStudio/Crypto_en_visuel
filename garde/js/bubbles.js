@@ -68,7 +68,7 @@ function settle(boxes, bounds) {
 export class Bubbles {
   constructor(camera) { this.camera = camera; this.items = new Map(); }
 
-  // who: 'a' | 'b' | 'e' | 'n'. anchor: Vector3, Object3D or () => Vector3.
+  // who: 'a' | 'b' | 'e' | 'g' | 'n'. anchor: Vector3, Object3D or () => Vector3.
   show(id, who, text, anchor, { lift = 0, ttl = 0 } = {}) {
     this.hide(id, true);
     const el = document.createElement('div');

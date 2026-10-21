@@ -133,10 +133,12 @@ select { font: inherit; background: #1b1d2a; color: var(--ink); border: 1px soli
 .bubble.a .who { color: #1f6fd1; }
 .bubble.b .who { color: #b07d00; }
 .bubble.e .who { color: #d11f35; }
+.bubble.g .who { color: #2b3a5c; }
 .bubble.n .who { color: #555; }
 .bubble.a { border-top: 3px solid var(--a); }
 .bubble.b { border-top: 3px solid var(--b); }
 .bubble.e { border-top: 3px solid var(--e); }
+.bubble.g { border-top: 3px solid #1f2a44; }   /* the guard's navy uniform */
 
 /* Quiz */
 .modal { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(5,6,12,.35); padding: 90px 14px 14px; }
