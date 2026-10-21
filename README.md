@@ -242,7 +242,7 @@ la place 7 (13 liens, 12 lettres, la boucle E–B–R–T–E), puis une vraie c
 seul ordre de rotors (I II III, bagues A, lettre test E) : les 5 menus × 17 576 positions =
 87 880 essais donnent 9 arrêts ; le contrôle du commis sur la machine en écarte huit. Reste IXW
 avec les câbles B–S, C–Z, E–R, F–I, H–O, K–W, L–M ; la première lecture HEGTEX… donne le dernier câble
-G–U, et le message se lit. 16 étapes en 7 chapitres, un bac à sable, un quiz de 8 questions.
+G–U, et le message se lit. 16 étapes en 7 chapitres, un bac à sable, un quiz de 6 questions.
 L'arithmétique est seule dans `enigma-casse/js/enigma.js` ; `node tests/enigma-casse_values.mjs` la
 compare à des vecteurs publiés, refait la casse depuis zéro (places, menus, arrêts, contrôle,
 lecture) et vérifie les chiffres écrits dans l'histoire ; `tests/enigma-casse_story.py` clique
