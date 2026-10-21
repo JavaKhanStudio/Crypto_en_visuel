@@ -79,6 +79,10 @@ export class Stage {
   // ---------- where things are ----------
   head(k) { return this.people[k].position.clone().add(v(0, 19.5, 0)); }
   padSpot(k) { return this.world.extras[k].pad.position.clone().add(v(0, 2.2, 0)); }
+  // steps 13-14 on a phone held upright (camera.js's eveCheckPhone): Eve's notepad tag sits just above
+  // her drum, whose part tags are hidden, so the drum can be framed close (r351, Simon's pick C)
+  closeCheck() { return this.st.check && innerWidth < innerHeight; }
+  checkSpot() { const d = this.machines.e.userData.drum; return d.entry.getWorldPosition(v(0, 0, 0)).lerp(d.ref.getWorldPosition(v(0, 0, 0)), .5).add(v(0, R * d.R.scale.x + .9, 0)); }
   mastTop(k) { return this.world.masts[k].position.clone().add(v(0, MAST_H + 1, 0)); }
   drumTop(k) { const m = this.machines[k]; return m.localToWorld(v(0, 4.4 + 2.6, -.3)); }
 
@@ -88,10 +92,11 @@ export class Stage {
   // shown: paths drawn, [{ m, rec, n }] (n of SEGS segments) · ghost: paths drawn faint, [{ m, rec }]
   // rows: the card's table, [{ rec, n }] · card: whose machine the card follows · pads: what each wrote
   // msg: { plain, cipher, from } under the table, once a whole message is typed
+  // check: Eve checks a stop on her drum (steps 13-14), framed close on a phone (closeCheck)
   apply(st) {
     this.token++;
     this.st = { set: {}, rack: 0, count: null, pos: {}, apart: {}, down: {}, lit: {}, shown: [], ghost: [], rows: [], card: 'a', pads: {}, msg: null, hot: -1, tally: null,
-      panel: null, slate: null, menu: null, run: null, ...st };
+      panel: null, slate: null, menu: null, run: null, check: false, ...st };
     st = this.st;
     for (const key of ['set', 'pos', 'apart', 'down', 'lit', 'pads']) st[key] = { ...st[key] };
     for (const k of Object.keys(this.machines)) { st.set[k] = { ...BARE, ...st.set[k] }; st.pos[k] ??= 'AAA'; st.apart[k] ??= 0; }
@@ -170,7 +175,7 @@ export class Stage {
     for (const [k, tag] of Object.entries(this.pads)) {
       const text = st.pads[k] || '';
       tag.visible = !!text;
-      tag.position.copy(this.padSpot(k));
+      tag.position.copy(k === 'e' && this.closeCheck() ? this.checkSpot() : this.padSpot(k));
       if (text && text !== tag.userData.text) setLabel(tag, text, '#' + COLORS[k].toString(16).padStart(6, '0'), 1.1);
     }
     this.onChange();
@@ -181,7 +186,7 @@ export class Stage {
     for (const id of DRUM) {
       const tag = this.names[k][id], f = Math.min(1, Math.max(0, (m.userData.out[id] - .6) / .4));   // a part's tag fades in as it settles
       tag.position.copy(d[id].getWorldPosition(new THREE.Vector3())).add(v(0, R * s + (SLOTS.includes(id) ? .75 : 1.25), 0));
-      tag.material.opacity = f; tag.visible = f > 0;
+      tag.material.opacity = f; tag.visible = f > 0 && !(k === 'e' && this.closeCheck());
     }
   }
 
@@ -254,8 +259,9 @@ export class Stage {
     const mid = a.lerp(b, .5).add(v(i >= 4 ? .42 : -.42, 0, 0));
     return mid.add(at(0, RC * s, xi * STEP));
   }
-  // over a socket of the plugboard, a little in front: where the cable's letter is shown
-  socketSpot(k, ch) { return this.machines[k].localToWorld(socketAt(ch).add(v(0, .42, .5))); }
+  // over a socket of the plugboard, a little in front: where the cable's letter is shown; higher in
+  // the close check on a phone, where the plugboard's foot is under the step panel (r351)
+  socketSpot(k, ch) { return this.machines[k].localToWorld(socketAt(ch).add(v(0, k === 'e' && this.closeCheck() ? 1.6 : .42, .5))); }
 
   tube(pts, color, faint) {
     const curve = new Poly(pts), n = Math.max(8, Math.round(curve.len * 10));
@@ -289,9 +295,10 @@ export class Stage {
   }
   // the letters a finished segment writes: the contact it reached, and a cable's other end
   segTags(k, rec, i) {
+    const sh = k === 'e' && this.closeCheck() ? .62 : .5;   // a cable's tag, as big as a contact's in the close check (r351)
     if (i >= 1) this.tag(this.tagSpot(k, rec, i), rec.path[i - 1], i < 4 ? '#ffd84d' : '#ff9a5c');
-    if (i === 0 && rec.in !== rec.key) this.tag(this.socketSpot(k, rec.in), `${rec.key}→${rec.in}`, '#ffd84d', .5);
-    if (i === 7 && rec.lamp !== rec.path[6]) this.tag(this.socketSpot(k, rec.lamp), `${rec.path[6]}→${rec.lamp}`, '#ff9a5c', .5);
+    if (i === 0 && rec.in !== rec.key) this.tag(this.socketSpot(k, rec.in), `${rec.key}→${rec.in}`, '#ffd84d', sh);
+    if (i === 7 && rec.lamp !== rec.path[6]) this.tag(this.socketSpot(k, rec.lamp), `${rec.path[6]}→${rec.lamp}`, '#ff9a5c', sh);
   }
 
   // ---------- animation helpers ----------

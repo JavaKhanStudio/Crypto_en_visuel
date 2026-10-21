@@ -42,11 +42,11 @@ const MENU0 = { ...SLATE(PLACE, ALL), menu: { links: LINKS, n: 0, rotors: ROT, p
 const MENU = { ...MENU0, menu: { ...MENU0.menu, n: null, loop: LOOP } };
 const RUN = done => ({ ...MENU, menu: { ...MENU.menu, loop: null }, panel: 'bombe',
   run: { menus: MENUS, test: TEST, rotors: ROT, m: done ? MENUS.length : 0, n: done ? STARTS : 0, done: done ? MENUS.map(() => STARTS) : [], stops: done ? STOPS : [], checks: done === 2 ? CHECKS : null } });
-const CLERK = { ...RUN(2), slate: null, menu: null, panel: null, apart: { e: 1 }, set: { ...HEARD.set, e: FOUND }, pos: { ...HEARD.pos, e: STOP }, card: 'e', pads: { a: CIPHER, e: '' } };
+const CLERK = { ...RUN(2), slate: null, menu: null, panel: null, apart: { e: 1 }, set: { ...HEARD.set, e: FOUND }, pos: { ...HEARD.pos, e: STOP }, card: 'e', pads: { a: CIPHER, e: '' }, check: true };
 const MSG1 = { plain: CIPHER, cipher: READ1.map(r => r.lamp).join(''), from: STOP }, MSG2 = { plain: CIPHER, cipher: PLAIN, from: STOP };
 const READ = { ...CLERK, pos: { ...CLERK.pos, e: READ1.at(-1).pos }, rows: full(READ1.slice(-4)), lit: { e: READ1.at(-1).lamp }, shown: [{ m: 'e', rec: READ1.at(-1), n: SEGS }], msg: MSG1, pads: { a: CIPHER, e: MSG1.cipher } };
 const DONE = { ...READ, set: { ...READ.set, e: FIXED }, rows: full(READ2.slice(-4)), lit: { e: READ2.at(-1).lamp }, shown: [{ m: 'e', rec: READ2.at(-1), n: SEGS }], msg: MSG2, pads: { a: CIPHER, e: PLAIN } };
-const END = { ...DONE, apart: {}, shown: [], lit: {} };
+const END = { ...DONE, apart: {}, shown: [], lit: {}, check: false };
 
 export const STEPS = [
   { id: 's1', ch: 0, shot: 'intro', orbit: .02, state: SENT, say: ['a', 'b', 'e'] },
@@ -106,8 +106,8 @@ export class Story {
     this.said = new Map();   // bubble id -> text key, to re-say them after a language switch
     onLang(() => { this.ctx.stage.relabel(); this.render(true); });
     // on a phone the slate shot pans with the crib: the x of its middle column (r147)
-    // Eve's tags and the slate's tiles are walls for the bubbles (r147)
-    ctx.bubbles.avoid = () => [...Object.values(ctx.stage.names.e), ...ctx.stage.slateG.children.filter(o => o.isSprite)];
+    // Eve's tags, her notepad's and the slate's tiles are walls for the bubbles (r147, r351)
+    ctx.bubbles.avoid = () => [...Object.values(ctx.stage.names.e), ctx.stage.pads.e, ...ctx.stage.slateG.children.filter(o => o.isSprite)];
     ctx.rig.follow = () => { const sl = ctx.stage.st.slate; return sl && Number.isFinite(sl.k) ? ctx.stage.colX(sl.k + (sl.crib.length - 1) / 2, sl.cipher.length) : null; };
   }
 

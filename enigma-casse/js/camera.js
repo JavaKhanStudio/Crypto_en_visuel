@@ -39,6 +39,9 @@ export const SHOTS = {
   slatePhone: { pos: v(0, 17, -4), target: v(0, 13.5, -42), follow: true },
   menuPhone: { pos: v(-1, 16, -12), target: v(-1, 8.4, -42) },   // the trace's tags (B→S) clear of the top controls
   menuDrawPhone: { pos: v(-1, 16, -10), target: v(-1, 7.3, -42) },   // a little higher: Eve's bubble fits under T
+  // steps 13-14 (r351): the drum close and from higher, Eve's notepad tag just above it and its part tags hidden
+  // (stage.js closeCheck), the plugboard's cable tag lifted: all between Eve's bubble and the step panel
+  eveCheckPhone: { pos: M('e').add(v(-.3, 20, 18)), target: M('e').add(v(-.3, -3, -.5)) },
   bombePhone: { pos: v(22, 22, 30), target: v(32, 2, -38) },
   bobMachine: machineShot('b'),
   bobDrum:  drumShot('b'),
