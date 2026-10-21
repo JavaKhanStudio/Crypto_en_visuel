@@ -5,6 +5,8 @@
 # its autoloaded overlays never reach the picture.
 #   WLR_BACKENDS=headless cage -- godot --path /home/simon/Shadow \
 #     -s $PWD/tools/godot_bridge/render.gd -- $PWD/tools/godot_bridge/views.json out/r207 [item]
+# r208: an argument gen=<dir> also shoots each item as built by the generated builder <dir>/<item>.gd
+# (tools/godot_bridge/to_gdscript.py), saved as <item>-gen.png beside <item>-godot.png.
 extends SceneTree
 
 func _init() -> void:
@@ -12,7 +14,9 @@ func _init() -> void:
 	var v: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(args[0]))
 	var out: String = args[1]
 	DirAccess.make_dir_recursive_absolute(out)
-	var only: Array = args.slice(2)
+	var only: Array = Array(args.slice(2)).filter(func(a): return not a.begins_with("gen="))
+	var gen: String = ""
+	for a in args.slice(2): if a.begins_with("gen="): gen = a.substr(4)
 	var Items = load("res://scripts/items/Items.gd")
 	var vp := SubViewport.new()
 	vp.size = Vector2i(v.size[0], v.size[1])
@@ -34,21 +38,24 @@ func _init() -> void:
 	var cam := Camera3D.new(); cam.fov = v.fov; vp.add_child(cam)
 	for item in v.items:
 		if only and not item in only: continue
-		var node: Node3D
-		match item:
-			"laptop": node = Items.laptop({}, 115.0, 0)
-			_: node = Items.call(item, {}, 0)
-		vp.add_child(node)
-		var c: Dictionary = v.items[item]
-		cam.look_at_from_position(_v(c.eye), _v(c.target), Vector3.UP)
-		cam.make_current()
-		for i in 8: await process_frame
-		await RenderingServer.frame_post_draw
-		var path := out.path_join(item + "-godot.png")
-		vp.get_texture().get_image().save_png(path)
-		print("[bridge] ", path)
-		node.queue_free()
-		await process_frame
+		for kind in (["godot", "gen"] if gen else ["godot"]):
+			var node: Node3D
+			if kind == "gen": node = load(gen.path_join(item + ".gd")).call(item, {})
+			else:
+				match item:
+					"laptop": node = Items.laptop({}, 115.0, 0)
+					_: node = Items.call(item, {}, 0)
+			vp.add_child(node)
+			var c: Dictionary = v.items[item]
+			cam.look_at_from_position(_v(c.eye), _v(c.target), Vector3.UP)
+			cam.make_current()
+			for i in 8: await process_frame
+			await RenderingServer.frame_post_draw
+			var path := out.path_join(item + "-" + kind + ".png")
+			vp.get_texture().get_image().save_png(path)
+			print("[bridge] ", path)
+			node.queue_free()
+			await process_frame
 	quit()
 
 func _v(a: Array) -> Vector3: return Vector3(a[0], a[1], a[2])
