@@ -23,6 +23,13 @@ export const SPOTS = {
   cafe: v(-36, 0, -8), isp: v(-6, 0, -13), vpn: v(-14, 0, -38), bob: v(34, 0, -4),
   tableA: v(-38.6, 0, -1.6), tableE: v(-33.6, 0, -1.2),
 };
+// step 12 (r367): three of Victor's other customers, each at the door of a house of his town, a laptop in
+// hand; net.js OTHERS[k] is the one at CUSTOMERS[k]
+export const CUSTOMERS = [
+  { at: v(-25.7, 0, -28.6), cloth: 0x8a5a9e },
+  { at: v(-1, 0, -31.6), cloth: 0xb0612e },
+  { at: v(-5.6, 0, -39.6), cloth: 0x3f7f8c },
+];
 // the packet's stops: Alice's laptop, the Wi-Fi box, the provider's racks, the VPN's racks, Bob's server
 export const NODES = {
   a: v(-38.6, TABLE_Y + .5, -1.3), w: v(-36, 3.25, -3.85),

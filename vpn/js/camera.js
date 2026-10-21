@@ -25,8 +25,8 @@ export const SHOTS = {
   // between them so they stand apart (r360)
   keysA:    { pos: v(-36.5, 9.5, 13), target: v(-39.2, 2.6, -1.4) },
   keysV:    { pos: v(-4.5, 9.5, -19), target: v(-11.7, 2.6, -31.4) },   // from the east: the valley cable's poles stay out
-  // step 12: the VPN's hall from the south, high, its racks and the sky to the north where the other
-  // customers' tunnels come from (r360)
+  // step 12: the VPN's hall from the south, high, its racks and the customers at the doors around it,
+  // whose tunnels end there too (r360, r367)
   vpnCrowd: { pos: v(-4, 17, -9), target: v(-14, -4, -40) },
   keysBoth: { pos: v(8, 26, 14), target: v(-25.4, 3, -16.4) },
   // on a phone held upright the VPN's racks from further down the street, not through the house behind,
@@ -56,6 +56,8 @@ SHOTS.seenCafe = SHOTS.seen;
 SHOTS.keysBothPhone = forPhone(SHOTS.keys);
 // step 3 on a phone: down the street from the café's end, the café near, the provider, then Bob's far
 SHOTS.routePhone = { pos: v(-68, 24, 4), target: v(-4, -12, -5) };
+// step 12 on a phone: Victor's hall from due south, so his customers at the doors on both sides stay in the narrow view (r367)
+SHOTS.vpnCrowdPhone = { pos: v(-13.5, 58, 2), target: v(-13.5, -26, -40) };
 SHOTS.seenCafePhone = { pos: v(-26, 53, 60), target: v(-26, -16, -4) };
 const pick = shot => {
   const s = typeof shot === 'string' ? SHOTS[shot] : shot;

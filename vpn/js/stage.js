@@ -6,7 +6,7 @@
 // away. apply(state) puts everything where a story step says, instantly; the async actions animate
 // from there and write back into st what they changed.
 import * as THREE from 'three';
-import { NODES, SPOTS, edge } from './world.js';
+import { NODES, SPOTS, CUSTOMERS, edge } from './world.js';
 import { envelope, tag, setTag, key, person, COLORS } from './props.js';
 import { ADDR, NAME, OTHERS, PUBLIC, KEY, hex, sees, route, opened, flipped, SEALED } from './net.js';
 import { burst, ring } from '../../lib/fx.js';
@@ -54,6 +54,15 @@ export class Stage {
     world.laptops.e.rotation.y = 1.2;
     const b = this.people.b; b.position.copy(NODES.b).setY(0).add(v(1.4, 0, .8)); b.rotation.y = -.5;
     const vi = this.people.v; vi.position.copy(NODES.v).setY(0).add(v(2.3, 0, .7)); vi.rotation.y = -.7;
+    // Victor's other customers (step 12, r367): at their doors, turned to his hall, a laptop in hand; a tag
+    // over each says its address while their packets fly
+    this.customers = CUSTOMERS.map(({ at, cloth }, k) => {
+      const p = person('c' + k, cloth); p.scale.setScalar(PERSON); p.position.copy(at);
+      p.rotation.y = Math.atan2(NODES.v.x - at.x, NODES.v.z - at.z);
+      const l = world.laptops.a.clone(); l.position.set(0, 1.55, .8); l.rotation.set(-.35, Math.PI, 0); l.scale.setScalar(.8 / PERSON); p.add(l);
+      const s = tag(); s.position.copy(at).add(v(0, 2.6, 0)); s.visible = false; S.add(p, s);
+      return { p, tag: s, from: at.clone().add(v(0, 1.1, 0)) };
+    });
     // the watchers' tags, over their heads (the provider has no face: its tag hangs over its racks)
     this.tags = { e: tag(), i: tag(), v: tag(), b: tag() };
     this.places = { cafe: tag(), isp: tag(), vpn: tag(), bob: tag() };
@@ -176,6 +185,8 @@ export class Stage {
     }
     const p = raw('place');
     for (const [k, s] of Object.entries(this.places)) setTag(s, [p[k]], '#e6dfcf', .026);
+    // step 12: each customer's address over them, the 'from' of their line in Victor's tag (r366, r367)
+    this.customers.forEach((c, k) => { c.tag.visible = st.crowd !== null; if (c.tag.visible) setTag(c.tag, [OTHERS[k].from], '#ffb3bb', .019); });
   }
 
   // The screen box of a tag (a sprite that keeps its size) for a camera, centred as s.center says;
@@ -312,17 +323,17 @@ export class Stage {
   }
 
   // Step 12 (r360): Alice's tunnel is not the only one that ends at Victor's. Her packet comes up the
-  // valley while the other customers' gold cases fly in from other towns; each one is opened at his
-  // racks, and his tag adds where it was going.
+  // valley while the other customers', in his town, leave their laptops (r367); each one is opened at
+  // his racks, and his tag adds who sent it and where it was going.
   async crowd() {
-    const st = this.st; st.crowd = 0; this.watch = ['v'];
+    const st = this.st; st.crowd = 0; this.watch = ['v']; this.drawTags();
     const alice = this.send(['v']);
     const fly = async (o, k) => {
       if (!await this.wait(1 + k * 1.3)) return false;
       const env = this.makeEnv('sealed', [t('tag.to', { addr: ADDR.vpn, who: raw('tag.place').vpn })]);
-      const end = NODES.v.clone().add(v(0, .5, 0)), start = v(-14 + (k - 1) * 46, 18, -95);
-      const c = new THREE.QuadraticBezierCurve3(start, start.clone().lerp(end, .55).add(v(0, 14, 0)), end);
-      env.position.copy(start); this.envs.add(env); sfx.send();
+      const end = NODES.v.clone().add(v(0, .5, 0)), start = this.customers[k].from;
+      const c = new THREE.QuadraticBezierCurve3(start, start.clone().lerp(end, .5).add(v(0, 5, 0)), end);
+      env.position.copy(start); this.envs.add(env); sfx.send(); ring(start.clone(), 0xffd66b, { radius: 1, life: .6 });
       if (!await this.tween(2.6, x => env.position.copy(c.getPointAt(ease(x))))) return false;
       burst(end.clone(), 0xffd66b, { count: 40, speed: 3, size: .14 }); sfx.unlock(); this.envs.remove(env);
       ring(NODES.v.clone().add(v(0, .5, 0)), 0xffd66b, { radius: 1.6, life: .8 });

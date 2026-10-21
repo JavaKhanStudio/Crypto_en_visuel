@@ -62,7 +62,7 @@ export const STEPS = [
       if (!await x.stage.send(ALL)) return;
       await x.fly('seen'); x.say('b');
     } },
-  // Victor opens every customer's tunnel, not only Alice's: theirs fly in from other towns (r360)
+  // Victor opens every customer's tunnel, not only Alice's: theirs leave from the doors of his town (r360, r367)
   { id: 's12', ch: 3, shot: 'vpn', state: { ...TUNNEL, read: ['v'], card: 'trust' }, say: ['v'], go: async x => {
       x.apply({ ...TUNNEL, card: 'trust' }); await x.fly('vpnCrowd'); if (!x.live()) return;
       if (!await x.stage.crowd()) return; x.say('v');
