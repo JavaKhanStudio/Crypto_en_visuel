@@ -4,6 +4,7 @@
 // bubbles, and offers buttons. auto: the step's action plays by itself once the camera has
 // landed (its button replays it).
 import { t, raw, lang, onLang } from './i18n.js';
+import { render } from './md.js';
 
 const N = 99;   // « every letter written »: write() stops at the end of the message
 const BLANK = { strip: { on: null, at: 'a', written: 0 } };
@@ -101,7 +102,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; render(this.el.text, s.p);
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';

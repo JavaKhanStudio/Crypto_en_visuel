@@ -8,7 +8,7 @@ path = f"{ep}/js/i18n.js"
 old = subprocess.run(["git", "show", f"{rev}:{path}"], capture_output=True, text=True, check=True).stdout
 new = open(path).read()
 P = lambda t: re.findall(r'\n\s*p: "((?:[^"\\]|\\.)*)"', t)
-INLINE = re.compile(r"\*\*(.+?)\*\*|\{([grb])\|(.+?)\}")
+INLINE = re.compile(r"\*\*(.+?)\*\*|\{([grb1-4])\|(.+?)\}")
 
 def plain(s):   # the same as md.js plain()
     s = s.replace("\\n", "\n")
