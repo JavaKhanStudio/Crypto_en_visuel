@@ -1,6 +1,6 @@
-// The objects of the story, built from primitives: Alice's car (a stone wedged in the tread of its
-// near front tyre), the key wheel (a five-sided drum, one key letter on each face, that tumbles face
-// after face along the lane), the letter tiles, the floating tags, and the characters.
+// The objects of the story, built from primitives: Alice's cart, drawn by a horse (a stone wedged
+// under the iron tyre of its near front wheel), the key wheel (a five-sided drum, one key letter on
+// each face, that tumbles face after face along the lane), the letter tiles, the floating tags, and the characters.
 import * as THREE from 'three';
 
 export const COLORS = { a: 0x4da3ff, b: 0xffc24d, e: 0xff3347 };
@@ -8,65 +8,100 @@ export const COLORS = { a: 0x4da3ff, b: 0xffc24d, e: 0xff3347 };
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: .6, flatShading: true, ...o });
 const dark = mat(0x15110c, { roughness: 1 });
 
-// ---------- the car ----------
-// Wheel radius from the circumference: 2 m around (a 205/55 R16 is 1.99 m) -> r = 2 / 2π = 0.318 m.
+// ---------- the cart ----------
+// r252 (Simon): an old farm cart, drawn by a horse, Alice and Bob on its bench. Its near front wheel
+// keeps the stone and the 2 m around: r = 2 / 2π = 0.318 m (the car's 205/55 R16 was 1.99 m).
 export const WHEEL_R = 2 / (2 * Math.PI);
-export const AXLES = { front: 1.32, back: -1.28 };   // along the car, from its centre
+export const AXLES = { front: 1.32, back: -1.28 };   // along the cart, from its centre
 export const TRACK_Z = .78;                          // half the distance between the left and right wheels
+const BACK_R = .46;                                  // the back wheels are the bigger ones, as on a farm wagon
 
-// A tyre and its rim, turning about z. The near front one carries the stone: userData.stone.
-function wheel(withStone) {
+const wood = mat(0x8a5a32, { roughness: .85 }), woodDark = mat(0x5e3b1f, { roughness: .9 }), iron = mat(0x34363b, { metalness: .5, roughness: .5 });
+
+// A wooden wheel with an iron tyre, turning about z. The near front one carries the stone: userData.stone.
+function wheel(r, withStone) {
   const g = new THREE.Group(), spin = new THREE.Group(); g.add(spin);
-  const tyre = new THREE.Mesh(new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, .21, 28), mat(0x1c1c1f, { roughness: .95 }));
-  tyre.rotation.x = Math.PI / 2; tyre.castShadow = true; spin.add(tyre);
-  const rim = new THREE.Mesh(new THREE.CylinderGeometry(WHEEL_R * .62, WHEEL_R * .62, .225, 10), mat(0xb8bcc4, { metalness: .6, roughness: .35 }));
-  rim.rotation.x = Math.PI / 2; spin.add(rim);
+  const tyre = new THREE.Mesh(new THREE.TorusGeometry(r - .022, .03, 6, 32), iron); tyre.castShadow = true; spin.add(tyre);
+  const felloe = new THREE.Mesh(new THREE.TorusGeometry(r - .075, .042, 6, 24), wood); spin.add(felloe);
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(.075, .085, .24, 10), woodDark); hub.rotation.x = Math.PI / 2; spin.add(hub);
   // spokes, so the turning shows
-  for (let i = 0; i < 5; i++) {
-    const s = new THREE.Mesh(new THREE.BoxGeometry(WHEEL_R * 1.1, .05, .235), mat(0x8a8f98, { metalness: .5 }));
-    s.rotation.z = i / 5 * Math.PI; spin.add(s);
-  }
-  // tread blocks around the tyre
-  for (let i = 0; i < 24; i++) {
-    const a = i / 24 * Math.PI * 2, b = new THREE.Mesh(new THREE.BoxGeometry(.035, .02, .2), dark);
-    b.position.set(Math.cos(a) * WHEEL_R, Math.sin(a) * WHEEL_R, 0); b.rotation.z = a; spin.add(b);
+  for (let i = 0; i < 10; i++) {
+    const a = i / 10 * Math.PI * 2, sp = new THREE.Mesh(new THREE.BoxGeometry(r - .1, .035, .035), wood);
+    sp.position.set(Math.cos(a) * (r - .02) / 2, Math.sin(a) * (r - .02) / 2, 0); sp.rotation.z = a; spin.add(sp);
   }
   if (withStone) {
-    // the stone, at the bottom of the tread when the wheel's angle is 0; a little larger than life, and pale, to be seen
+    // the stone, wedged under the iron tyre at the bottom when the wheel's angle is 0; a little larger than life, and pale, to be seen
     const stone = new THREE.Mesh(new THREE.IcosahedronGeometry(.095, 0), mat(0xf4ecd8, { roughness: .8, emissive: 0x6a5a30, emissiveIntensity: .8 }));
-    stone.position.set(0, -WHEEL_R - .02, .08); stone.castShadow = true; spin.add(stone);   // on the outer edge of the tread, seen from the road side
+    stone.position.set(0, -WHEEL_R - .02, .05); stone.castShadow = true; spin.add(stone);   // on the road side of the tyre
     g.userData.stone = stone;
   }
   g.userData.spin = spin;
   return g;
 }
 
-// A small hatchback, facing +x, its wheels on the ground at y = 0. userData.roll(d): the car has
-// moved d metres from where its stone touched the ground, so the wheels turn by d / r.
+// The horse, facing +x, hooves at y = 0, its shoulder at x = 0. userData.walk(d): its legs trot with the distance.
+function horse() {
+  const g = new THREE.Group(), coat = mat(0x7a4a2a, { roughness: .8 }), hair = mat(0x2a1a10, { roughness: .9 });
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(.36, 1.15, 4, 10), coat); body.rotation.z = Math.PI / 2; body.position.set(-.55, 1.3, 0); body.castShadow = true; g.add(body);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.17, .27, .9, 8), coat); neck.position.set(.25, 1.75, 0); neck.rotation.z = -.62; neck.castShadow = true; g.add(neck);
+  const head = new THREE.Group(); head.position.set(.62, 2.1, 0); g.add(head);
+  const skull = new THREE.Mesh(new THREE.BoxGeometry(.62, .26, .24), coat); skull.position.set(.2, -.08, 0); skull.rotation.z = -.55; skull.castShadow = true; head.add(skull);
+  for (const z of [-.07, .07]) { const ear = new THREE.Mesh(new THREE.ConeGeometry(.045, .16, 5), coat); ear.position.set(-.03, .14, z); head.add(ear);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(.03, 6, 5), dark); eye.position.set(.06, .0, z * 1.75); head.add(eye); }
+  const mane = new THREE.Mesh(new THREE.BoxGeometry(.1, .85, .07), hair); mane.position.set(.1, 1.86, 0); mane.rotation.z = -.62; g.add(mane);
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(.09, .75, 6), hair); tail.position.set(-1.33, 1.05, 0); tail.rotation.z = -.35; g.add(tail);
+  // the collar the shafts are hitched to
+  const collar = new THREE.Mesh(new THREE.TorusGeometry(.27, .055, 6, 14), mat(0x3a2414)); collar.position.set(.08, 1.52, 0);
+  collar.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(Math.sin(.62), Math.cos(.62), 0)); g.add(collar);   // round the neck
+  const legs = [];
+  for (const [x, z, ph] of [[-.05, .17, 0], [-.05, -.17, Math.PI], [-1.08, .17, Math.PI], [-1.08, -.17, 0]]) {   // a trot: diagonal pairs together
+    const hip = new THREE.Group(); hip.position.set(x, 1.12, z); g.add(hip);
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(.075, .055, 1.06, 6), coat); leg.position.y = -.53; leg.castShadow = true; hip.add(leg);
+    const hoof = new THREE.Mesh(new THREE.CylinderGeometry(.07, .08, .08, 6), hair); hoof.position.y = -1.08; hip.add(hoof);
+    legs.push([hip, ph]);
+  }
+  g.userData.walk = d => { const t = d / 1.1 * Math.PI; for (const [hip, ph] of legs) hip.rotation.z = Math.sin(t + ph) * .35; head.rotation.z = Math.sin(t * 2) * .04; };
+  return g;
+}
+
+// An old farm cart drawn by a horse, facing +x, its wheels on the ground at y = 0. userData.roll(d):
+// the cart has moved d metres from where its stone touched the ground, so each wheel turns by d / its r.
 export function car() {
-  const g = new THREE.Group(), paint = mat(0x2f6fd1, { roughness: .35, metalness: .3, flatShading: false });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(3.9, .62, 1.7), paint); body.position.y = .62; body.castShadow = true; g.add(body);
-  const hood = new THREE.Mesh(new THREE.BoxGeometry(1, .2, 1.6), paint); hood.position.set(1.45, .98, 0); hood.rotation.z = -.12; g.add(hood);
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.1, .62, 1.5), paint); cabin.position.set(-.35, 1.22, 0); cabin.castShadow = true; g.add(cabin);
-  const glass = mat(0x3a5068, { roughness: .12, metalness: .5, flatShading: false });
-  const wind = new THREE.Mesh(new THREE.BoxGeometry(.06, .5, 1.36), glass); wind.position.set(.72, 1.24, 0); wind.rotation.z = -.5; g.add(wind);
-  for (const z of [-.76, .76]) for (const [x, w] of [[.05, .8], [-.85, .8]]) { const side = new THREE.Mesh(new THREE.BoxGeometry(w, .36, .03), glass); side.position.set(x, 1.27, z); g.add(side); }
-  const lamp = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xfff2c8, emissiveIntensity: 2 });
-  for (const z of [-.58, .58]) { const l = new THREE.Mesh(new THREE.BoxGeometry(.06, .14, .3), lamp); l.position.set(1.96, .7, z); g.add(l); }
-  const red = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff2a2a, emissiveIntensity: 1.5 });
-  for (const z of [-.6, .6]) { const l = new THREE.Mesh(new THREE.BoxGeometry(.06, .14, .26), red); l.position.set(-1.96, .72, z); g.add(l); }
-  const bumper = mat(0x26282e);
-  for (const x of [-1.98, 1.98]) { const b = new THREE.Mesh(new THREE.BoxGeometry(.1, .18, 1.72), bumper); b.position.set(x, .38, 0); g.add(b); }
+  const g = new THREE.Group(), FLOOR = .95;
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(3.4, .08, 1.36), wood); floor.position.set(-.05, FLOOR, 0); floor.castShadow = true; g.add(floor);
+  // plank sides, a darker rail on top
+  for (const z of [-.66, .66]) {
+    const side = new THREE.Mesh(new THREE.BoxGeometry(3.4, .42, .05), wood); side.position.set(-.05, FLOOR + .25, z); side.castShadow = true; g.add(side);
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(3.45, .06, .08), woodDark); rail.position.set(-.05, FLOOR + .48, z); g.add(rail);
+    for (const x of [-1.35, -.45, .45, 1.35]) { const post = new THREE.Mesh(new THREE.BoxGeometry(.07, .46, .07), woodDark); post.position.set(x, FLOOR + .25, z * 1.04); g.add(post); }
+  }
+  for (const x of [-1.75, 1.65]) { const end = new THREE.Mesh(new THREE.BoxGeometry(.05, .42, 1.36), wood); end.position.set(x, FLOOR + .25, 0); g.add(end); }
+  // the axles and the beam under the floor
+  for (const [ax, x] of Object.entries(AXLES)) { const r = ax === 'front' ? WHEEL_R : BACK_R;
+    const axle = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, TRACK_Z * 2), woodDark); axle.position.set(x, r, 0); g.add(axle);
+    const block = new THREE.Mesh(new THREE.BoxGeometry(.18, FLOOR - r, .5), woodDark); block.position.set(x, (FLOOR + r) / 2, 0); g.add(block); }
+  // the bench, across the front
+  const bench = new THREE.Mesh(new THREE.BoxGeometry(.4, .07, 1.3), woodDark); bench.position.set(.95, FLOOR + .38, 0); g.add(bench);
   const wheels = [];
   for (const [ax, x] of Object.entries(AXLES)) for (const z of [-TRACK_Z, TRACK_Z]) {
-    const w = wheel(ax === 'front' && z > 0); w.position.set(x, WHEEL_R, z); g.add(w); wheels.push(w);
+    const r = ax === 'front' ? WHEEL_R : BACK_R, w = wheel(r, ax === 'front' && z > 0);
+    w.position.set(x, r, z); w.userData.r = r; g.add(w); wheels.push(w);
   }
+  // the horse ahead, between two shafts from the front of the cart to its collar
+  const h = horse(); h.position.set(3.75, 0, 0); g.add(h);
+  for (const z of [-.42, .42]) {
+    const a = new THREE.Vector3(1.6, FLOOR - .05, z * 1.3), b = new THREE.Vector3(3.8, 1.42, z), shaft = new THREE.Mesh(new THREE.CylinderGeometry(.035, .035, a.distanceTo(b), 6), woodDark);
+    shaft.position.copy(a).add(b).multiplyScalar(.5); shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()); g.add(shaft);
+  }
+  // Alice (the near side, she holds the reins) and Bob, seated on the bench
+  const seated = {};
+  for (const [k, z] of [['a', .26], ['b', -.26]]) {
+    const p = person(k); p.scale.setScalar(.44); p.position.set(.95, FLOOR + .1, z); p.rotation.y = Math.PI / 2; g.add(p); seated[k] = p;
+  }
+  g.userData.seated = seated;
   g.userData.wheels = wheels;
   g.userData.stoneWheel = wheels.find(w => w.userData.stone);
-  g.userData.roll = d => { for (const w of wheels) w.userData.spin.rotation.z = -d / WHEEL_R; };
-  // Alice at the wheel
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.2, 12, 10), mat(0xf0c8a0)); head.position.set(-.1, 1.3, .32); g.add(head);
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(.22, 12, 8, 0, Math.PI * 2, 0, Math.PI * .55), mat(0x6b3d1f)); hair.position.set(-.13, 1.34, .32); g.add(hair);
+  g.userData.roll = d => { for (const w of wheels) w.userData.spin.rotation.z = -d / w.userData.r; h.userData.walk(d); };
   return g;
 }
 

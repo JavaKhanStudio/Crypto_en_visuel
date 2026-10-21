@@ -75,7 +75,7 @@ export class Stage {
   stoneX(d = this.st.car) { return START_X + d; }                 // the stone wheel's axle, along x
   carX(d) { return this.stoneX(d) - AXLES.front; }
   head(k) {
-    if (k === 'a') return this.st.lane ? this.people.a.position.clone().add(v(0, 2.1, 0)) : this.car.position.clone().add(v(-.1, 1.75, .4));
+    if (k === 'a') return this.st.lane ? this.people.a.position.clone().add(v(0, 2.1, 0)) : this.car.position.clone().add(v(.95, 2.2, .26));
     if (k === 'kw') return this.kwheel.position.clone().add(v(0, 1.3, 0));
     if (k === 'bars') return this.barsAt.clone().add(v(0, 3.6, 0));
     // on a phone, while Eve reads the arcs (from behind the lane, or beside her bars in step 10), her bubble keeps to the top, off the arcs
