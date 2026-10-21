@@ -17,7 +17,24 @@ export const SHOTS = {
   // the sandbox panel covers the left quarter: each shot sits a little right of what it shows
   sbA:      { pos: v(14, 46, 80), target: v(8, 28, -14) },                      // the booth and the board
   sbMid:    { pos: v(-8, 42, 70), target: v(-20, 24, -6) },                     // the chart and the booth
+  // r219: on a phone, the intro is taken from the front and far back, so the four of them stand in
+  // one row just above the step panel, their three bubbles stacked over them
+  introPhone: { pos: v(-8, 80, 340), target: v(-8, -12, 0) },
   sbB:      { pos: v(52, 44, 82), target: v(46, 18, -6) },                      // the gate
+};
+
+// r219: on a phone held upright the step panel covers the lower half and the view is narrow: every
+// shot is taken from further back and aimed lower, so what it frames sits in the upper half, above
+// the panel (kasiski's rule). A shot named <shot>Phone, when there is one, replaces this rule.
+export const portrait = () => innerWidth < innerHeight;
+export function forPhone(s, back = 1.6, low = .24) {
+  const dir = s.pos.clone().sub(s.target).multiplyScalar(back), d = dir.length();
+  return { pos: s.target.clone().add(dir), target: s.target.clone().add(v(0, -low * d, 0)) };
+}
+const pick = shot => {
+  const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+  if (!portrait()) return s;
+  return (typeof shot === 'string' && SHOTS[shot + 'Phone']) || forPhone(s);
 };
 
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -34,7 +51,7 @@ export class CameraRig {
   // Fly to a shot (name or {pos,target}). The path arcs upward a little so long
   // moves read as a swoop rather than a slide. Resolves when it lands.
   fly(shot, duration = 2.2) {
-    const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+    const s = pick(shot);
     return new Promise(res => {
       const from = { pos: this.camera.position.clone(), target: this.controls.target.clone() };
       const lift = Math.min(40, from.pos.distanceTo(s.pos) * .18);
@@ -44,7 +61,7 @@ export class CameraRig {
 
   // Cut straight to a shot, no flight (used by screenshots and reduced motion).
   jump(shot) {
-    const s = typeof shot === 'string' ? SHOTS[shot] : shot;
+    const s = pick(shot);
     this.flight = null;
     this.camera.position.copy(s.pos); this.controls.target.copy(s.target); this.camera.lookAt(s.target);
   }
