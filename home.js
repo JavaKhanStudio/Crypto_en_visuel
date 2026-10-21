@@ -33,6 +33,29 @@ const EPISODES = [
   { n: 9, slug: 'kasiski', icon: '🛞', live: true },
 ];
 
+// The concepts each episode shows (r191), so a student finds one fast: a tag bar above the cards filters
+// them (?tag=hmac links straight to a filter), and each card lists its own. Labels are tags in fr/en below.
+// vpn is here ahead of its card (r221): an episode with no EPISODES entry is simply not drawn.
+const TAGS = {
+  'deux-generaux': ['canal', 'consensus'],
+  'eve-lit-tout': ['sym', 'aes', 'iv'],
+  'octet-change': ['integ', 'hmac'],
+  'cle-vallee': ['pubkey', 'rsa', 'kex'],
+  'paquet-complet': ['sym', 'aes', 'hmac', 'rsa'],
+  'encore-des-tours': ['sig', 'gcm', 'replay', 'integ'],
+  cadenas: ['pubkey'],
+  'diffie-hellman': ['kex', 'dh', 'mitm'],
+  scytale: ['hist', 'transpo'],
+  enigma: ['hist', 'enigma', 'subst'],
+  'enigma-reglage': ['hist', 'enigma'],
+  'enigma-casse': ['hist', 'enigma', 'crypta'],
+  pingouin: ['sym', 'aes', 'modes', 'integ'],
+  sel: ['hash', 'pwd', 'salt'],
+  garde: ['hmac', 'timing'],
+  kasiski: ['hist', 'vigenere', 'subst', 'crypta'],
+  vpn: ['vpn', 'kex', 'sym'],
+};
+
 const fr = {
   tab: 'Crypto en visuel',
   series: 'Crypto en visuel',
@@ -42,6 +65,16 @@ const fr = {
   soon: 'Bientôt',
   watch: 'Voir l’épisode ▶',
   course: 'Pour le cours Cryptographie de Simon Bédard.',
+  find: 'Trouver un concept :',
+  all: 'Tous',
+  tags: {
+    canal: 'Canal peu fiable', consensus: 'Consensus', sym: 'Chiffrement symétrique', aes: 'AES', iv: 'IV',
+    integ: 'Intégrité', hmac: 'HMAC', pubkey: 'Clé publique', rsa: 'RSA', kex: 'Échange de clés',
+    sig: 'Signature', gcm: 'AES-GCM', replay: 'Rejeu', dh: 'Diffie-Hellman', mitm: 'Attaque de l’homme du milieu',
+    hist: 'Chiffres historiques', transpo: 'Transposition', subst: 'Substitution', enigma: 'Enigma',
+    crypta: 'Cryptanalyse', modes: 'Modes ECB et CBC', hash: 'Hachage', pwd: 'Mots de passe', salt: 'Sel',
+    timing: 'Attaque temporelle', vigenere: 'Vigenère', vpn: 'VPN',
+  },
   sagas: {
     1: ['La saga des deux généraux', 'Six épisodes, une brique chacun : le message qu’Eve ne pourra ni lire, ni changer, ni usurper.'],
     5: ['Enigma', 'La machine pas à pas : une touche d’abord, puis tout le réglage du jour, puis la casse.'],
@@ -74,6 +107,16 @@ const en = {
   soon: 'Coming soon',
   watch: 'Watch the episode ▶',
   course: 'For Simon Bédard’s Cryptography course.',
+  find: 'Find a concept:',
+  all: 'All',
+  tags: {
+    canal: 'Unreliable channel', consensus: 'Consensus', sym: 'Symmetric encryption', aes: 'AES', iv: 'IV',
+    integ: 'Integrity', hmac: 'HMAC', pubkey: 'Public key', rsa: 'RSA', kex: 'Key exchange',
+    sig: 'Signature', gcm: 'AES-GCM', replay: 'Replay', dh: 'Diffie-Hellman', mitm: 'Man-in-the-middle attack',
+    hist: 'Historical ciphers', transpo: 'Transposition', subst: 'Substitution', enigma: 'Enigma',
+    crypta: 'Cryptanalysis', modes: 'ECB and CBC modes', hash: 'Hashing', pwd: 'Passwords', salt: 'Salt',
+    timing: 'Timing attack', vigenere: 'Vigenère', vpn: 'VPN',
+  },
   sagas: {
     1: ['The Two Generals Saga', 'Six episodes, one brick each: the message Eve can neither read, change nor forge.'],
     5: ['Enigma', 'The machine step by step: one key press first, then the whole setting of the day, then the break.'],
@@ -102,6 +145,34 @@ const dicts = { fr, en };
 const fromUrl = new URLSearchParams(location.search).get('lang');
 let lang = (fromUrl || localStorage.getItem('dg-lang') || 'fr').toLowerCase().startsWith('en') ? 'en' : 'fr';
 const t = (k, n) => (dicts[lang][k] ?? fr[k]).replace('{n}', n);
+const label = k => dicts[lang].tags[k] ?? fr.tags[k];
+let tag = new URLSearchParams(location.search).get('tag');
+
+// the tag bar: every concept an episode on the page shows, A to Z, with how many episodes show it
+function renderTags() {
+  const count = {};
+  for (const e of EPISODES) for (const k of TAGS[e.slug] ?? []) count[k] = (count[k] ?? 0) + 1;
+  if (!count[tag]) tag = null;
+  const keys = Object.keys(count).sort((a, b) => label(a).localeCompare(label(b), lang));
+  const chip = (k, text) => `<button data-tag="${k}" class="${(k || null) === tag ? 'on' : ''}">${text}</button>`;
+  document.getElementById('tags').innerHTML = `<span>${t('find')}</span>`
+    + chip('', t('all')) + keys.map(k => chip(k, `${label(k)} <small>${count[k]}</small>`)).join('');
+  for (const b of document.querySelectorAll('#tags button')) b.onclick = () => {
+    tag = b.dataset.tag || null;
+    const u = new URL(location); tag ? u.searchParams.set('tag', tag) : u.searchParams.delete('tag');
+    history.replaceState(null, '', u); render();
+  };
+  const bar = document.getElementById('tags'), on = bar.querySelector('.on');   // a phone scrolls the bar: show the chosen one
+  if (on && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2;
+}
+
+// a card whose episode does not show the chosen concept is hidden, and a saga with none left too
+function filter() {
+  for (const c of document.querySelectorAll('#episodes .card'))
+    c.hidden = !!tag && !(TAGS[c.id] ?? []).includes(tag);
+  for (const s of document.querySelectorAll('#episodes .saga'))
+    s.hidden = ![...s.querySelectorAll('.card')].some(c => !c.hidden);
+}
 
 function render() {
   document.documentElement.lang = lang;
@@ -113,6 +184,7 @@ function render() {
     const [title, line] = dicts[lang].ep[e.slug] ?? fr.ep[e.slug];
     const head = `<div class="art">${e.live ? `<img src="${e.slug}/vignette.jpg" alt="">` : `<span class="icon">${e.icon}</span>`}</div>
       <div class="text"><span class="num">${t('episode', e.n)}</span><h2>${title}</h2><p>${line}</p>
+      <span class="chips">${(TAGS[e.slug] ?? []).map(k => `<span class="${k === tag ? 'on' : ''}">${label(k)}</span>`).join('')}</span>
       <span class="${e.live ? 'go' : 'soon'}">${e.live ? t('watch') : t('soon')}</span></div>`;
     return e.live
       ? `<a class="card live" id="${e.slug}" href="${e.slug}/${q}">${head}</a>`
@@ -128,7 +200,9 @@ function render() {
     html.push(`<section class="saga"><div class="saga-head"><span class="num">${t('episode', e.saga)}</span><h2>${name}</h2><p>${line}</p></div>
       <div class="saga-cards">${card(first)}<div class="saga-rest">${rest.map(card).join('')}</div></div></section>`);
   }
+  renderTags();
   document.getElementById('episodes').innerHTML = html.join('');
+  filter();
   const target = document.getElementById(location.hash.slice(1));
   if (target) target.classList.add('flash');
 }

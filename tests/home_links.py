@@ -39,6 +39,22 @@ with sync_playwright() as p:
         pg.goto(base + s + "/", wait_until="load")
         pg.wait_for_function("window.demo && window.demo.ready", timeout=30000)
         check(f"{s}/ -> its card on the home", pg.url == base + "#" + s and pg.locator(f"#{s}.flash").count() == 1)
+    # concept tags (r191): ?tag= filters the cards, every chip has a label in both languages
+    for q, want in [("?tag=hmac", {"octet-change", "paquet-complet", "garde"}), ("?lang=en&tag=hist", {"scytale", "enigma", "enigma-reglage", "enigma-casse", "kasiski"})]:
+        pg.goto(base + q, wait_until="load")
+        pg.wait_for_function("window.demo && window.demo.ready", timeout=30000)
+        shown = set(pg.eval_on_selector_all("#episodes .card:not([hidden])", "cs => cs.map(c => c.id)"))
+        check(f"{q} shows {sorted(want)}", shown == want)
+    for lg in ["fr", "en"]:
+        pg.goto(base + "?lang=" + lg, wait_until="load")
+        pg.wait_for_function("window.demo && window.demo.ready", timeout=30000)
+        raw = pg.eval_on_selector_all("#tags button[data-tag]:not([data-tag='']), .card .chips span", "es => es.map(e => e.textContent).filter(s => /^[a-z]+( |$)/.test(s))")
+        check(f"every concept tag has a {lg} label", not raw)
+        raw and print(raw)
+        pg.click("#tags button[data-tag='hmac']")
+        check(f"clicking a tag filters ({lg})", pg.locator("#episodes .card:not([hidden])").count() == 3 and "tag=hmac" in pg.url)
+        pg.click("#tags button[data-tag='']")
+        check(f"« all » shows every card again ({lg})", pg.locator("#episodes .card[hidden]").count() == 0 and "tag=" not in pg.url)
     check("no page errors", not errors)
     errors and print(errors)
     b.close()
