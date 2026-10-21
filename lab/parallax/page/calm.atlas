@@ -1,0 +1,47 @@
+calm.webp
+size: 2510, 2580
+format: RGBA8888
+filter: MipMap,MipMap
+repeat: none
+Clouds
+  rotate: false
+  xy: 5, 648
+  size: 2500, 465
+  orig: 2500, 465
+  offset: 0, 0
+  index: -1
+Mountains_big
+  rotate: false
+  xy: 5, 5
+  size: 2500, 583
+  orig: 2500, 583
+  offset: 0, 0
+  index: -1
+Mountains_small
+  rotate: false
+  xy: 5, 1173
+  size: 2500, 426
+  orig: 2500, 426
+  offset: 0, 0
+  index: -1
+Trees_close
+  rotate: false
+  xy: 5, 2358
+  size: 2500, 217
+  orig: 2500, 217
+  offset: 0, 0
+  index: -1
+Trees_far
+  rotate: false
+  xy: 5, 1659
+  size: 2500, 302
+  orig: 2500, 302
+  offset: 0, 0
+  index: -1
+Trees_fartest
+  rotate: false
+  xy: 5, 2021
+  size: 2500, 276
+  orig: 2500, 276
+  offset: 0, 0
+  index: -1

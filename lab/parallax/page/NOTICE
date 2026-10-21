@@ -1,0 +1,4 @@
+calm.atlas, calm.webp: calm.png halved to 2510x2580 as WebP q92 (the atlas coordinates halved with it, for the 1 MB push limit) from JKS_Tools2D_ParallaxBackground, core/test-data/samples/transfer/ (commit 056c9aa),
+Copyright JavaKhanStudio, Apache License 2.0 (https://github.com/JavaKhanStudio/JKS_Tools2D_ParallaxBackground).
+calm-day.jplax: JKS_Tools2D_ParallaxEditor, demo/showcase/calm-day.jplax (commit bc9936a), the editor's demo/,
+Apache License 2.0. Otherwise copies: never re-export them here; a change goes to the library first.

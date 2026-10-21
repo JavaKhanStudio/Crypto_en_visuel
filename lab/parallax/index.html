@@ -1,0 +1,212 @@
+<!doctype html>
+<!-- r195 lab: can Simon's parallax library give the series a « puppet show » feel? One page of his (calm-day, from
+     JKS_Tools2D_ParallaxBackground, Apache-2.0: page/NOTICE) read by plax.js, shown three ways:
+       Fond      the library as it is in libGDX: a flat backdrop, each layer sliding at its own speed (orthographic)
+       Théâtre   each layer a painted card set at the depth its speed means (1/speed), the camera really moving:
+                 the parallax comes from perspective, and episode 1.1's own castles, city and rider stand between
+                 the cards as flat cardboard puppets on rods, their feet hidden by the front trees (the playboard)
+       Coulisses the same stage from the side: what Théâtre is made of
+     Deep links for shots: ?mode=fond|theatre|coulisses&t=SECONDS (frozen at that time) &curtain=0 -->
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parallaxe → three.js · théâtre de marionnettes</title>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #e8e4da; font: 15px system-ui, sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #ui { position: fixed; left: 12px; top: 12px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  #ui button { font: inherit; padding: 7px 13px; border-radius: 8px; border: 1px solid #ffffff40; background: #141820d0; color: inherit; cursor: pointer; }
+  #ui button.on { background: #e8b34b; color: #1b1408; border-color: #e8b34b; }
+  #say { position: fixed; left: 12px; bottom: 12px; max-width: min(560px, calc(100vw - 48px)); padding: 9px 13px; border-radius: 8px; background: #141820d8; font-size: 14px; line-height: 1.4; }
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <button data-mode="fond">Fond (libGDX)</button>
+  <button data-mode="theatre">Théâtre</button>
+  <button data-mode="coulisses">Coulisses</button>
+  <button id="curtain">Rideau</button>
+  <button id="play">⏸</button>
+</div>
+<div id="say"></div>
+<script type="module">
+import * as THREE from 'three';
+import { loadPage, layerX, layerY, gradientTexture, WORLD_W } from './plax.js';
+import { buildWorld } from '../../deux-generaux/js/world.js';
+import { buildRider, gallop } from '../../deux-generaux/js/messenger.js';
+
+const q = new URLSearchParams(location.search);
+const SAY = {
+  fond: 'Fond : la bibliothèque telle quelle. Une image plate, chaque couche glisse à sa vitesse. Les personnages ne sont que posés devant.',
+  theatre: 'Théâtre : chaque couche est un carton peint posé à la profondeur que dit sa vitesse. La caméra avance vraiment, les châteaux et le messager sont des marionnettes plates sur tiges, cachées par les sapins de devant.',
+  coulisses: 'Coulisses : le même décor vu de côté. Des cartons à plat, espacés, et les tiges des marionnettes.',
+};
+
+const renderer = new THREE.WebGLRenderer({ canvas: c, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.toneMapping = THREE.NoToneMapping;
+const scene = new THREE.Scene();
+const page = await loadPage('page/calm-day.jplax');
+const FRONT = Math.max(...page.layers.map(l => l.speed));   // the front layer's speed: the camera's depth unit
+
+// ---------- the view ----------
+const VFOV = 40, ortho = new THREE.OrthographicCamera(0, WORLD_W, 1, 0, -100, 100);
+const persp = new THREE.PerspectiveCamera(VFOV, 1, .5, 4000);
+let worldH = 22.5, D0 = 30;   // the world's height for this aspect; D0 the front layer's distance, where 1 world unit = 1 unit
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  // the library keeps the world 40 wide and lets the height follow, which leaves a portrait phone with bands of bare
+  // gradient: no taller than 16:9 makes it, the view crops the page's sides instead (a portrait rule the library lacks)
+  worldH = WORLD_W * Math.min(h / w, 9 / 16);
+  const viewW = worldH * w / h;
+  D0 = worldH / 2 / Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
+  ortho.left = (WORLD_W - viewW) / 2; ortho.right = (WORLD_W + viewW) / 2; ortho.top = worldH; ortho.updateProjectionMatrix();
+  persp.aspect = w / h; persp.updateProjectionMatrix();
+}
+resize(); addEventListener('resize', resize);
+
+// ---------- the backcloth: the page's two gradients, screen-high ----------
+const sky = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: gradientTexture(page.gradients), depthWrite: false }));
+sky.renderOrder = -1; scene.add(sky);
+
+// ---------- the layers: a pool of tiles each, placed every frame ----------
+const strips = page.layers.map(l => {
+  const mat = new THREE.MeshBasicMaterial({ map: l.texture, transparent: true, depthWrite: false });
+  const geo = new THREE.PlaneGeometry(1, 1); geo.translate(.5, .5, 0);   // origin at the tile's bottom left, like libGDX
+  const tiles = Array.from({ length: Math.ceil(240 / (l.width + l.padX)) + 2 }, () => {
+    const m = new THREE.Mesh(geo, mat); m.renderOrder = l.i; scene.add(m); return m;
+  });
+  return { l, k: FRONT / l.speed, tiles };
+});
+
+// ---------- the puppets: episode 1.1's own models, flattened to cardboard, on rods ----------
+scene.add(new THREE.HemisphereLight(0xfff4e0, 0x6a7a88, 2.2));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-3, 5, 8); scene.add(sun);
+const scratch = new THREE.Scene(), w1 = buildWorld(scratch);
+w1.setBeam(false);
+const rodMat = new THREE.MeshStandardMaterial({ color: 0x4a3423, roughness: .9 });
+const PUPPET_K = 1.18;   // between the last-but-one layer (k 1.33) and the front trees (k 1): the trees are the playboard
+function puppet(model, height, flat = .14) {
+  model.position.set(0, 0, 0);
+  const box = new THREE.Box3().setFromObject(model), size = box.getSize(new THREE.Vector3());
+  const s = height / size.y, inner = new THREE.Group();
+  inner.add(model); model.position.set(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2);
+  inner.scale.set(s, s, s * flat);
+  const holder = new THREE.Group(); holder.add(inner);
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(.09, .09, 14, 6), rodMat); rod.position.y = -7 + height * .3; holder.add(rod);
+  holder.traverse(o => { if (o.isMesh) o.renderOrder = 6.5; });
+  scene.add(holder);
+  return holder;
+}
+// along the stage (world units on the puppets' plane, the camera's travel): Alice's castle, Eve's city, Bob's castle
+const TRAVEL = 1000, CAM_END = TRAVEL * FRONT, LOOP = 18;   // the heart's travel over the loop: the camera moves CAM_END units
+const props = [
+  { o: puppet(w1.castleA, 9.5), x: -9 * PUPPET_K, v: 3.2 },
+  { o: puppet(w1.city, 10.5), x: CAM_END / 2, v: 2.6 },
+  { o: puppet(w1.castleB, 9.5), x: CAM_END + 9 * PUPPET_K, v: 3.2 },
+];
+const rider = buildRider('a', false), riderP = { o: puppet(rider, 3.4, .25), x: 0, v: 3.6 };
+props.push(riderP);
+
+// ---------- the timeline ----------
+const ease = p => p < 0 ? 0 : p > 1 ? 1 : p * p * (3 - 2 * p);
+function at(t) {   // the heart's travel and the rider's place at time t of the loop
+  const p = ease((t % LOOP - 2) / (LOOP - 4));
+  // at the city, a push in: the move a flat backdrop can only fake with a zoom (dolly, a share of the way to the puppets)
+  const dolly = .38 * Math.exp(-((((t % LOOP) - LOOP / 2) / 2.2) ** 2));
+  return { travel: p * TRAVEL, riderX: p * CAM_END + (-5 + 10 * p) * PUPPET_K, moving: p > 0 && p < 1, dolly };
+}
+
+// ---------- placing everything for a mode ----------
+let mode = ['fond', 'theatre', 'coulisses'].includes(q.get('mode')) ? q.get('mode') : 'theatre';
+let swing = mode === 'coulisses' ? 1 : 0;
+function place(t) {
+  const { travel, riderX, moving, dolly } = at(t), camX = travel * FRONT, flat = mode === 'fond';
+  riderP.x = riderX;
+  if (moving) gallop(rider.userData, t); else gallop(rider.userData, 0);
+  w1.update(1 / 60, t);
+  // layers: the closed form of ParallaxLayer.act, tiled over the view (and the wings, for the side view)
+  for (const { l, k, tiles } of strips) {
+    const step = l.width + l.padX, x0 = layerX(l, travel, t, worldH), y = layerY(l, worldH);
+    let first = page.repeatX ? x0 - Math.ceil((x0 + 100) / step) * step : x0;
+    tiles.forEach((m, j) => {
+      const u = first + j * step;   // the tile's left edge, world units from the view's left edge
+      m.visible = page.repeatX || j === 0;
+      if (flat) { m.position.set(u, y, -50 + l.i); m.scale.set(l.width, l.height, 1); return; }
+      // on its card: k times farther than the front layer, k times larger, so the straight view frames it as Fond does
+      m.position.set(camX + (u - WORLD_W / 2) * k, worldH / 2 + (y - worldH / 2) * k, -D0 * k);
+      m.scale.set(l.width * k, l.height * k, 1);
+    });
+  }
+  for (const p of props) {
+    const u = WORLD_W / 2 + (p.x - camX) / PUPPET_K;   // where it stands in the straight view
+    if (flat) { p.o.position.set(u, p.v, -50 + 6.5); p.o.scale.setScalar(1); continue; }
+    p.o.position.set(p.x, worldH / 2 + (p.v - worldH / 2) * PUPPET_K, -D0 * PUPPET_K);
+    p.o.scale.setScalar(PUPPET_K);
+  }
+  // the camera: straight on (Théâtre), or swung round the puppets' plane (Coulisses)
+  const target = new THREE.Vector3(camX, worldH / 2, -D0 * PUPPET_K), r = D0 * PUPPET_K * (1 - dolly * (1 - swing));
+  ortho.zoom = 1 / (1 - dolly); ortho.updateProjectionMatrix();   // Fond's only way to push in: everything grows alike
+  const yaw = swing * THREE.MathUtils.degToRad(62), pitch = swing * THREE.MathUtils.degToRad(14), back = 1 + swing * 1.6;
+  persp.position.set(target.x + Math.sin(yaw) * r * back, target.y + Math.sin(pitch) * r * back, target.z + Math.cos(yaw) * r * back);
+  persp.lookAt(target.x - swing * 60, target.y - swing * 4, target.z - swing * 90);
+  curtain.visible = curtainOn && !flat && swing < .02;
+  // the backcloth: screen-anchored, as the library anchors its gradients to the screen
+  if (flat) { sky.position.set(WORLD_W / 2, worldH / 2, -99); sky.scale.set(WORLD_W, worldH, 1); sky.quaternion.identity(); }
+  else {
+    const far = D0 * 14, h = 2 * far * Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
+    sky.position.copy(persp.position).add(new THREE.Vector3(0, 0, -far).applyQuaternion(persp.quaternion));
+    sky.quaternion.copy(persp.quaternion); sky.scale.set(h * persp.aspect * 1.02, h * 1.02, 1);
+  }
+}
+
+// ---------- the curtain: a proscenium hung on the camera ----------
+const curtain = new THREE.Group(); persp.add(curtain); scene.add(persp);
+let curtainOn = q.get('curtain') !== '0';
+{
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 8;
+  const g = cv.getContext('2d');
+  for (let x = 0; x < 256; x++) { const f = .55 + .45 * Math.cos(x / 256 * Math.PI * 2 * 5); g.fillStyle = `rgb(${120 * f + 20},${14 * f + 4},${22 * f + 6})`; g.fillRect(x, 0, 1, 8); }
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.MeshBasicMaterial({ map: tex, depthTest: false, transparent: true });   // transparent: drawn after the cards, which are
+  const sideL = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat), sideR = sideL.clone(), top = sideL.clone();
+  const gold = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0xc89b3c, depthTest: false, transparent: true }));
+  curtain.add(sideL, sideR, top, gold);
+  curtain.children.forEach(m => m.renderOrder = 100);
+  curtain.userData.fit = () => {
+    const d = 2, h = 2 * d * Math.tan(THREE.MathUtils.degToRad(VFOV / 2)), w = h * persp.aspect, sw = w * .06, th = h * .09;
+    sideL.position.set(-w / 2 + sw / 2, 0, -d); sideL.scale.set(sw, h, 1);
+    sideR.position.set(w / 2 - sw / 2, 0, -d); sideR.scale.set(sw, h, 1);
+    top.position.set(0, h / 2 - th / 2, -d); top.scale.set(w, th, 1);
+    gold.position.set(0, h / 2 - th, -d); gold.scale.set(w - 2 * sw, h * .008, 1);
+  };
+}
+
+// ---------- the loop and the buttons ----------
+const frozen = q.has('t') ? +q.get('t') : null;
+let playing = frozen === null, clock = frozen ?? 0, last = performance.now();
+const ui = document.getElementById('ui'), say = document.getElementById('say');
+function setMode(m) {
+  mode = m;
+  ui.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === m));
+  document.getElementById('curtain').style.display = m === 'fond' ? 'none' : '';
+  say.textContent = SAY[m];
+}
+ui.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+document.getElementById('curtain').onclick = e => { curtainOn = !curtainOn; e.target.classList.toggle('on', curtainOn); };
+document.getElementById('curtain').classList.toggle('on', curtainOn);
+document.getElementById('play').onclick = e => { playing = !playing; e.target.textContent = playing ? '⏸' : '▶'; };
+setMode(mode);
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  if (playing) clock += dt;
+  const want = mode === 'coulisses' ? 1 : 0;   // the side view swings in and out in about a second
+  swing = frozen !== null ? want : swing + Math.sign(want - swing) * Math.min(Math.abs(want - swing), dt * 1.1);
+  curtain.userData.fit();
+  place(clock);
+  renderer.render(scene, mode === 'fond' ? ortho : persp);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.lab = { setMode, at, page, get clock() { return clock; }, seek(t) { clock = t; playing = false; } };
+window.labReady = 1;
+window.demo = { ready: true };   // what tools/shoot.py waits for
+</script></body></html>
