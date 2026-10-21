@@ -25,7 +25,8 @@ const P = (x, z) => v(x, CABLE_Y, z);
 const LINES = {
   wi: [NODES.w, v(-35, CABLE_Y, -3.2), P(-28, -3.6), P(-20, -4.4), P(-12, -5.6), v(-6.8, CABLE_Y, -6.8), NODES.i],
   ib: [NODES.i, v(-5.2, CABLE_Y, -6.8), P(2, -5.8), P(10, -4.6), P(18, -3.2), P(26, -2), v(31.4, CABLE_Y, -.6), NODES.b],
-  iv: [NODES.i, v(-6.4, CABLE_Y, -7.8), P(-8, -14), P(-10, -20), P(-12, -26), v(-13.6, CABLE_Y, -31.4), NODES.v],
+  // round the provider's west wall, along the valley road, not through the building
+  iv: [NODES.i, v(-6.8, CABLE_Y, -6.4), P(-13.8, -6.6), P(-13.8, -14), P(-13.8, -21), P(-13.8, -27), v(-13.8, CABLE_Y, -31.2), NODES.v],
   vb: [NODES.v, v(-13, CABLE_Y, -31.6), P(-6, -30), P(4, -27), P(14, -22), P(24, -15), P(31, -8), v(33, CABLE_Y, -1), NODES.b],
 };
 export const EDGES = {};
@@ -72,7 +73,8 @@ function buildStreets() {
     s.rotation.x = -Math.PI / 2; s.rotation.z = -Math.atan2(z1 - z0, x1 - x0); s.position.set((x0 + x1) / 2, .02, (z0 + z1) / 2); s.receiveShadow = true; g.add(s);
   };
   strip(-52, 3.2, 44, 3.2, 5, asphalt);              // the main street, in front of the café, the provider and Bob
-  strip(-9, 3.2, -16, -46, 4, asphalt);              // up the valley to the other town
+  // up the valley to the other town: between the street's houses and the provider's west wall, to the VPN's forecourt (r197)
+  strip(-16.6, 1, -16.6, -31.6, 4, asphalt);
   strip(-42, -.4, -30, -.4, 5.8, pave);              // the café's terrace
   return g;
 }
