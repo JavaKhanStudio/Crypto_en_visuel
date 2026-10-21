@@ -5,7 +5,9 @@ Serve the repo first (python3 -m http.server 8793). At 390x844 (?instant=1), fr 
 steps where the watchers' tags show (stage.js pinTags) and measures, in screen pixels, each shown
 watcher tag and place name against the others, the page's walls (bubbles.js WALLS), the speech
 bubbles and the screen's edge. The tag each step's words are about must be among those shown, and
-every shown tag's first line must say whose it is (r344).
+every shown tag's first line must say whose it is (r344). Step 12 is also measured after « Envoyer »
+(#play): Victor's tag then grows to its crowd form, the widest of the episode, and pinTags hides it if
+it finds no room (r373).
     tests/vpn_tags.py [base]"""
 import sys
 from playwright.sync_api import sync_playwright
@@ -25,6 +27,22 @@ MEASURE = """() => {
 }"""
 over = lambda a, b: min(a["x"] + a["w"], b["x"] + b["w"]) - max(a["x"], b["x"]) > 1 and min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]) > 1
 bad = []
+def check(pg, lang, n, label):
+    m = pg.evaluate(MEASURE)
+    L = m["labels"]
+    for i, a in enumerate(L):
+        if a["kind"] != "tag": continue
+        if a["x"] < 0 or a["y"] < 0 or a["x"] + a["w"] > 390 or a["y"] + a["h"] > 844:
+            bad.append(f"{lang} {label}: {a['name']} runs off the screen")
+        for b in [x for j, x in enumerate(L) if j != i] + m["others"]:
+            if over(a, b): bad.append(f"{lang} {label}: {a['name']} on {b['name']}")
+    for a in L:   # r344: on a phone a tag may leave its watcher and the places' names may hide, so its first line names it
+        if a["kind"] == "tag" and not a["head"].startswith(HEAD[lang][a["name"][4:]]):
+            bad.append(f"{lang} {label}: {a['name']} does not say whose it is (first line: {a['head']})")
+    shown = [a["name"][4:] for a in L if a["kind"] == "tag"]
+    if n in MUST and MUST[n] not in shown: bad.append(f"{lang} {label}: tag {MUST[n]} not shown (shown: {shown})")
+    print(f"{lang} {label}: tags {' '.join(shown) or '-'}")
+
 with sync_playwright() as p:
     br = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
     for lang in ["fr", "en"]:
@@ -36,20 +54,15 @@ with sync_playwright() as p:
         pg.add_style_tag(content=".bubble { transition: opacity .35s !important; }")
         for n in range(1, 15):
             pg.evaluate(f"demo.story.go({n - 1})"); pg.wait_for_timeout(1500)
-            m = pg.evaluate(MEASURE)
-            L = m["labels"]
-            for i, a in enumerate(L):
-                if a["kind"] != "tag": continue
-                if a["x"] < 0 or a["y"] < 0 or a["x"] + a["w"] > 390 or a["y"] + a["h"] > 844:
-                    bad.append(f"{lang} step {n}: {a['name']} runs off the screen")
-                for b in [x for j, x in enumerate(L) if j != i] + m["others"]:
-                    if over(a, b): bad.append(f"{lang} step {n}: {a['name']} on {b['name']}")
-            for a in L:   # r344: on a phone a tag may leave its watcher and the places' names may hide, so its first line names it
-                if a["kind"] == "tag" and not a["head"].startswith(HEAD[lang][a["name"][4:]]):
-                    bad.append(f"{lang} step {n}: {a['name']} does not say whose it is (first line: {a['head']})")
-            shown = [a["name"][4:] for a in L if a["kind"] == "tag"]
-            if n in MUST and MUST[n] not in shown: bad.append(f"{lang} step {n}: tag {MUST[n]} not shown (shown: {shown})")
-            print(f"{lang} step {n}: tags {' '.join(shown) or '-'}")
+            check(pg, lang, n, f"step {n}")
+            if n == 12:   # r373: Victor's crowd tag, after « Envoyer »
+                others = pg.evaluate("async () => (await import('./js/net.js')).OTHERS.length")
+                pg.click("#play")
+                pg.wait_for_function(f"demo.stage.st.crowd === {others}", timeout=90000)
+                # then Victor speaks: measure once his bubble has settled, the state the step ends in
+                pg.wait_for_function("[...document.querySelectorAll('#bubbles .bubble.v.show')].some(e => getComputedStyle(e).opacity === '1')", timeout=30000)
+                pg.wait_for_timeout(1000)
+                check(pg, lang, n, "step 12 after #play")
         if errors: bad.append(f"{lang} page errors: {errors[:2]}")
         pg.close()
     br.close()
