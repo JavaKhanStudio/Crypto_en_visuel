@@ -9,7 +9,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld } from './world.js';
 import { Stage } from './stage.js';
 import { CameraRig } from './camera.js';
-import { initFx, updateFx, fireworks } from './fx.js';
+import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Bubbles } from './bubbles.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';

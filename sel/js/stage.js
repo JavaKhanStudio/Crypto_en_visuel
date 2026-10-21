@@ -9,7 +9,7 @@ import { X, AT, CARD_Y } from './world.js';
 import { card, drawTable, drawBook, drawCounter, DESK_Y } from './props.js';
 import { md5 } from './hash.js';
 import { USERS, LIST, BCRYPT, BCRYPT_TRY, short, bshort, bsalt, RATE, SPACE8, WATCH, seconds } from './data.js';
-import { burst, ring, icon } from './fx.js';
+import { burst, ring, icon } from '../../lib/fx.js';
 import { sfx } from './sound.js';
 import { t, raw, num, dec } from './i18n.js';
 

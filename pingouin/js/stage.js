@@ -10,7 +10,7 @@ import { X, SLOT, CRATE_Y, HOLD, SCREENS } from './world.js';
 import { crate, CRATE, BELT_Y } from './props.js';
 import * as A from './aes.js';
 import { paint } from './penguin.js';
-import { burst, ring, icon } from './fx.js';
+import { burst, ring, icon } from '../../lib/fx.js';
 import { sfx } from './sound.js';
 import { raw } from './i18n.js';
 

@@ -8,7 +8,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld, CASTLE_A, CASTLE_B } from './world.js';
 import { CameraRig } from './camera.js';
-import { initFx, updateFx, fireworks } from './fx.js';
+import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Sim, wait } from './sim.js';
 import { Bubbles } from './bubbles.js';
 import { renderLadder, ladder3d } from './ladder.js';

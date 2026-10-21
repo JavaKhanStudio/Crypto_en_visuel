@@ -3,7 +3,7 @@
 // alone, the army is crushed under the walls.
 import * as THREE from 'three';
 import { COLORS, CITY } from './world.js';
-import * as fx from './fx.js';
+import * as fx from '../../lib/fx.js';
 
 const N = 48;
 

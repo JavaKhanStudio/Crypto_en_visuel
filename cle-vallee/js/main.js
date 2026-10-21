@@ -10,7 +10,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld, CASTLE_A, CASTLE_B } from './world.js';
 import { cargo as buildCargo } from './props.js';
 import { CameraRig } from './camera.js';
-import { initFx, updateFx, fireworks } from './fx.js';
+import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from './messenger.js';
 import { Bubbles } from './bubbles.js';
 import { Inside } from './inside.js';

@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { PLACES, BENCH, TABLE_TOP } from './world.js';
 import { padlock, key, chest, person, COLORS } from './props.js';
-import { burst, ring, icon } from './fx.js';
+import { burst, ring, icon } from '../../lib/fx.js';
 import { sfx } from './sound.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);

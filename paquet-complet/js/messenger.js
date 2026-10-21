@@ -7,7 +7,7 @@
 // `done` resolves with 'delivered' | 'captured' | 'rejected'.
 import * as THREE from 'three';
 import { COLORS, CITY } from './world.js';
-import * as fx from './fx.js';
+import * as fx from '../../lib/fx.js';
 
 const horseMat = new THREE.MeshStandardMaterial({ color: 0x6b4a2f, roughness: .8, flatShading: true });
 const darkHorseMat = new THREE.MeshStandardMaterial({ color: 0x1e1a1c, roughness: .6, flatShading: true });

@@ -8,7 +8,7 @@ import { PLACES, TABLE_TOP } from './world.js';
 import { stick, cradles, stylus, person, COLORS, STICK_L } from './props.js';
 import { Strip } from './strip.js';
 import { layout, order, lines, show } from './scytale.js';
-import { burst, ring, icon } from './fx.js';
+import { burst, ring, icon } from '../../lib/fx.js';
 import { sfx } from './sound.js';
 import { t } from './i18n.js';
 

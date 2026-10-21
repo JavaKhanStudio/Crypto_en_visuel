@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { PLACES, TOP_Y, FLOOR, MAST_H } from './world.js';
 import { machine, person, rack, COLORS, STEP, R, RC, wirePoints, loopPoints, at, DRUM, SLOTS, socketAt, cablePoints, FRONT, APART_C } from './props.js';
 import { A, ROTORS, NAMES, BARE, STARTS, press, clashes, menuLetters, bombe as runBombe, check, scrambler, posOf } from './enigma.js';
-import { burst, ring } from './fx.js';
+import { burst, ring } from '../../lib/fx.js';
 import { sfx } from './sound.js';
 import { raw } from './i18n.js';
 
