@@ -10,7 +10,7 @@ import { NODES, SPOTS, edge } from './world.js';
 import { envelope, tag, setTag, key, person, COLORS } from './props.js';
 import { ADDR, NAME, OTHERS, PUBLIC, KEY, hex, sees, route, opened, flipped, SEALED } from './net.js';
 import { burst, ring } from '../../lib/fx.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from './sound.js';
 import { t, raw } from './i18n.js';
 import { portrait } from './camera.js';
 
