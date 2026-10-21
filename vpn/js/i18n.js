@@ -15,6 +15,7 @@ const fr = {
   who: { a: 'Alice', b: 'Bob', e: 'Eve', v: 'Victor', n: 'Le chroniqueur' },
   ch: ['Le chemin', 'Sans tunnel', 'Le tunnel', 'Qui voit quoi', 'Pourquoi, et jusqu’où'],
   place: { cafe: 'Le café', isp: 'Le fournisseur d’accès', vpn: 'Serveur VPN · autre ville', bob: 'Le site de Bob' },
+  plate: { isp: 'FOURNISSEUR D’ACCÈS', vpn: 'VPN' },   // the words on the halls' plates, by their doors (r382)
   tag: {
     place: { cafe: 'le café', bob: 'Bob', vpn: 'le VPN' },
     head: { e: 'Eve, {at}', i: 'Le fournisseur d’accès', v: 'Victor, au VPN', b: 'Bob, sur son site' },   // a phone's first line: whose tag (r344)
@@ -118,6 +119,7 @@ const en = {
   who: { a: 'Alice', b: 'Bob', e: 'Eve', v: 'Victor', n: 'The chronicler' },
   ch: ['The way', 'No tunnel', 'The tunnel', 'Who sees what', 'Why, and how far'],
   place: { cafe: 'The café', isp: 'The internet provider', vpn: 'VPN server · another town', bob: 'Bob’s site' },
+  plate: { isp: 'INTERNET PROVIDER', vpn: 'VPN' },
   tag: {
     place: { cafe: 'the café', bob: 'Bob', vpn: 'the VPN' },
     head: { e: 'Eve, {at}', i: 'The internet provider', v: 'Victor, at the VPN', b: 'Bob, at his site' },

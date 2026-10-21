@@ -83,7 +83,7 @@ export function key(color) {
 }
 
 // ---------- the café ----------
-// The café's Wi-Fi box: a small white box with two antennas and a blinking light, on the wall.
+// The café's Wi-Fi box: a small white box with two antennas and a blinking light, on the roof (r382).
 export function router() {
   const g = new THREE.Group();
   g.add(box(.5, .12, .32, mat(0xeeeeea)));
@@ -138,8 +138,23 @@ export function hall(w, d, h, wall, sign) {
   const cap = mat(0x5a5f68);
   g.add(box(w + .1, .1, T + .1, cap, 0, h + .05, -d / 2 + T / 2), box(w + .1, .1, T + .1, cap, 0, h + .05, d / 2 - T / 2));
   for (const sx of [-1, 1]) g.add(box(T + .1, .1, d, cap, sx * (w / 2 - T / 2), h + .05, 0));
-  g.add(box(Math.min(w / 2 - 2, 3.4), .5, .08, mat(sign, { emissive: sign, emissiveIntensity: .35 }), -(w / 4 + .4), h - .55, d / 2 + .04));   // a plate on the front wall
+  // a plate on the front wall, left of the door, that says what the hall is for (r382): world.js writes it
+  const pw = (w - door) / 2 - .5, px = -(door + (w - door) / 2) / 2;
+  g.add(box(pw, .62, .08, mat(sign, { emissive: sign, emissiveIntensity: .35 }), px, h - .6, d / 2 + .04));
+  const words = new THREE.Mesh(new THREE.PlaneGeometry(pw - .1, .52), new THREE.MeshBasicMaterial({ transparent: true }));
+  words.position.set(px, h - .6, d / 2 + .085); g.add(words); g.userData.plate = words;
   return g;
+}
+// The words on a hall's plate, white capitals filling it.
+export function setPlate(words, text) {
+  const { width, height } = words.geometry.parameters, c = document.createElement('canvas'), x = c.getContext('2d');
+  c.width = 1024; c.height = Math.round(1024 * height / width);
+  let px = Math.round(c.height * .62);
+  const font = n => `700 ${n}px Georgia, "Times New Roman", serif`;
+  x.font = font(px); while (x.measureText(text).width > c.width * .92 && px > 10) x.font = font(--px);
+  x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, c.width / 2, c.height * .54);
+  words.material.map?.dispose(); words.material.map = new THREE.CanvasTexture(c); words.material.map.colorSpace = THREE.SRGBColorSpace;
+  words.material.map.anisotropy = 4; words.material.needsUpdate = true;
 }
 // A café awning over the terrace, striped.
 export function awning(w) {

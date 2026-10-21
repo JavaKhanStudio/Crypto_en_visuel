@@ -1,26 +1,28 @@
 // A small map, one unit = one metre: a town with its café (Alice and Eve at the terrace, the café's
-// Wi-Fi box on the wall) and its internet provider's server hall, Bob's site at the east end, and in
+// Wi-Fi box on its roof) and its internet provider's server hall, Bob's site at the east end, and in
 // another town, up the valley to the north-west, the VPN's server hall. The halls have no roof (r360):
 // from above, the rows of racks inside show; the packet's stop is the front rack, by the door. Cables on poles join them:
 // café → provider, provider → Bob, provider → VPN, VPN → Bob. Built from primitives, except the
 // servers and the laptops, which are Shadow's (assets/shapes, through lib/shapes.js).
 import * as THREE from 'three';
 import { loadShape } from '../../lib/shapes.js';
-import { router, table, cup, building, hall, awning, pole, house, TABLE_Y } from './props.js';
+import { router, table, cup, building, hall, setPlate, awning, pole, house, TABLE_Y } from './props.js';
+import { raw, onLang } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const CABLE_Y = 4.2;
 // the two server halls, roofless (r360): centre and size; the packet's stop (NODES.i, NODES.v) is over
-// the middle of the front row of racks, just inside the front wall, and Victor stands before that row
+// the middle of the front row of racks, just inside the front wall, and Victor stands before that row.
+// Small halls, the back wall just behind the last row (r382: no empty row, fewer machines)
 export const HALL_H = 2;
 export const HALLS = {
-  i: { x: -6, z: -11.5, w: 14, d: 12, rows: [-8, -10.4, -12.8, -15.2] },
-  v: { x: -14, z: -35.2, w: 12, d: 10.4, rows: [-33, -35.4, -37.8] },
+  i: { x: -6, z: -9.75, w: 10, d: 8.5, rows: [-8, -10.4, -12.8] },
+  v: { x: -14, z: -33.3, w: 9, d: 6.6, rows: [-33, -35.4] },
 };
 
 // where things stand
 export const SPOTS = {
-  cafe: v(-36, 0, -8), isp: v(-6, 0, -13), vpn: v(-14, 0, -38), bob: v(34, 0, -4),
+  cafe: v(-36, 0, -8), isp: v(-6, 0, -11), vpn: v(-14, 0, -35.5), bob: v(34, 0, -4),
   tableA: v(-38.6, 0, -1.6), tableE: v(-33.6, 0, -1.2),
 };
 // step 12 (r367): three of Victor's other customers, each at the door of a house of his town, a laptop in
@@ -32,13 +34,14 @@ export const CUSTOMERS = [
 ];
 // the packet's stops: Alice's laptop, the Wi-Fi box, the provider's racks, the VPN's racks, Bob's server
 export const NODES = {
-  a: v(-38.6, TABLE_Y + .5, -1.3), w: v(-36, 3.25, -3.85),
+  a: v(-38.6, TABLE_Y + .5, -1.3), w: v(-36, 4.7, -5.1),   // the Wi-Fi box on the café's roof, by its front edge (r382)
   i: v(-6, 2.3, -7.1), v: v(-14, 2.3, -32.1), b: v(32.3, 1.6, 0),
 };
 // each cable, pole top to pole top; the Wi-Fi hop from the laptop is a curve through the air
 const P = (x, z) => v(x, CABLE_Y, z);
 const LINES = {
-  wi: [NODES.w, v(-35, CABLE_Y, -3.2), P(-28, -3.6), P(-20, -4.4), P(-12, -5.6), v(-6.8, CABLE_Y, -6.8), NODES.i],
+  // down off the café's roof, then along the street, the last pole west of the provider's front wall (r382)
+  wi: [NODES.w, v(-34.8, 4.85, -3.6), P(-28, -3.6), P(-20, -4.4), P(-12.4, -4.6), v(-6.8, CABLE_Y, -5.2), NODES.i],
   ib: [NODES.i, v(-5.2, CABLE_Y, -6.8), P(2, -5.8), P(10, -4.6), P(18, -3.2), P(26, -2), v(31.4, CABLE_Y, -.6), NODES.b],
   // round the provider's west wall, along the valley road, not through the building
   iv: [NODES.i, v(-6.8, CABLE_Y, -6.4), P(-13.8, -6.6), P(-13.8, -14), P(-13.8, -21), P(-13.8, -27), v(-13.8, CABLE_Y, -31.2), NODES.v],
@@ -46,7 +49,7 @@ const LINES = {
 };
 export const EDGES = {};
 for (const [k, pts] of Object.entries(LINES)) EDGES[k] = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
-EDGES.aw = new THREE.QuadraticBezierCurve3(NODES.a.clone(), v(-37.6, 4.2, -2.2), NODES.w.clone());
+EDGES.aw = new THREE.QuadraticBezierCurve3(NODES.a.clone(), v(-37.6, 5.4, -2.2), NODES.w.clone());   // over the awning
 // the edge from one stop to the next, and whether it runs backwards
 export function edge(from, to) {
   const k = from + to, r = to + from;
@@ -173,16 +176,21 @@ export async function buildWorld(scene) {
   sun.shadow.bias = -.0005; scene.add(sun);
   scene.add(buildTerrain(), buildStreets(), buildTrees());
 
-  // the café: its front at z = -4.5, the terrace before it, the Wi-Fi box over the door
+  // the café: its front at z = -4.5, the terrace before it, the Wi-Fi box on the roof
   const cafe = building(11, 4.2, 7, 0xe9dcc4, { sign: 0x7a2e22 }); cafe.position.copy(SPOTS.cafe); scene.add(solid(cafe));
   const aw = awning(10); aw.position.set(SPOTS.cafe.x, 3.1, -3.4); scene.add(solid(aw));
-  const box = router(); box.position.copy(NODES.w).add(v(0, -.08, 0)); scene.add(box);
+  const box = router(); box.scale.setScalar(1.6); box.position.copy(NODES.w).add(v(0, -.1, 0)); scene.add(box);   // big enough to be seen from the street
   for (const k of ['tableA', 'tableE']) { const tb = table(); tb.position.copy(SPOTS[k]); scene.add(tb); }
   for (const k of ['tableA', 'tableE']) { const c = cup(); c.position.copy(SPOTS[k]).add(v(.25, TABLE_Y, .12)); scene.add(c); }
   // the provider's server hall, and the VPN's in the other town, with the town around it: no roof (r360)
-  for (const [at, w, sign] of [[HALLS.i, 0x8c95a3, 0x2d5f9a], [HALLS.v, 0x7d8a7a, 0x1f5a3c]]) {
-    const h = hall(at.w, at.d, HALL_H, w, sign); h.position.set(at.x, 0, at.z); scene.add(solid(h));
+  // the plate by each door says what the hall is for, in the page's language (r382)
+  const plates = {};
+  for (const [k, w, sign] of [['isp', 0x8c95a3, 0x2d5f9a], ['vpn', 0x7d8a7a, 0x1f5a3c]]) {
+    const at = HALLS[k === 'isp' ? 'i' : 'v'], h = hall(at.w, at.d, HALL_H, w, sign); h.position.set(at.x, 0, at.z); scene.add(solid(h));
+    plates[k] = h.userData.plate;
   }
+  const writePlates = () => { for (const [k, words] of Object.entries(plates)) setPlate(words, raw('plate')[k]); };
+  writePlates(); onLang(writePlates);
   for (const [x, z, w, d, h, wall] of [[-27, -41, 5, 5, 3.4, 0xd9c8a8], [-25, -32, 4.5, 4, 3, 0xcbb894], [-3, -43, 6, 5, 3.6, 0xe0d2b4], [-1, -35, 4, 4, 3, 0xd2c29c]]) {
     const hs = house(w, d, h, wall, 0x8e3f2c); hs.position.set(x, 0, z); hs.rotation.y = (x + z) % 2 * .2; scene.add(solid(hs));
   }
