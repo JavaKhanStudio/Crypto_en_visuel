@@ -32,6 +32,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 7 | Le sel (et la lenteur de bcrypt) | https://javakhanstudio.github.io/Crypto_en_visuel/sel/ | publié |
 | 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | publié |
 | 9 | La roue et le caillou (Vigenère, l'attaque de Kasiski) | https://javakhanstudio.github.io/Crypto_en_visuel/kasiski/ | publié |
+| 10 | Le tunnel (VPN, WireGuard : X25519 et ChaCha20-Poly1305) | https://javakhanstudio.github.io/Crypto_en_visuel/vpn/ | publié |
 
 Dans un épisode, `#story=N` est l'**étape** N de son histoire (pas un numéro d'épisode),
 `#sandbox` et `#quiz` ses autres modes, `?lang=en` l'anglais. Les anciens liens vers la racine
@@ -304,6 +305,25 @@ hasard), 2 en divise 36 ; puis cinq colonnes, cinq César, E le plus fréquent :
 12 étapes en 5 chapitres, un bac à sable (le tour de roue et le gravier, ou votre propre clé),
 un quiz de 8 questions. `node tests/kasiski_values.mjs` refait le chiffrement et le compte et
 vérifie les chiffres écrits dans l'histoire ; `tests/kasiski_story.py` clique chaque bouton.
+
+## Épisode 10 — Le tunnel
+
+Ce qu'un VPN cache, et ce qu'il ne cache pas. Alice, au Wi-Fi ouvert d'un café, ouvre le site de
+Bob ; Eve est à la table voisine, le fournisseur d'accès entre les deux, et Victor fait tourner un
+serveur VPN dans une autre ville. Une enveloppe porte deux adresses dehors (celle de la box du
+café, 203.0.113.7, et celle de Bob, 198.51.100.20) ; chaque boîte du chemin les lit. Sans HTTPS,
+Eve lit aussi le mot de passe ; avec HTTPS, le contenu est fermé, mais l'adresse, le nom du site,
+l'heure et la taille fuient encore, au café comme chez le fournisseur. Puis le tunnel, à la
+WireGuard : une paire de clés X25519 de chaque côté, le même secret calculé chez Alice et chez
+Victor, l'enveloppe entière (adresse comprise) scellée par ChaCha20-Poly1305 dans une nouvelle
+enveloppe vers le VPN, 192.0.2.44 ; un bit changé en chemin, et Victor jette le paquet. Enfin qui
+voit quoi : Eve et le fournisseur ne voient plus que le VPN, Bob voit l'autre ville, et Victor voit
+ce que le fournisseur voyait — la confiance se déplace ; à quoi sert un VPN, et ce qu'il ne fait
+pas. 14 étapes en 5 chapitres, un bac à sable (VPN et HTTPS allumés ou non, Eve à l'une des quatre
+places, un bit changé en chemin) et un quiz de 7 questions. X25519 et ChaCha20-Poly1305 sont
+calculés dans la page ; `node tests/vpn_values.mjs` les compare aux vecteurs des RFC 7748 et 8439
+et à `node:crypto`, et vérifie les adresses, octets et nombres écrits dans l'histoire ;
+`tests/vpn_story.py` clique chaque bouton de l'histoire et du bac à sable.
 
 ## Lancer
 

@@ -31,11 +31,11 @@ const EPISODES = [
   { n: 7, slug: 'sel', icon: '🧂', live: true },
   { n: 8, slug: 'garde', icon: '⏱️', live: true },
   { n: 9, slug: 'kasiski', icon: '🛞', live: true },
+  { n: 10, slug: 'vpn', icon: '🛡️', live: true },
 ];
 
 // The concepts each episode shows (r191), so a student finds one fast: a tag bar above the cards filters
 // them (?tag=hmac links straight to a filter), and each card lists its own. Labels are tags in fr/en below.
-// vpn is here ahead of its card (r221): an episode with no EPISODES entry is simply not drawn.
 const TAGS = {
   'deux-generaux': ['canal', 'consensus'],
   'eve-lit-tout': ['sym', 'aes', 'iv'],
@@ -96,6 +96,7 @@ const fr = {
     sel: ['Le sel', 'Même mot de passe, même empreinte… sauf avec du sel. Et bcrypt prend son temps exprès.'],
     kasiski: ['La roue et le caillou', 'La clé de Vigenère tourne comme une roue, et ses traces trahissent sa longueur.'],
     garde: ['Le garde trop pressé', 'Un garde qui compare un badge lettre par lettre trahit le HMAC par son chronomètre.'],
+    vpn: ['Le tunnel', 'Un VPN scelle chaque paquet jusqu’à un autre serveur : qui voit encore quoi ?'],
   },
 };
 const en = {
@@ -138,6 +139,7 @@ const en = {
     sel: ['Salt', 'Same password, same hash… unless it is salted. And bcrypt is slow on purpose.'],
     kasiski: ['The Wheel and the Stone', 'The Vigenère key turns like a wheel, and its tracks give its length away.'],
     garde: ['The Hasty Guard', 'A guard who checks a badge letter by letter gives the HMAC away to a stopwatch.'],
+    vpn: ['The Tunnel', 'A VPN seals every packet up to another server: who still sees what?'],
   },
 };
 

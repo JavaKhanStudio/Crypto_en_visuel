@@ -26,12 +26,12 @@ with sync_playwright() as p:
         if want:
             check(f"root {old} -> deux-generaux/{want}", pg.url == base + "deux-generaux/" + want)
         else:
-            check("bare root shows the home", pg.url == base and pg.locator(".card").count() == 16 and pg.locator(".saga .card").count() == 9)
+            check("bare root shows the home", pg.url == base and pg.locator(".card").count() == 17 and pg.locator(".saga .card").count() == 9)
     pg.evaluate("location.hash = 'story=5'")   # typed on the home, no reload
     pg.wait_for_function("window.demo && window.demo.story", timeout=60000)
     check("hash typed on the home -> step 5 of deux-generaux/", pg.url == base + "deux-generaux/#story=5" and pg.evaluate("demo.story.i") == 4)
     pg.goto(base, wait_until="load")
-    for live in ["deux-generaux", "eve-lit-tout", "octet-change", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "kasiski"]:
+    for live in ["deux-generaux", "eve-lit-tout", "octet-change", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "kasiski", "vpn"]:
         check(f"{live} card links {live}/", pg.locator(f"a.card#{live}").get_attribute("href").startswith(f"{live}/"))
     for s in SOON:
         check(f"{s} card is a « soon » card, not a link", pg.locator(f"div.card.soon#{s}").count() == 1)
