@@ -49,7 +49,7 @@ const FRONT = Math.max(...page.layers.map(l => l.speed));   // the front layer's
 // ---------- the view ----------
 const VFOV = 40, ortho = new THREE.OrthographicCamera(0, WORLD_W, 1, 0, -100, 100);
 const persp = new THREE.PerspectiveCamera(VFOV, 1, .5, 4000);
-let worldH = 22.5, D0 = 30;   // the world's height for this aspect; D0 the front layer's distance, where 1 world unit = 1 unit
+let worldH = 22.5, D0 = 30, squeeze = 1, riderSqueeze = 1, shrink = 1;   // the world's height for this aspect; D0 the front layer's distance, where 1 world unit = 1 unit
 function resize() {
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false);
@@ -57,6 +57,15 @@ function resize() {
   // gradient: no taller than 16:9 makes it, the view crops the page's sides instead (a portrait rule the library lacks)
   worldH = WORLD_W * Math.min(h / w, 9 / 16);
   const viewW = worldH * w / h;
+  // cropping alone leaves a portrait phone ~10 units of a stage laid out for 40: the actors fall off its sides (r259).
+  // so under 24 units the puppets get smaller and closer to the middle: a castle 13.7 units off (where it stands at t=4
+  // and t=14) lands with its centre just inside the curtain, and the rider's ride (±5) is narrowed to stay clear of it.
+  // The scenery is not touched
+  const narrow = viewW < 24, castleHalf = 3, riderHalf = 1.1;
+  shrink = narrow ? Math.max(.5, viewW / 24) : 1;
+  const edge = viewW / 2 * .88 - castleHalf * shrink;   // .88: the curtain's sides take 6% each
+  squeeze = narrow ? edge / 13.7 : 1;
+  riderSqueeze = narrow ? Math.max(0, (edge - (castleHalf + riderHalf) * shrink - .2) / 5) : 1;
   D0 = worldH / 2 / Math.tan(THREE.MathUtils.degToRad(VFOV / 2));
   ortho.left = (WORLD_W - viewW) / 2; ortho.right = (WORLD_W + viewW) / 2; ortho.top = worldH; ortho.updateProjectionMatrix();
   persp.aspect = w / h; persp.updateProjectionMatrix();
@@ -137,10 +146,10 @@ function place(t) {
     });
   }
   for (const p of props) {
-    const u = WORLD_W / 2 + (p.x - camX) / PUPPET_K;   // where it stands in the straight view
-    if (flat) { p.o.position.set(u, p.v, -50 + 6.5); p.o.scale.setScalar(1); continue; }
-    p.o.position.set(p.x, worldH / 2 + (p.v - worldH / 2) * PUPPET_K, -D0 * PUPPET_K);
-    p.o.scale.setScalar(PUPPET_K);
+    const x = camX + (p.x - camX) * (p === riderP ? riderSqueeze : squeeze), u = WORLD_W / 2 + (x - camX) / PUPPET_K;   // where it stands in the straight view
+    if (flat) { p.o.position.set(u, p.v, -50 + 6.5); p.o.scale.setScalar(shrink); continue; }
+    p.o.position.set(x, worldH / 2 + (p.v - worldH / 2) * PUPPET_K, -D0 * PUPPET_K);
+    p.o.scale.setScalar(PUPPET_K * shrink);
   }
   // the camera: straight on (Théâtre), or swung round the puppets' plane (Coulisses)
   const target = new THREE.Vector3(camX, worldH / 2, -D0 * PUPPET_K), r = D0 * PUPPET_K * (1 - dolly * (1 - swing));
