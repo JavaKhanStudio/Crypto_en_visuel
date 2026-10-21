@@ -47,6 +47,11 @@ const fr = {
     eveDid: { none: 'Eve ne touche à rien', iv: "Eve change le {o} octet de l'IV", ct: "Eve change le {o} octet du chiffré", forge: 'Eve envoie son propre cavalier' },
   },
 
+  // inside Alice's keep: the HMAC machine (inside.js); its colours are the card's
+  'in.aesKey': 'clé AES · chiffre', 'in.macKey': 'clé HMAC · scelle', 'in.msg': 'IV ‖ chiffré · {n} octets',
+  'in.pass1': 'passe 1 · clé + message', 'in.pass2': 'passe 2 · clé + passe 1',
+  'in.sealA': "sceau d'Alice · 32 octets", 'in.sealB': 'sceau recalculé par Bob', 'in.flip': "{o} octet de l'IV, changé par Eve",
+
   // story
   ch: ['Eve écrit', 'Le sceau', 'Vérifier d’abord', 'Le paquet'],
   steps: {
@@ -137,6 +142,11 @@ const en = {
     verdict: { ok: 'accepted', reject: 'rejected, not decrypted', wrong: 'accepted, but changed!', pad: 'padding error' },
     eveDid: { none: 'Eve touches nothing', iv: 'Eve changes byte {n} of the IV', ct: 'Eve changes byte {n} of the ciphertext', forge: 'Eve sends her own rider' },
   },
+
+  // inside Alice's keep: the HMAC machine (inside.js); its colours are the card's
+  'in.aesKey': 'AES key · encrypts', 'in.macKey': 'HMAC key · seals', 'in.msg': 'IV ‖ ciphertext · {n} bytes',
+  'in.pass1': 'pass 1 · key + message', 'in.pass2': 'pass 2 · key + pass 1',
+  'in.sealA': "Alice's seal · 32 bytes", 'in.sealB': 'seal recomputed by Bob', 'in.flip': 'byte {n} of the IV, changed by Eve',
 
   ch: ['Eve writes', 'The seal', 'Check first', 'The packet'],
   steps: {

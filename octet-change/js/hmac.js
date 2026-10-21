@@ -41,12 +41,15 @@ export function sha256(bytes) {
 }
 
 // hmac.new(key, message, hashlib.sha256).digest(): 32 bytes
+// in two passes: the inner one, SHA-256 of the key (xor 36…) and the message, which the room in
+// Alice's keep (inside.js) shows between its two discs, then the outer one over the key (xor 5c…) and that
+const pads = (key, v) => { const k = key.length > 64 ? sha256(key) : key, p = new Uint8Array(64); for (let i = 0; i < 64; i++) p[i] = (k[i] || 0) ^ v; return p; };
+export function hmacInner(key, message) {
+  const ipad = new Uint8Array(64 + message.length); ipad.set(pads(key, 0x36)); ipad.set(message, 64);
+  return sha256(ipad);
+}
 export function hmac(key, message) {
-  const k = key.length > 64 ? sha256(key) : key;
-  const ipad = new Uint8Array(64 + message.length), opad = new Uint8Array(64 + 32);
-  for (let i = 0; i < 64; i++) { ipad[i] = (k[i] || 0) ^ 0x36; opad[i] = (k[i] || 0) ^ 0x5c; }
-  ipad.set(message, 64);
-  opad.set(sha256(ipad), 64);
+  const opad = new Uint8Array(64 + 32); opad.set(pads(key, 0x5c)); opad.set(hmacInner(key, message), 64);
   return sha256(opad);
 }
 

@@ -74,7 +74,11 @@ et Bob déchiffre « ATTAQUE A 9H DEMAIN » au lieu de 6H, sans aucune erreur. U
 marche aussi (un bloc de bruit, un octet changé dans le suivant). Alice scelle alors l'IV et le
 chiffré d'un HMAC-SHA256, avec une deuxième clé ; Bob recalcule le sceau, rejette le paquet changé
 et le faux cavalier d'Eve, vérifie AVANT de déchiffrer (oracle de padding) et compare en temps
-constant (renvoi à l'épisode 8). 13 étapes en 4 chapitres, un bac à sable (votre ordre ; Eve ne
+constant (renvoi à l'épisode 8). Le chapitre du sceau se passe dans le donjon d'Alice : la caméra
+entre par sa fenêtre, et une machine HMAC-SHA256 montée sur les vrais octets grandit d'une étape à
+l'autre (la clé HMAC à côté de la clé AES, le sceau de l'IV et du chiffré en deux passes de SHA-256,
+puis le calcul de Bob sur le paquet changé : un autre sceau), puis ressort à « Le sceau à la porte de
+Bob » (`octet-change/js/inside.js`, vérifié par `tests/octet_inside.py`). 13 étapes en 4 chapitres, un bac à sable (votre ordre ; Eve ne
 touche à rien, change un octet de l'IV ou du chiffré, ou envoie son cavalier ; Bob vérifie le sceau
 ou non), un quiz de 7 questions. Tout est calculé dans la page (`octet-change/js/aes.js`,
 `octet-change/js/hmac.js`) et vérifié par `node tests/octet_values.mjs` contre FIPS-197, RFC 4231,

@@ -34,9 +34,12 @@ export const STEPS = [
   { id: 'flip', ch: 0, shot: 'city', view: 'flip', say: ['e'] },
   { id: 'ride', ch: 0, shot: 'both', view: 'flip', go: async x => { await x.ride({ how: 'iv', check: false }); x.say('n', t('m.alone')); } },
   { id: 'why', ch: 0, shot: 'valley', view: 'ctflip', say: ['n'] },
-  { id: 'key', ch: 1, shot: 'castleA', view: 'mackey', say: ['a'] },
-  { id: 'hmac', ch: 1, shot: 'castleA', view: 'hmac', say: ['a'] },
-  { id: 'avalanche', ch: 1, shot: 'castleB', view: 'avalanche', say: ['b'] },
+  // r103/r159: chapter 2 happens inside Alice's keep, one zoom for the three steps; the HMAC room
+  // (inside.js) grows a beat per step, 'avalanche' plays Bob's check on the same machine, and the
+  // camera comes out at 'sealed'
+  { id: 'key', ch: 1, shot: 'castleA', view: 'mackey', say: ['a'], inside: 'hmac' },
+  { id: 'hmac', ch: 1, shot: 'castleA', view: 'hmac', say: ['a'], inside: 'hmac' },
+  { id: 'avalanche', ch: 1, shot: 'castleB', view: 'avalanche', say: ['b'], inside: 'hmac' },
   { id: 'sealed', ch: 1, shot: 'both', view: 'avalanche', go: async x => { await x.ride({ how: 'iv', check: true }); } },
   { id: 'forged', ch: 1, shot: 'city', view: 'forged', go: async x => { await x.ride({ how: 'forge', check: true }); } },
   { id: 'first', ch: 2, shot: 'castleB', view: 'ops', say: ['b'] },
@@ -53,7 +56,7 @@ export class Story {
       chapters: document.getElementById('chapters'), prev: document.getElementById('prev'), next: document.getElementById('next') };
     this.el.prev.onclick = () => this.go(this.i - 1);
     this.el.next.onclick = () => this.go(this.i + 1);
-    onLang(() => { this.render(true); this.card(); });
+    onLang(() => { if (STEPS[this.i].inside) this.ctx.inside.rebuild(packets()); this.render(true); this.card(); });
   }
 
   // what the corner card shows at this step: the view and the story's packets
@@ -67,10 +70,23 @@ export class Story {
     c.bubbles.clear(); c.resetWorld();
     this.card();
     c.rig.setOrbit(0);
-    c.rig.fly(step.shot, c.instant ? 0.001 : 2.2).then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
     this.render();
+    if (step.inside) return this.enter(step, tok);
+    // out of a room, the camera backs out of its window and flies on to the step's shot
+    const out = c.inside.active;
+    Promise.resolve(out ? c.inside.leave(step.shot) : c.rig.fly(step.shot, c.instant ? 0.001 : 2.2))
+      .then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
     // bubbles appear once the camera has mostly arrived
-    setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : 1300);
+    setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : out ? 2000 : 1300);
+  }
+
+  // a step inside the castle: the first one zooms in through the window (from wherever the camera is,
+  // so #story=N straight into the chapter enters too); the next ones are beats of the same room
+  async enter(step, tok) {
+    const c = this.ctx, live = () => tok === this.token;
+    if (c.inside.active && c.inside.room.name === step.inside) c.inside.beat(step.id);
+    else if (!await c.inside.enter(step.inside, step.id, packets(), live)) return;
+    setTimeout(() => { if (live()) for (const s of step.say || []) this.say(s, undefined, () => c.inside.anchor()); }, c.instant ? 0 : 900);
   }
 
   say(who, text, anchor) {
@@ -104,7 +120,7 @@ export class Story {
     (step.link || []).forEach((href, k) => this.el.actions.insertAdjacentHTML('beforeend', `<a class="button" href="${href}?lang=${lang}">${s.link[k]}</a>`));
     this.el.next.classList.toggle('primary', !anim || this.seen);
     if (!this.seen) this.el.next.classList.remove('shine');
-    if (langOnly) for (const s2 of step.say || []) this.say(s2);
+    if (langOnly) for (const s2 of step.say || []) this.say(s2, undefined, step.inside ? () => this.ctx.inside.anchor() : undefined);
   }
 
   // the step's animation has played: Suivant takes the gold back and shines once to call the eye
