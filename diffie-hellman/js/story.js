@@ -4,6 +4,7 @@
 // always land somewhere consistent), flies the camera, pins its bubbles, and offers buttons.
 // auto: the step's action plays by itself once the camera has landed (its button replays it).
 import { t, raw, lang, onLang } from './i18n.js';
+import { render } from './md.js';
 
 // The pots, by id: [table, slot (0 1 2 front, 3 4 5 back), recipe, options]. a = Alice, e = Eve, b = Bob.
 const PUB = { aJ: ['a', 0, 'J'], eJ: ['e', 0, 'J'], bJ: ['b', 0, 'J'] };
@@ -157,7 +158,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; render(this.el.text, s.p);
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.ctx.stage.relabel();
