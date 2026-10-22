@@ -11,6 +11,7 @@ import { layout, order, lines, show } from './scytale.js';
 import { burst, ring, icon } from '../../lib/fx.js';
 import { sfx } from '../../lib/sound.js';
 import { t } from './i18n.js';
+import { ROW_COLORS } from './card.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -76,7 +77,7 @@ export class Stage {
   }
 
   redraw() {
-    this.strip.draw(j => this.shown(j), this.hot);
+    this.strip.draw(j => this.shown(j), this.hot, j => ROW_COLORS[(j % this.lay.k) % ROW_COLORS.length]);
     this.relabel();
     this.onChange();
   }
