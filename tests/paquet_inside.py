@@ -8,8 +8,9 @@ the frame and the speaker's bubble sit in the free band at every held second (th
 demo.inside.hold); the tiles are the card's bytes (the 64 key bytes, Bob's seal, the order; on 'why'
 what AES gives of Eve's bytes); the next step comes out, Back zooms in again, a language switch inside
 rebuilds the room in English, #story=N straight into it enters; no page errors.
-Where the step's text leaves the phone no band (under a fifth of the screen, Inside.band() falls back
-to the whole screen), the frame checks are reported as skipped, never as ok.
+On a phone the step's text is folded to 3 lines inside a room (r368); should a text still leave no band
+(under a fifth of the screen, Inside.band() falls back to the whole screen), the frame checks are
+reported as skipped, never as ok.
 Serve the repo first (python3 -m http.server 8793).
 
     python3 tests/paquet_inside.py [base]

@@ -11,6 +11,7 @@ const fr = {
   loading: 'Construction des châteaux…',
   'mode.story': 'Histoire', 'mode.sandbox': 'Bac à sable', 'mode.quiz': 'Quiz',
   'nav.prev': '◀ Précédent', 'nav.next': 'Suivant ▶', 'nav.count': 'Étape {i} / {n}',
+  'nav.more': 'Lire la suite ▾', 'nav.less': 'Replier ▴',
   who: { a: 'Alice', b: 'Bob', e: 'Eve', n: 'Chroniqueur' },
   ord: '{o} octet',
 
@@ -150,6 +151,7 @@ const en = {
   loading: 'Building the castles…',
   'mode.story': 'Story', 'mode.sandbox': 'Sandbox', 'mode.quiz': 'Quiz',
   'nav.prev': '◀ Back', 'nav.next': 'Next ▶', 'nav.count': 'Step {i} / {n}',
+  'nav.more': 'Read more ▾', 'nav.less': 'Fold ▴',
   who: { a: 'Alice', b: 'Bob', e: 'Eve', n: 'Chronicler' },
   ord: 'byte {n}',
 
