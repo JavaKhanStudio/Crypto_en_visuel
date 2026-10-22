@@ -15,7 +15,7 @@ BASE = "http://localhost:8793/"
 EPISODES = sys.argv[1:] or ["deux-generaux", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "kasiski", "vpn", "aes-interieur"]
 MEASURE = """() => {
   const box = (el, name) => { const r = el.getBoundingClientRect(); return { name, x: r.left, y: r.top, w: r.width, h: r.height }; };
-  const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz', 'credit'].map(id => document.getElementById(id))
+  const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz', 'credit', 'ladder'].map(id => document.getElementById(id))
     .filter(el => el && !el.classList.contains('hidden') && el.offsetHeight).map(el => box(el, '#' + el.id));
   const bubbles = [...document.querySelectorAll('#bubbles .bubble.show')].filter(el => getComputedStyle(el).visibility !== 'hidden')
     .map(el => box(el, 'bubble ' + el.querySelector('.who').textContent));

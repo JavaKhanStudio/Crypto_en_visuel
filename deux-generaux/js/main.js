@@ -53,7 +53,7 @@ function resize() {
 addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
-const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
+const bubbles = new Bubbles(camera, { raw: i18n.raw, walls: ['ladder'] }); bubbles.instant = instant;   // r486: « Qui sait quoi ? » hid Bob's bubble
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
