@@ -1,4 +1,4 @@
-.narration p { margin: 0; color: #e6dfcf; min-height: 3em; }
+.narration .step-text { color: #e6dfcf; min-height: 3em; }
 /* r368, Simon's pick A: on a phone, in Bob's keep, the text folds to its first 3 lines so the room
    keeps the screen; « Lire la suite ▾ » opens it (story.js render) */
 #step-more { display: none; margin-top: 4px; padding: .2em .6em; font-size: 13px; }
@@ -6,6 +6,21 @@
   #story.roomy:not(.open) #step-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; min-height: 0; }
   #story.roomy.long #step-more { display: inline-block; }
 }
+/* r234 (r176 roll-out): the step text's paragraphs and list (lib/md.js); the tones are the card's
+   brick colours: 1 violet the locked keys and the AES key, 2 blue the IV, 3 gold the ciphertext,
+   4 green the HMAC key and the seal, r red what Eve changes */
+.step-text p { margin: 0; }
+.step-text p + p, .step-text ul + p { margin-top: 6px; }
+.step-text p + ul { margin-top: 3px; }
+.step-text ul { margin: 0; padding-left: 1.25em; }
+.step-text li { margin: 2px 0; }
+.step-text li::marker { color: var(--muted); }
+.step-text strong { color: #fff; }
+.tone-1 { color: #d9b0f7; font-weight: 700; }
+.tone-2 { color: #9fd3f0; font-weight: 700; }
+.tone-3 { color: #ffd84d; font-weight: 700; }
+.tone-4 { color: #8fd18a; font-weight: 700; }
+.tone-r { color: #ff8f9a; font-weight: 700; }
 /* r93: a step's points as tiles under its text (Eve's four tricks); 2 by 2 on a phone */
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
 .tiles:empty { display: none; }
@@ -20,6 +35,8 @@
 /* Episode 1.3: the corner card (the packet, the byte Eve changes, the seals, what Bob decrypts) */
 #card { top: 96px; right: 14px; width: min(430px, calc(100% - 28px)); padding: 10px 14px 10px; }
 #card:empty { display: none; }
+/* r129: on a desktop a tall card stops above the story panel (the last step's doors raise it) and scrolls, never covering the step's text */
+@media (min-width: 901px) { #card { max-height: calc(100% - var(--dock, 14px) - 104px); overflow: auto; } }
 #card h3 { font: 600 15px var(--serif); margin: 0; color: var(--b); }
 #card .note { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; }
 #card .lbl { display: block; margin: 8px 0 2px; color: var(--muted); font: 600 11px var(--sans); letter-spacing: .06em; text-transform: uppercase; }

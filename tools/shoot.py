@@ -12,6 +12,7 @@ Serve the repo first:  python3 -m http.server 8793   (from the repo root)
 """
 import argparse
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 ap = argparse.ArgumentParser()
 ap.add_argument("out")
@@ -25,7 +26,7 @@ ap.add_argument("--eval", action="append", default=[])
 a = ap.parse_args()
 w, h = map(int, a.size.split("x"))
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": w, "height": h})
     errors, logs = [], []
     pg.on("pageerror", lambda e: errors.append(str(e)))

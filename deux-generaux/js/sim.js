@@ -59,11 +59,12 @@ export class Sim {
   }
 
   // n copies of the same message, staggered. Resolves when all are done.
+  // Each is marked burst: Eve says nothing when she takes one, ten bubbles hid the valley (r417).
   async burst(from, n = 10, gap = 280) {
     const seq = this.nextSeq(from);
     if (!seq) return null;
     const all = [];
-    for (let i = 0; i < n; i++) { all.push(this.send(from, { seq }).done); await wait(gap); }
+    for (let i = 0; i < n; i++) { const m = this.send(from, { seq }); m.burst = true; all.push(m.done); await wait(gap); }
     return Promise.all(all);
   }
 

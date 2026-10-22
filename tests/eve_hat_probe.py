@@ -7,6 +7,8 @@ Serve the repo first (python3 -m http.server 8793), then:  python3 tests/eve_hat
 """
 import sys, os
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image
 
 EPISODES = [('cadenas', 8), ('diffie-hellman', 7), ('scytale', 7), ('enigma', 10), ('pingouin', 2), ('sel', 2), ('garde', 2)]
@@ -23,7 +25,7 @@ FIND = """() => { const V = demo.THREE.Vector3, found = [];
     return { head: head.toArray(), dir: front.sub(head).normalize().toArray(), scale: s.x, visible: fig.visible }; }); }"""
 fails, tiles = [], []
 with sync_playwright() as p:
-    b = p.chromium.launch(args=['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
+    b = launch(p)
     for ep, step in EPISODES:
         pg = b.new_page(viewport={'width': 900, 'height': 700})
         errors = []

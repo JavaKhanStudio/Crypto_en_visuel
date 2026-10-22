@@ -16,6 +16,7 @@ export const EPISODES = {
   '8': ['garde', 4],              // the guard in a hurry, timed
   '9': ['kasiski', 1],
   '10': ['vpn', 1],
+  '11': ['aes-interieur', 1],
 };
 const RX = /([ÉéEe]pisode) (\d+(?:\.\d+)?)(?![\d])/g;
 

@@ -121,7 +121,7 @@ const en = {
   steps: {
     s1: { t: 'The setting of the day',
       p: "Alice must again answer Bob « OUI » (French for yes), by radio, and Eve is still listening. So far their Enigma was a simplified one: no cable, the rings on A, and only the right rotor turned.\n\nThe real machine is set in four parts, written down every day on a sheet:\n- which rotors, and in which order;\n- the ring of each rotor;\n- the cables of the plugboard;\n- the start position.\n\nLet us add them one at a time.",
-      a: 'Today I set the machine the way real operators did.', b: 'I have the same sheet as Alice: the same setting.', e: 'More parts in the machine… more things I do not know.' },
+      a: 'Today I set it like real operators did.', b: 'I have the same sheet as Alice: the same setting.', e: 'More parts in the machine… more things I do not know.' },
     s2: { t: 'The bare machine',
       p: "First, the machine as we left it: rotors I, II and III, reflector B, start AAA, and nothing else. Alice presses O: the right rotor steps to AAB, the current follows {g|D, K, N}, the reflector, {r|K, B, J, T}, and lamp {r|T} lights up.\n\nEverything we add now will change this path.",
       go: 'Press O', a: 'O gives T, like last time.' },

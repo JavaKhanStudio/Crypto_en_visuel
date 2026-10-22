@@ -2,7 +2,7 @@
 // Together they take it and stay camped under the walls until the world is reset;
 // alone, the army is crushed under the walls.
 import * as THREE from 'three';
-import { COLORS, CITY } from './world.js';
+import { COLORS, CITY } from '../../lib/saga/world.js';
 import * as fx from '../../lib/fx.js';
 
 const N = 48;

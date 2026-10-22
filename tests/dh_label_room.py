@@ -6,6 +6,8 @@ Serve the repo first (python3 -m http.server 8793). For every story step, fr and
 bobClose: the shots a step lands on at rest) and measures each shown tag's box on screen.
     tests/dh_label_room.py"""
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 BASE = "http://localhost:8793/diffie-hellman/"
 MEASURE = """shot => {
@@ -27,7 +29,7 @@ MEASURE = """shot => {
 }"""
 bad, seen = [], 0
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    br = launch(p)
     for lang in ["fr", "en"]:
         for w, h in [(390, 844), (1440, 900)]:
             pg = br.new_page(viewport={"width": w, "height": h})

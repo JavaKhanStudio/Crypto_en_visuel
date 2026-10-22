@@ -33,6 +33,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | publié |
 | 9 | La roue et le caillou (Vigenère, l'attaque de Kasiski) | https://javakhanstudio.github.io/Crypto_en_visuel/kasiski/ | publié |
 | 10 | Le tunnel (VPN, WireGuard : X25519 et ChaCha20-Poly1305) | https://javakhanstudio.github.io/Crypto_en_visuel/vpn/ | publié |
+| 11 | AES de l'intérieur (les 14 tours d'AES-256 sur un bloc) | https://javakhanstudio.github.io/Crypto_en_visuel/aes-interieur/ | publié |
 
 Dans un épisode, `#story=N` est l'**étape** N de son histoire (pas un numéro d'épisode),
 `#sandbox` et `#quiz` ses autres modes, `?lang=en` l'anglais. Les anciens liens vers la racine
@@ -105,7 +106,7 @@ où pend le cadenas ouvert de Bob, qui se ferme, et c en sort ; la caméra resso
 chiffrement hybride (190 octets au plus par bloc, RSA lent), des clés neuves à chaque ordre, et le
 paquet complet ; la fin renvoie aux épisodes 2 (le cadenas) et 3 (Diffie-Hellman). 13 étapes en 4
 chapitres, un bac à sable (votre ordre ; les clés en clair ou fermées ; Eve lit ou change l'ordre),
-un quiz de 7 questions. RSA et OAEP sont calculés dans la page sur BigInt (`cle-vallee/js/rsa.js`,
+un quiz de 7 questions. RSA et OAEP sont calculés dans la page sur BigInt (`lib/rsa.js`, partagé avec 1.5 et 1.6,
 la paire de Bob tirée une fois avec openssl, des graines fixes pour l'histoire) et vérifiés par
 `node tests/cle_values.mjs` contre openssl (`pkeyutl`, OAEP SHA-256), WebCrypto et `pow` de
 Python ; `tests/cle_story.py` joue chaque chevauchée et le bac à sable.
@@ -127,7 +128,9 @@ padding, `compare_digest`), de nouveau dans le donjon de Bob : sur le paquet d'E
 rouge et AES reste fermé, puis l'erreur, déchiffrer d'abord, montre ce qu'AES rend des octets d'Eve
 (`paquet-complet/js/inside.js`, vérifié par `tests/paquet_inside.py`). Puis le code : les quatre fichiers et leurs fonctions, la scène de
 `main.py` rejouée par deux cavaliers dans un terminal (« Bonjour Bob ! », puis « ALERTE : HMAC
-invalide »), les choix que le README justifie ; la fin renvoie aux épisodes 1.2, 1.3 et 1.4. 14
+invalide »), les choix que le README justifie ; la fin renvoie aux épisodes 1.2, 1.3 et 1.4, et ouvre quatre portes avec
+leur clip au survol : bac à sable, quiz, tous les épisodes, puis l'épisode 1.6 en or à droite (`lib/doors.js`,
+`tests/last_doors.py paquet-complet 14 encore-des-tours`). 14
 étapes en 4 chapitres, un bac à sable (votre ordre ; Eve laisse passer ou change l'octet de votre
 choix dans la brique de votre choix ; Bob vérifie d'abord ou déchiffre d'abord), un quiz de 7
 questions. Le moteur et les valeurs sont ceux de 1.4 (`paquet-complet/js/packet.js` assemble) ;
@@ -352,6 +355,20 @@ calculés dans la page ; `node tests/vpn_values.mjs` les compare aux vecteurs de
 et à `node:crypto`, et vérifie les adresses, octets et nombres écrits dans l'histoire ;
 `tests/vpn_story.py` clique chaque bouton de l'histoire et du bac à sable.
 
+## Épisode 11 — AES de l'intérieur
+
+La boîte AES-256 de l'épisode 1.2, ouverte, dans le donjon d'Alice. Le bloc qu'elle reçoit
+(P1 ⊕ IV, 16 octets) est posé en cubes, colonne par colonne : c'est l'état ; la clé d'Alice
+(32 octets) donne les 15 clés de tour. Le tour 1 en détail, une étape à la fois (AddRoundKey,
+SubBytes avec sa case de la S-box, ShiftRows, MixColumns, AddRoundKey), les tours 2 à 13 en
+accéléré, le tour 14 sans MixColumns, et la sortie est le C1 de l'épisode 1.2, octet pour octet.
+Puis une seule lettre du message changée : 1 octet diffère, 4 après le tour 1, les 16 après le tour 2.
+13 étapes en 4 chapitres, un bac à sable (changer un octet du bloc ou de la clé, lancer les
+14 tours, les cubes qui diffèrent cerclés de rouge) et un quiz de 6 questions. Le chiffrement est
+calculé dans la page par `lib/aes.js` ; `node tests/aes_interieur_values.mjs` le compare, tour
+par tour, à l'exemple C.3 de FIPS-197 et à l'épisode 1.2 ; `tests/aes_interieur_story.py` lit ce
+que montrent les cubes à chaque étape et dans le bac à sable.
+
 ## Lancer
 
 Aucune dépendance, aucun build : three.js r170 est copié dans `vendor/` (la démo marche hors
@@ -362,6 +379,34 @@ python3 -m http.server 8793
 ```
 
 puis http://localhost:8793/ (l'accueil) ou http://localhost:8793/deux-generaux/.
+
+## Déployer (simonbedardprog.com/ficelle/)
+
+Le dépôt est aussi servi tel quel, sans build, par le Worker Cloudflare `ficelle`
+(simonbedardprog r97) à https://simonbedardprog.com/ficelle/ ; GitHub Pages reste l'adresse
+que donne le cours.
+
+- `wrangler.jsonc` sert la racine du dépôt comme fichiers statiques et route
+  `simonbedardprog.com/ficelle*` et `www.simonbedardprog.com/ficelle*` vers le Worker ;
+  `worker/ficelle.js` retire le préfixe `/ficelle` (et le remet dans les redirections).
+- `.assetsignore` garde hors du web `tools/`, `tests/`, `out/`, `worker/`, `.atelier`, `.claude`,
+  `README.md` et `wrangler.jsonc`.
+- La mise en ligne passe par la branche `prod` (Workers Builds, tableau de bord Cloudflare) :
+  c'est Simon qui la pousse (`git push origin main:prod`). Les sessions du tableau ne poussent
+  jamais `prod` et ne lancent jamais `wrangler deploy`.
+
+Trois règles pour ne pas le casser :
+
+1. **Tout lien reste relatif.** Le site vit sous `/ficelle/` : un chemin absolu depuis la racine
+   (`/lib/...`, `src="/assets/..."`, `fetch('/...')`) vise simonbedardprog.com/lib/ et casse.
+   Écrire `../lib/...`, `../../lib/...`, `../assets/...`. Vérifier (ne doit rien trouver) :
+   `grep -rnE "(src|href)=./[a-z]|from ./[a-z]|fetch\(./[a-z]" --include=*.html --include=*.js --include=*.css . | grep -vE '^./(tools|tests|out|worker|vendor)/'`
+2. **Un nouveau dossier de premier niveau qui n'est pas pour le web** (outils, captures, données
+   de travail) va dans `.assetsignore` dans le même commit.
+3. **Après toute modification de `wrangler.jsonc` ou de `worker/`**, lancer
+   `tools/probe_ficelle_worker.sh` (sous `wrangler dev`, rien n'est déployé) : chaque ligne doit
+   être ✓ et la dernière dire `ok.` ; avec une adresse (`tools/probe_ficelle_worker.sh
+   https://simonbedardprog.com`), il vérifie le site en ligne.
 
 ## Ce qu'il y a dedans
 
@@ -382,16 +427,17 @@ Liens directs : `deux-generaux/#story=5`, `#sandbox`, `#quiz` ; `?lang=en`.
 ```
 index.html, home.js, home.css   l'accueil de la série (liste des épisodes, renvoi des anciens liens)
 vendor/three/       three.js r170, partagé par les épisodes
+lib/saga/           la vallée de la saga 1.1-1.6, une seule copie (r423) :
+  world.js            terrain, châteaux, ville d'Eve, route, ciel, aube (buildWorld(scene, { castles: 'middle-earth' | 'keep' }))
+  castles.js          les deux châteaux de la Terre du Milieu : la cité blanche des humains (Alice), Caras Galadhon, la cité des mallorns des elfes (Bob)
+  camera.js           plans nommés, vols, poursuite d'un messager
 <slug>/index.html   épisode pas encore construit : renvoie à sa carte sur l'accueil
 deux-generaux/      l'épisode 1 :
   index.html          la page, les panneaux
   vignette.jpg        sa carte sur l'accueil
   css/style.css
   js/main.js          rendu, bloom, boucle, modes
-  js/world.js         terrain, châteaux, ville d'Eve, route, ciel, aube
-  js/castles.js       les deux châteaux de la Terre du Milieu : la cité blanche des humains (Alice), Caras Galadhon, la cité des mallorns des elfes (Bob)
-  lab/castles.html    les mêmes de près, sans l'histoire (?view=, ?cam=x,y,z,tx,ty,tz)
-  js/camera.js        plans nommés, vols, poursuite d'un messager
+  lab/castles.html    les châteaux de lib/saga/ de près, sans l'histoire (?view=, ?cam=x,y,z,tx,ty,tz)
   js/sim.js           le protocole : numéros de message, qui sait quoi, l'aube
   js/ladder.js        l'échelle de connaissance (texte + 3D)
   js/bubbles.js       bulles de dialogue accrochées à la scène

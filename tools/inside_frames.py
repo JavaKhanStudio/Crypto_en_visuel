@@ -8,6 +8,7 @@ Serve the repo first (python3 -m http.server 8793).
 """
 import argparse, glob, shutil, subprocess, tempfile, time
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image
 
 ap = argparse.ArgumentParser()
@@ -26,8 +27,7 @@ w, h = map(int, a.size.split("x"))
 tmp = tempfile.mkdtemp()
 with sync_playwright() as p:
     # the machine's GPU, as tools/door_clips.py: SwiftShader's few frames a second play the zoom in slow motion
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"] if a.gpu else
-                          ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p, None if a.gpu else 'soft')
     ctx = b.new_context(viewport={"width": w, "height": h}, record_video_dir=tmp, record_video_size={"width": w, "height": h})
     pg = ctx.new_page(); t_rec = time.time()
     errors = []

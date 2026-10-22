@@ -8,6 +8,7 @@ first (python3 -m http.server 8793).
 """
 import argparse
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image
 
 ap = argparse.ArgumentParser()
@@ -17,7 +18,7 @@ a = ap.parse_args()
 times, yaws = [float(x) for x in a.times.split(",")], [float(x) for x in a.yaws.split(",")]
 W, H = 900, 420
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": W, "height": H})
     errors = []; pg.on("pageerror", lambda e: errors.append(str(e)))
     grid = Image.new("RGB", (W * len(times), H * len(yaws)))

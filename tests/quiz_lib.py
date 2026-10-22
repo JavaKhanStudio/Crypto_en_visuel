@@ -8,6 +8,8 @@ that FR -> EN re-renders the question in English, and that playing to the end sh
 """
 import sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 BASE = "http://localhost:8793/"
 EPISODES = sys.argv[1:] or ["deux-generaux", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet",
@@ -20,7 +22,7 @@ def check(name, ok):
     ok or fails.append(name)
 
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for ep in EPISODES:
         pg = b.new_page(viewport={"width": 1280, "height": 800})
         errors = []

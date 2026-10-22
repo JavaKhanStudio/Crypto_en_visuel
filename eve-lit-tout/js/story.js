@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
 import { render } from '../../lib/md.js';
-import { CASTLE_A, CASTLE_B, CITY } from './world.js';
+import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
 import * as A from './values.js';
 import { renderDoors } from '../../lib/doors.js';
 
@@ -31,7 +31,7 @@ export const STEPS = [
   { id: 'key', ch: 1, shot: 'castleA', view: 'key', say: ['a'], inside: 'aes' },
   { id: 'aes', ch: 1, shot: 'castleA', view: 'aes', say: ['a'], inside: 'aes' },
   { id: 'pad', ch: 1, shot: 'castleA', view: 'pad', say: ['a'], inside: 'aes' },
-  { id: 'cbc', ch: 1, shot: 'castleA', view: 'cbc', say: ['a'], inside: 'aes' },
+  { id: 'cbc', refs: { '11': 2 }, ch: 1, shot: 'castleA', view: 'cbc', say: ['a'], inside: 'aes' },
   { id: 'cipher', ch: 1, shot: 'both', view: 'cipher', go: async x => { await x.ride({ cipher: true }); } },
   { id: 'again', ch: 2, shot: 'city', view: 'book', book: () => [day(1, 1)],
     go: async x => { await x.ride({ cipher: true, seen: true, log: day(2, 1, { seen: true, tag: 'same' }) }); x.say('e'); } },
@@ -42,7 +42,7 @@ export const STEPS = [
   { id: 'end', refs: { '6': 3 }, ch: 3, shot: 'overview', orbit: .06, view: 'packet', key: 2, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../octet-change/vignette.jpg', clip: 'img/door-next.mp4', href: '../octet-change/' }] },
 ];
 

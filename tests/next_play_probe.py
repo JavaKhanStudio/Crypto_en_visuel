@@ -10,6 +10,8 @@ Checks every episode, prints FAIL lines (exit 1 on any), and shoots each case to
 """
 import argparse, os
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 EPISODES = ['deux-generaux', 'cadenas', 'diffie-hellman', 'scytale', 'enigma', 'pingouin', 'sel', 'garde']
 
@@ -43,7 +45,7 @@ def check(cond, ep, what):
         fails.append(f'{ep}: {what}'); print('  FAIL', what)
 
 with sync_playwright() as p:
-    b = p.chromium.launch(args=['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
+    b = launch(p)
     for ep in EPISODES:
         if a.only and ep != a.only: continue
         pg = b.new_page(viewport={'width': w, 'height': h})

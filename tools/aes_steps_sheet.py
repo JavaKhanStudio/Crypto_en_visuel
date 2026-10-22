@@ -4,13 +4,14 @@ out/aes-sheet-<w>x<h>-<lang>.png (and each step as out/aes-step-<n>.png). Serve 
     tools/aes_steps_sheet.py [390x844] [fr|en] [first-last]"""
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image
 
 size = sys.argv[1] if len(sys.argv) > 1 else "390x844"; lang = sys.argv[2] if len(sys.argv) > 2 else "fr"
 a, z = map(int, (sys.argv[3] if len(sys.argv) > 3 else "1-13").split("-"))
 w, h = map(int, size.split("x"))
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": w, "height": h}); errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(f"http://localhost:8793/aes-interieur/?instant=1&lang={lang}#story={a}", wait_until="load")

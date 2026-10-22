@@ -15,6 +15,7 @@
 import * as THREE from 'three';
 import { t } from './i18n.js';
 import * as A from './values.js';
+import { buildRoom } from '../../lib/room-parts.js';   // the stone room of 1.2, lit by two torches
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
@@ -77,34 +78,6 @@ function relabel(s, text, color = s.userData.color) {
   Object.assign(s.userData, { text, color });
 }
 const show = (o, k) => { o.visible = k > .001; if (o.isSprite) o.material.opacity = k; };
-
-// the stone room of 1.2, lit by two torches; tall enough for a phone's upright frame
-function buildRoom(scene, portrait) {
-  scene.background = new THREE.Color(0x120c08);
-  scene.fog = new THREE.Fog(0x120c08, 40, 90);
-  scene.add(new THREE.HemisphereLight(0xffe0b0, 0x2a1a10, .9));
-  const stone = new THREE.MeshStandardMaterial({ color: 0x8a7c68, roughness: .95, flatShading: true });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 40, 30, 20), new THREE.MeshStandardMaterial({ color: 0x4a3e32, roughness: 1, flatShading: true }));
-  { const p = floor.geometry.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, (Math.sin(i * 12.9898) * 43758.5453 % 1) * .08); floor.geometry.computeVertexNormals(); }
-  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-  const rows = portrait ? 20 : 10;
-  const wall = new THREE.InstancedMesh(new THREE.BoxGeometry(1.95, 1.45, 1), stone, rows * 28), m4 = new THREE.Matrix4();
-  for (let y = 0, i = 0; y < rows; y++) for (let x = -14; x < 14; x++, i++)
-    wall.setMatrixAt(i, m4.makeTranslation(x * 2 + (y % 2), y * 1.5 + .75, -9 - Math.abs(Math.sin(x * 7 + y)) * .15));
-  wall.receiveShadow = true; scene.add(wall);
-  const tx = portrait ? 9 : 22, ty = portrait ? 16 : 6.5;
-  for (const x of [-tx, tx]) {
-    const light = new THREE.PointLight(0xffa040, 60, 34, 1.6); light.position.set(x, ty, -7.6); scene.add(light);
-    const flame = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffc070 }));
-    flame.position.copy(light.position); scene.add(flame);
-    const holder = new THREE.Mesh(new THREE.CylinderGeometry(.1, .16, 1, 6), new THREE.MeshStandardMaterial({ color: 0x2a1c12 }));
-    holder.position.set(x, ty - .7, -8); scene.add(holder);
-    scene.userData.flames = [...(scene.userData.flames || []), { light, flame }];
-  }
-  const over = new THREE.PointLight(0xffb060, 80, 50, 1.4); over.position.set(0, portrait ? 22 : 13, 8); scene.add(over);
-  const key = new THREE.DirectionalLight(0xfff0dd, 1.2); key.position.set(6, 24, 14); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -18, right: 18, top: 28, bottom: -6 }); scene.add(key);
-}
 
 // ---------- the beats ----------
 // the story's steps in the room, in order; ops: which steps of the cipher the beat plays, and how
@@ -172,6 +145,18 @@ function machine(scene, data, portrait) {
     xor: label('⊕', '#ffd27a', 1.3), is: label('=', '#ffd27a', 1.3),
   };
   for (const s of Object.values(L)) scene.add(s);
+  // the S-box lookup's leader (r435): from its label beside the grid, through the gap above the row, down onto the turning cube
+  const leadMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .85, depthTest: false, depthWrite: false });
+  // and a frame round the turning cube, where the leader lands
+  const lead = [0, 1, 2, 3, 4, 5, 6].map(() => { const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), leadMat); m.renderOrder = 10; m.visible = false; scene.add(m); return m; });
+  const leadTo = (pts, c, w = .07) => {
+    const f = C / 2 + .1, sides = [[v(-f, f), v(f, f)], [v(f, f), v(f, -f)], [v(f, -f), v(-f, -f)], [v(-f, -f), v(-f, f)]]
+      .map(([a, b]) => [a.add(c), b.add(c)]);
+    [...pts.slice(1).map((b, j) => [pts[j], b]), ...sides].forEach(([a, b], j) => {
+      const m = lead[j]; m.position.copy(a).add(b).multiplyScalar(.5);
+      m.scale.set(Math.abs(b.x - a.x) + w, Math.abs(b.y - a.y) + w, w); m.visible = true;
+    });
+  };
   const top = c => v(c.x, c.y + 2.95);
   L.name.position.copy(v(G.x, G.y + 3.55)); L.op.position.copy(v(G.x, G.y + 3.45)); L.round.position.copy(v(G.x, G.y - 3.45));
   L.P1.position.copy(top(at.P1)); L.IV.position.copy(top(at.IV)); L.X.position.copy(top(at.X));
@@ -240,7 +225,7 @@ function machine(scene, data, portrait) {
   const hideAll = () => {
     for (const m of [...cubes, ...keyT, ...Object.values(T).flat(), ...RK.flat()]) { m.visible = false; m.userData.outline && (m.userData.outline.visible = false); }
     for (const s of [...Object.values(L), ...RKL]) show(s, 0);
-    box.visible = false;
+    box.visible = false; lead.forEach(m => { m.visible = false; });
   };
   const pop = (list, c, time, a, gap = .03, p = 1.12, sc = 1) => list.forEach((m, i) => {
     const k = span(time, a + i * gap, a + i * gap + .45); m.position.copy(tileAt(c, i, p)); m.scale.set(k * sc, k * sc, sc); m.rotation.set(0, 0, 0); m.visible = k > .02;
@@ -291,7 +276,16 @@ function machine(scene, data, portrait) {
       // round 1's SubBytes, slowly: the lookup of the byte going through, S(bc) = 65
       if (beat === 'sub1' && time >= o.t0 && k < .97) {
         const i = Math.max(0, Math.min(15, Math.round((k - .25) * 30)));   // cube i is mid-turn at k = .5 i / 15 + .25
-        relabel(L.note, `S(${hx(o.from[i])}) = ${hx(o.to[i])}`); L.note.position.copy(cell(i)).add(v(0, 1.25, 1.6)); show(L.note, 1);
+        // a phone draws the grid about 60 px wide: the lookup is the beat's point, so its words grow there (r436)
+        const nh = narrow() ? 1.7 : .62;
+        if (L.note.userData.h !== nh) Object.assign(L.note.userData, { h: nh, text: null });
+        relabel(L.note, `S(${hx(o.from[i])}) = ${hx(o.to[i])}`);
+        // beside the grid on the cube's row and side: above the cube, a top row's label ran into the step's name (r422)
+        const side = i < 8 ? -1 : 1, c = cell(i);
+        L.note.position.set(G.x + side * (1.5 * S + C / 2 + .3 + L.note.scale.x / 2), c.y, c.z + .6); show(L.note, 1);
+        // beside the grid it sits by the row's outer cube: the leader names the one turning (r435)
+        const xe = G.x + side * (1.5 * S + C / 2 + .18), yg = c.y + S / 2, z = c.z + .6;
+        leadTo([v(xe, c.y, z), v(xe, yg, z), v(c.x, yg, z), v(c.x, c.y + C / 2 + .1, z)], v(c.x, c.y, z), narrow() ? .14 : .07);
       }
       // the changed run: outline every byte that differs from Alice's at the same moment
       if (P && BEATS[beat].cmp && ref) {
@@ -339,7 +333,7 @@ function machine(scene, data, portrait) {
 }
 
 // ---------- the room, its camera and its framing ----------
-const SMOOTH = .04, BUBBLE = 84;   // the camera closes 96% of the way to its framing every second
+const SMOOTH = .04, BUBBLE = 84, QUIET = 200;   // the camera closes 96% of the way to its framing every second
 export class Room {
   constructor({ camera, instant }) {
     Object.assign(this, { camera, instant });
@@ -368,22 +362,33 @@ export class Room {
     const bar = [r('topbar'), r('modes'), r('lang')].filter(b => b && b.height).reduce((m, b) => Math.max(m, b.bottom), 0);
     const panel = ['story', 'sandbox'].map(id => document.getElementById(id)).find(p => p && !p.classList.contains('hidden') && p.offsetHeight);
     const card = document.getElementById('card'), cr = r('card');
-    let top = bar + 8, bottom = H, left = 0, right = W;
+    let top = bar + 8, bottom = H, left = 0, right = W, pr;
     if (panel) {
-      const pr = panel.getBoundingClientRect();
+      pr = panel.getBoundingClientRect();
       if (panel.id === 'story' || W < 900) bottom = pr.top - 8; else left = pr.right + 8;   // the sandbox is a side panel on a wide screen
     }
     if (cr && cr.height && !card.classList.contains('hidden')) {
-      if (card.classList.contains('folded') && W < 900) bottom = Math.min(bottom, cr.top - 4);   // a phone's card is folded to a line (r84)
-      else if (cr.left > W * .55) right = cr.left - 8;
+      // a phone's card is folded to a line (r84), docked 8 px over the panel by main.js dock(): taken from the
+      // panel, not from where the card is now, since dock() lands a frame after a step's text changes (r442)
+      if (card.classList.contains('folded') && W < 900) {
+        const over = Math.min(bottom, (pr ? pr.top - 8 - cr.height : cr.top) - 4);
+        // a band over the card too short to hold anything (the last step's doors and the credit line: ~70 px at 360x780)
+        // gives the room the corner left of the card instead, down to the panel (r483). Only then: off-centre, the camera
+        // shows the wall's end and clips the step's name, so a band that holds the grid stays the full width
+        if (over - top < 90 && bottom - top >= 90 && cr.left - 8 >= 140) right = cr.left - 8; else bottom = over;
+      } else if (cr.left > W * .55) right = cr.left - 8;
     }
-    if (bottom - top < 110) { top = 0; bottom = H; }   // a band under 110 px holds nothing: the whole screen
+    // a band under 90 px holds nothing: the whole screen, or on a phone the room framed out behind the panel, where no word
+    // of it peeks out beside the card (r480). 104 px (360x780 en, the last step) still holds the grid, ~15 px cubes
+    if (bottom - top < 90) { top = pr && W < 900 ? pr.top : 0; bottom = H; left = 0; right = W; }
     return { W, H, left, top, w: right - left, h: bottom - top };
   }
+  // a phone whose band is under 200 px (360x780: the title wraps, r442, Simon's C) has no bubble: the cubes get it all
+  get quiet() { const b = this.band(); return b.W < 600 && b.h < QUIET; }
   fit(now = false) {
     const pts = this.m.frame(this.id, this.time), box = new THREE.Box3().setFromPoints(pts);
     const c = box.getCenter(v(0, 0)), size = box.getSize(v(0, 0)), b = this.band();
-    const room = Math.min(BUBBLE, b.h * (b.W < 600 ? .42 : .25)); b.top += room; b.h -= room;   // the top of the band is kept for the bubble (a phone's is taller for its width)
+    const room = this.quiet ? 0 : Math.min(BUBBLE, b.h * (b.W < 600 ? .42 : .25)); b.top += room; b.h -= room;   // the top of the band is kept for the bubble (a phone's is taller for its width)
     const tan = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * 2, m = .9;
     const d = Math.max(size.y * b.H / (m * b.h), size.x * b.H / (m * b.w)) / tan + 2.2;
     this.want = { center: c, d, b, box };

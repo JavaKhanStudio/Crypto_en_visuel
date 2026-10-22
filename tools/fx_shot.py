@@ -7,6 +7,7 @@ for a page from before r318 (--base the live site at an older commit), ../lib/fx
 Prints page errors, which must be none."""
 import argparse
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 ap = argparse.ArgumentParser()
 ap.add_argument("out"); ap.add_argument("page")
 ap.add_argument("--n", type=int, default=14); ap.add_argument("--spread", type=float)
@@ -25,7 +26,7 @@ JS = f"""Promise.all([import('{a.mod}'), import('three')]).then(([fx, T]) => {{
     [0xffd66b, 0xff8a5c, 0x5fd1ff, 0xffd84d, 0x9be37a], {a.n}, s);
 }})"""
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": 1440, "height": 860})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))

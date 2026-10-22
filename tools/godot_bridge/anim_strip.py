@@ -7,12 +7,14 @@ over the crop, is printed: all zero would mean nothing moves."""
 import base64, io, sys
 from PIL import Image, ImageDraw
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 out, item = sys.argv[1], (sys.argv[2] if len(sys.argv) > 2 else "server_rack")
 crop = tuple(int(v) for v in sys.argv[5].split(',')) if len(sys.argv) > 5 else (0, 0, 600, 600)
 cycle, count = float(sys.argv[3]) if len(sys.argv) > 3 else 1.2, int(sys.argv[4]) if len(sys.argv) > 4 else 8
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": 1300, "height": 900}); errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto("http://localhost:8793/lab/shapes/?t=0"); pg.wait_for_function("window.labReady === 3", timeout=30000)

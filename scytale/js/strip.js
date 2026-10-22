@@ -44,8 +44,9 @@ export class Strip {
     this.draw();
   }
 
-  // paint the leather and the letters: shown(j) says which are written yet, hot is lit in gold
-  draw(shown = () => false, hot = -1) {
+  // paint the leather and the letters: shown(j) says which are written yet, hot is lit in gold,
+  // tone(j) is the colour of the line Alice wrote letter j on (the card's), outlined to read on leather
+  draw(shown = () => false, hot = -1, tone = () => '#2a170a') {
     const c = this.canvas, x = c.getContext('2d'), H = c.height;
     x.fillStyle = '#c99a5b'; x.fillRect(0, 0, c.width, H);
     for (let i = 0; i < c.width; i += 3) { x.fillStyle = `rgba(90,50,20,${.04 + .06 * Math.abs(Math.sin(i * 12.9898) * 43758 % 1)})`; x.fillRect(i, 0, 3, H); }
@@ -54,10 +55,12 @@ export class Strip {
       if (!ch || !shown(j)) return;
       const cx = (LEAD + (j + .5) * S) * PXU;
       x.save(); x.translate(cx, H / 2); x.rotate(Math.PI / 2); x.scale(PXV / PXU, 1);
-      if (j === hot) { x.shadowColor = '#ffd66b'; x.shadowBlur = 18; x.fillStyle = '#7a2a00'; } else x.fillStyle = '#2a170a';
       x.font = `700 ${Math.round(S * PXU * .78)}px Georgia, "Times New Roman", serif`;
-      x.textAlign = 'center'; x.textBaseline = 'middle';
-      x.fillText(ch, 0, S * PXU * .04);
+      x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
+      if (j === hot) { x.strokeStyle = '#ffe9a0'; x.shadowColor = '#ffd66b'; x.shadowBlur = 20; x.lineWidth = 16; x.strokeText(ch, 0, S * PXU * .04); x.shadowBlur = 0; }
+      x.lineWidth = 7; x.strokeStyle = '#2a170a';
+      x.strokeText(ch, 0, S * PXU * .04);
+      x.fillStyle = tone(j); x.fillText(ch, 0, S * PXU * .04);
       x.restore();
     });
     this.tex.needsUpdate = true;

@@ -13,11 +13,7 @@
 .tone-r { color: #ff8f9a; font-weight: 700; }
 .tone-b { color: #9fd0ff; font-weight: 700; }
 
-#step-count { color: var(--muted); font-size: 13px; white-space: nowrap; }   /* r312: one line, even at 360px */
-
-@media (max-width: 380px) {
-  /* r312: the nav row keeps Précédent, « Étape 12 / 13 » and Suivant on one line at 360px */
-  .nav { gap: 6px; } .nav button { padding: .5em .6em; } }
+#step-count { color: var(--muted); font-size: 13px; }
 
 /* The penguin: the slides' tables in the corner, the message box and statuses in the sandbox */
 #card { top: 96px; right: 14px; max-width: min(720px, calc(100% - 28px)); padding: 10px 14px 8px; }

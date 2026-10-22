@@ -3,6 +3,8 @@
 one sweep during which world.inBeam() holds at torso height. Serve the repo first
 (python3 -m http.server 8793). Prints a strip, '#' = lit at some angle, and the overall share."""
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 JS = """() => {
   const w = demo.world, out = [];
   for (let i = 0; i <= 60; i++) {
@@ -14,7 +16,7 @@ JS = """() => {
   return out;
 }"""
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page()
     pg.goto("http://localhost:8793/deux-generaux/index.html#story=4", wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)

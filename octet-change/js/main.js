@@ -3,16 +3,17 @@
 // Deep links: #story=5, #sandbox, #quiz. ?lang=en. ?instant=1 skips camera flights and rides fast
 // (used by the headless screenshots in tools/shoot.py).
 import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { qualityComposer } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld, CASTLE_B } from './world.js';
-import { CameraRig } from './camera.js';
+import { buildWorld, CASTLE_B } from '../../lib/saga/world.js';
+import { CameraRig } from '../../lib/saga/camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from '../../lib/messenger.js';
 import { Bubbles } from '../../lib/bubbles.js';
-import { Inside } from './inside.js';
+import { Inside } from '../../lib/room.js';
+import { ROOM } from './inside.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
 import { Quiz } from '../../lib/quiz.js';
@@ -27,8 +28,7 @@ const instant = params.has('instant');
 
 // ---------- renderer ----------
 const canvas = document.getElementById('scene');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({ canvas });   // r254: the antialiasing is the composer's MSAA, lib/quality.js
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -36,13 +36,13 @@ renderer.toneMappingExposure = 1.3;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1, .5, 1500);
-const world = buildWorld(scene);
+const world = buildWorld(scene, { castles: 'keep' });   // the keeps their rooms are built in (r423)
 const tickers = new Set(); world.tickers = tickers;
 initFx(scene);
 const rig = new CameraRig(camera, canvas);
 if (instant) { const fly = rig.fly.bind(rig); rig.fly = shot => fly(shot, .001); }
 
-const composer = new EffectComposer(renderer);
+const composer = qualityComposer(renderer);
 const renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
 composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .75, .55, .82));
 composer.addPass(new OutputPass());
@@ -59,7 +59,7 @@ addEventListener('resize', resize); resize();
 // ---------- the pieces ----------
 const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
 // chapter 2 (the seal) happens inside Alice's keep, where a room shows the HMAC machine at work (r103, r159)
-inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant }); resize();
+inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant, castles: { a: world.castleA, b: world.castleB }, ...ROOM }); resize();
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
@@ -177,4 +177,4 @@ else if (h === 'sandbox' || h === 'quiz') setMode(h);
 else setMode('story', { step: Math.max(0, Math.min(STEPS.length - 1, (parseInt(h.split('=')[1]) || 1) - 1)) });
 loop();
 document.getElementById('loading').classList.add('done');
-window.demo = { THREE, scene, camera, world, rig, inside, story, sandbox, quiz, setMode, riders, said, ready: true };
+window.demo = { THREE, renderer, composer, scene, camera, world, rig, inside, story, sandbox, quiz, setMode, riders, said, ready: true };

@@ -1,6 +1,6 @@
 <!doctype html>
-<!-- r192 lab, since d7 (r262) the episode's own castles: the valley of js/world.js with Alice's white city (humans) and
-     Bob's towers (elves) from js/castles.js, to look at them close up without playing the story.
+<!-- r192 lab, since d7 (r262) the episode's own castles: the valley of lib/saga/world.js with Alice's white city (humans) and
+     Bob's towers (elves) from lib/saga/castles.js, to look at them close up without playing the story.
      Query: ?view=over|a|b|gateA|gateB  ?dawn=0..1  ?cam=x,y,z,tx,ty,tz   (tools/shoot.py --page deux-generaux/lab/castles.html) -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Two Generals: castles of Middle-earth (lab)</title>
@@ -28,8 +28,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B } from '../js/world.js';
-import { SHOTS } from '../js/camera.js';
+import { buildWorld, CASTLE_A, CASTLE_B } from '../../lib/saga/world.js';
+import { SHOTS } from '../../lib/saga/camera.js';
 
 const q = new URLSearchParams(location.search);
 let cam = q.get('cam')?.split(',').map(Number);

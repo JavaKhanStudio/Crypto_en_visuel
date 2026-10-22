@@ -12,6 +12,7 @@ Bubbles, the canvas and the loading veil move with time, so their geometry is no
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 A, B = sys.argv[1], sys.argv[2]
 eps = sys.argv[3:] or sorted(p.parent.parent.name for p in Path('.').glob('*/css/style.css')
@@ -36,7 +37,7 @@ GRAB = """() => {
 STATES = [('story', ''), ('sandbox', '#sandbox'), ('quiz', '#quiz')]
 bad = 0
 with sync_playwright() as p:
-    b = p.chromium.launch(args=['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
+    b = launch(p)
     for ep in eps:
         for w, h in [(390, 844), (1440, 900)]:
             for name, hash_ in STATES:

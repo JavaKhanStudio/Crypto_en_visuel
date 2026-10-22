@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- r195 lab: can Simon's parallax library give the series a « puppet show » feel? One page of his (calm-day, from
-     JKS_Tools2D_ParallaxBackground, Apache-2.0: page/NOTICE) read by plax.js, shown three ways:
+     JKS_Tools2D_ParallaxBackground, Apache-2.0: ../../assets/parallax/calm-day/NOTICE) read by ../../lib/plax.js, shown three ways:
        Fond      the library as it is in libGDX: a flat backdrop, each layer sliding at its own speed (orthographic)
        Théâtre   each layer a painted card set at the depth its speed means (1/speed), the camera really moving:
                  the parallax comes from perspective, and episode 1.1's own castles, city and rider stand between
@@ -29,8 +29,8 @@
 <div id="say"></div>
 <script type="module">
 import * as THREE from 'three';
-import { loadPage, layerX, layerY, gradientTexture, WORLD_W } from './plax.js';
-import { buildWorld } from '../../deux-generaux/js/world.js';
+import { loadPage, layerX, layerY, gradientTexture, WORLD_W } from '../../lib/plax.js';
+import { buildWorld } from '../../lib/saga/world.js';
 import { buildRider, gallop } from '../../lib/messenger.js';
 
 const q = new URLSearchParams(location.search);
@@ -43,7 +43,7 @@ const SAY = {
 const renderer = new THREE.WebGLRenderer({ canvas: c, antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.toneMapping = THREE.NoToneMapping;
 const scene = new THREE.Scene();
-const page = await loadPage('page/calm-day.jplax');
+const page = await loadPage('../../assets/parallax/calm-day/calm-day.jplax');
 const FRONT = Math.max(...page.layers.map(l => l.speed));   // the front layer's speed: the camera's depth unit
 
 // ---------- the view ----------

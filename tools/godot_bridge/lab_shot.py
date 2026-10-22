@@ -5,10 +5,12 @@ Serve the repo root on 8793 first.    tools/godot_bridge/lab_shot.py out/r207"""
 import io, sys
 from PIL import Image, ImageChops
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 out = sys.argv[1] if len(sys.argv) > 1 else "out/r207"
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": 1300, "height": 900}); errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto("http://localhost:8793/lab/shapes/"); pg.wait_for_function("window.labReady === 3", timeout=30000)

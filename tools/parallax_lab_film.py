@@ -8,6 +8,7 @@ Each frame is the page frozen at its time (window.lab.seek), so the clip plays a
 """
 import argparse, pathlib, subprocess, tempfile
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 ap = argparse.ArgumentParser()
 ap.add_argument("out")
@@ -21,7 +22,7 @@ w, h = map(int, a.size.split("x"))
 tmp = pathlib.Path(tempfile.mkdtemp(prefix="plaxfilm-"))
 n = 0
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for mode in a.modes.split(","):
         pg = b.new_page(viewport={"width": w, "height": h})
         errors = []

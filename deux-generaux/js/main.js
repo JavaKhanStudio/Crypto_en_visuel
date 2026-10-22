@@ -2,12 +2,12 @@
 // Deep links: #story=5, #sandbox, #quiz. ?lang=en. ?instant=1 skips camera flights
 // (used by the headless screenshots in tools/shoot.py).
 import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { qualityComposer } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B } from './world.js';
-import { CameraRig } from './camera.js';
+import { buildWorld, CASTLE_A, CASTLE_B } from '../../lib/saga/world.js';
+import { CameraRig } from '../../lib/saga/camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Sim, wait } from './sim.js';
 import { Bubbles } from '../../lib/bubbles.js';
@@ -26,8 +26,7 @@ const instant = params.has('instant');
 
 // ---------- renderer ----------
 const canvas = document.getElementById('scene');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({ canvas });   // r254: the antialiasing is the composer's MSAA, lib/quality.js
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -41,7 +40,7 @@ initFx(scene); ladder3d.init(scene);
 const rig = new CameraRig(camera, canvas);
 if (instant) { const fly = rig.fly.bind(rig); rig.fly = shot => fly(shot, .001); }
 
-const composer = new EffectComposer(renderer);
+const composer = qualityComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .75, .55, .82));
 composer.addPass(new OutputPass());
@@ -54,7 +53,7 @@ function resize() {
 addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
-const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
+const bubbles = new Bubbles(camera, { raw: i18n.raw, walls: ['ladder'] }); bubbles.instant = instant;   // r486: « Qui sait quoi ? » hid Bob's bubble
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
@@ -71,7 +70,7 @@ const sim = new Sim(world, {
     if (ev === 'sent') sfx.send();
     else if (ev === 'captured') {
       sfx.capture();
-      bubbles.show('caught', 'e', t('m.capturedE'), m.position.clone().add(new THREE.Vector3(0, 7, 0)), { ttl: 3500 });
+      if (!m.burst) bubbles.show('caught', 'e', t('m.capturedE'), m.position.clone().add(new THREE.Vector3(0, 7, 0)), { ttl: 3500 });
     } else if (ev === 'delivered') {
       sfx.arrive();
       const text = m.seq <= sim.L[to] ? t('m.duplicate', { n: m.seq })
@@ -177,4 +176,4 @@ else if (h === 'sandbox' || h === 'quiz') setMode(h);
 else setMode('story', { step: Math.max(0, Math.min(STEPS.length - 1, (parseInt(h.split('=')[1]) || 1) - 1)) });
 loop();
 document.getElementById('loading').classList.add('done');
-window.demo = { THREE, scene, camera, world, rig, sim, story, quiz, setMode, dawn, ready: true };
+window.demo = { THREE, renderer, composer, scene, camera, world, rig, sim, story, quiz, setMode, dawn, ready: true };

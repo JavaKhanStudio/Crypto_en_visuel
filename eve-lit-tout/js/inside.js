@@ -3,30 +3,11 @@
 // bytes. One zoom per chapter: the chapter's steps are BEATS of the same room, the machine grows a
 // step at a time, and the camera only drifts inside the room between them.
 //
-// To give another episode a room, copy this file and replace the room part (ROOMS):
-//   const inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant });   // main.js
-//   ROOMS[name] = (scene, send, portrait) => ({
-//     beats: { <step id>: { end } },     // the room's steps; end = seconds its animation lasts
-//     pose(beat, time),                   // sets EVERY part for that beat at that time, so any beat
-//                                         //   can follow any other (back as well as forward)
-//     frame(beat, time) → [Vector3, ...], // the points the camera must hold in the free band now
-//                                         //   (a phone can follow the action: P1 in, then out)
-//     anchor(beat) → Vector3 })           // optional: where the speaker's bubble points; by default
-//                                         //   the top of the frame, where the band keeps room for it
-//   portrait: the screen is upright (a phone): lay the machine out top to bottom.
-//   await inside.enter(name, beat, send, live)   flies in from where the camera is; false if cancelled
-//   inside.beat(id)          the next step in the same room: no flight, its animation from 0
-//   await inside.leave(shot) out through the window, then the valley camera flies to shot
-//   inside.rebuild(send)     same room and beat, new words or bytes (language) or a turned phone
-//   inside.update(dt)        every frame; main.js skips rig.update while inside.active
-// The free band is the screen between the top bar and the story panel, left of the open corner
-// card: each beat's frame is fitted into it (camera distance + setViewOffset), so a phone sees the
-// machine large in the strip it has, not a far view of the whole room.
+// The engine (enter, beat, cut, leave, the free band, the doors) is lib/room.js (r424), as is its API;
+// this file keeps only the rooms (ROOM.rooms) and the engine options this episode needs.
 import * as THREE from 'three';
+import { litTile, label, relabel, show, buildRoom } from '../../lib/room-parts.js';
 import { t } from './i18n.js';
-import { CASTLE_A } from './world.js';
-import { SHOTS } from './camera.js';
-import { ZOOM, windowPath, roomArrival, setVeil } from '../../lib/zoom.js';
 import * as A from './values.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
@@ -35,83 +16,12 @@ const clamp01 = k => Math.max(0, Math.min(1, k));
 const span = (time, a, b) => ease(clamp01((time - a) / (b - a)));
 const hx = x => x.toString(16).padStart(2, '0');
 
-// the upper lit window of Alice's keep on the valley side (+z), y 9 above the plateau: the way in.
-// focus: the point behind the glass the zoom closes on (lib/zoom.js); normal: out through the window,
-// the line the camera ends on; near: where a mode switch leaves the camera, in front of the keep.
-const WINDOW = () => v(CASTLE_A.x, CASTLE_A.y + 9, 3.52);
-export const DOORS = {
-  a: () => ({ focus: v(CASTLE_A.x, CASTLE_A.y + 9, 0), normal: v(0, 0, 1),
-              near: { pos: v(CASTLE_A.x + 3, CASTLE_A.y + 12.5, 16), target: WINDOW() } }),
-};
-
-// ---------- what a room is made of ----------
-// a square tile with a byte on it: a letter of the order, or two hex digits
-function tileTex(text, { fg, bg, size = 74 }) {
-  const c = document.createElement('canvas'); c.width = c.height = 128;
-  const g = c.getContext('2d');
-  g.fillStyle = bg; g.fillRect(0, 0, 128, 128);
-  g.strokeStyle = fg; g.globalAlpha = .55; g.lineWidth = 6; g.strokeRect(5, 5, 118, 118); g.globalAlpha = 1;
-  g.fillStyle = fg; g.font = `700 ${size}px ui-monospace, Menlo, Consolas, monospace`;
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 64, 68);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-  return tex;
-}
-const side = new THREE.MeshStandardMaterial({ color: 0x1a120c });
-function tile(text, ink) {
-  const front = new THREE.MeshStandardMaterial({ map: tileTex(text, ink), roughness: .6 });
-  const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, .22), [side, side, side, side, front, side]);
-  m.castShadow = true; m.visible = false; return m;
-}
+// ---------- what a room is made of: lib/room-parts.js (r485); here, the colours ----------
 // the colours of the corner card: the order cream, padding gold, key violet, IV blue, ciphertext yellow
 const INK = { p: { fg: '#fff3dc', bg: '#3a2b1a', size: 80 }, pad: { fg: '#ffd27a', bg: '#5a3c10', size: 62 },
   key: { fg: '#e3b8ff', bg: '#2a1838', size: 62 }, iv: { fg: '#9fd3f0', bg: '#12283a', size: 62 },
   x: { fg: '#ffb070', bg: '#3a1e0c', size: 62 }, c: { fg: '#ffd84d', bg: '#2a2008', size: 62 } };
-const byteTile = (b, ink) => tile(ink === INK.p ? (b === 32 ? '␣' : String.fromCharCode(b)) : hx(b), ink);
-
-// a word floating in the room, always facing the camera
-function label(text, color, h = .8) {
-  const c = document.createElement('canvas'), g = c.getContext('2d'), font = '600 56px system-ui, sans-serif';
-  g.font = font; c.width = Math.ceil(g.measureText(text).width) + 40; c.height = 84;
-  g.font = font; g.fillStyle = color; g.textBaseline = 'middle'; g.fillText(text, 20, 44);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-  s.scale.set(h * c.width / c.height, h, 1); s.userData.h = h; s.visible = false;
-  return s;
-}
-function relabel(s, text, color) {
-  if (s.userData.text === text) return;
-  const n = label(text, color, s.userData.h); s.material.map?.dispose(); s.material.map = n.material.map; s.scale.copy(n.scale);
-  s.userData.text = text;
-}
-const show = (o, k, opacity = 1) => { o.visible = k > .001; if (o.material?.opacity !== undefined && o.isSprite) o.material.opacity = k * opacity; };
-
-// the stone room, lit by two torches; tall enough for a phone's upright frame
-function buildRoom(scene, portrait) {
-  scene.background = new THREE.Color(0x120c08);
-  scene.fog = new THREE.Fog(0x120c08, 40, 90);
-  scene.add(new THREE.HemisphereLight(0xffe0b0, 0x2a1a10, .9));
-  const stone = new THREE.MeshStandardMaterial({ color: 0x8a7c68, roughness: .95, flatShading: true });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 40, 30, 20), new THREE.MeshStandardMaterial({ color: 0x4a3e32, roughness: 1, flatShading: true }));
-  { const p = floor.geometry.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, (Math.sin(i * 12.9898) * 43758.5453 % 1) * .08); floor.geometry.computeVertexNormals(); }
-  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-  const rows = portrait ? 20 : 10;
-  const wall = new THREE.InstancedMesh(new THREE.BoxGeometry(1.95, 1.45, 1), stone, rows * 28), m4 = new THREE.Matrix4();
-  for (let y = 0, i = 0; y < rows; y++) for (let x = -14; x < 14; x++, i++)
-    wall.setMatrixAt(i, m4.makeTranslation(x * 2 + (y % 2), y * 1.5 + .75, -9 - Math.abs(Math.sin(x * 7 + y)) * .15));
-  wall.receiveShadow = true; scene.add(wall);
-  const tx = portrait ? 9 : 22, ty = portrait ? 16 : 6.5;
-  for (const x of [-tx, tx]) {
-    const light = new THREE.PointLight(0xffa040, 60, 34, 1.6); light.position.set(x, ty, -7.6); scene.add(light);
-    const flame = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffc070 }));
-    flame.position.copy(light.position); scene.add(flame);
-    const holder = new THREE.Mesh(new THREE.CylinderGeometry(.1, .16, 1, 6), new THREE.MeshStandardMaterial({ color: 0x2a1c12 }));
-    holder.position.set(x, ty - .7, -8); scene.add(holder);
-    scene.userData.flames = [...(scene.userData.flames || []), { light, flame }];
-  }
-  const over = new THREE.PointLight(0xffb060, 80, 50, 1.4); over.position.set(0, portrait ? 22 : 13, 8); scene.add(over);
-  const key = new THREE.DirectionalLight(0xfff0dd, 1.2); key.position.set(6, 24, 14); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -18, right: 18, top: 28, bottom: -6 }); scene.add(key);
-}
+const byteTile = (b, ink) => litTile(ink === INK.p ? (b === 32 ? '␣' : String.fromCharCode(b)) : hx(b), ink);
 
 // ---------- the AES room of episode 1.2: four beats, key → aes → pad → cbc ----------
 // The machine is laid out along a flow axis u (the order goes in at -u, the ciphertext comes out at
@@ -285,136 +195,5 @@ function aesRoom(scene, send, portrait) {
   };
   return { beats: { key: { end: 3.0 }, aes: { end: 8.6 }, pad: { end: 4.3 }, cbc: { end: 11.5 } }, pose, frame: (k, time) => frames[k](time) };
 }
-const ROOMS = { aes: aesRoom };
-
-// ---------- the switch between the valley and a room ----------
-const SMOOTH = .04, BUBBLE = 84;   // the room camera closes 96% of the way to its framing every second
-export class Inside {
-  constructor({ renderer, renderPass, camera, rig, bubbles, instant }) {
-    Object.assign(this, { renderer, renderPass, outer: { scene: renderPass.scene, camera }, rig, bubbles, instant });
-    this.camera = new THREE.PerspectiveCamera(45, 1, .3, 300);
-    this.veil = document.getElementById('veil');
-    this.room = null; this.time = 0; this.token = 0; this.log = [];
-    this.view = { center: v(0, 5, 0), d: 30 };
-  }
-  get active() { return !!this.room; }
-  get portrait() { return innerWidth < innerHeight; }
-  resize(aspect, fov) {
-    this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix();
-    if (this.room && this.room.portrait !== this.portrait) this.rebuild();
-  }
-  build(name, send) {
-    const scene = new THREE.Scene(), machine = ROOMS[name](scene, send, this.portrait);
-    return { name, send, scene, machine, portrait: this.portrait };
-  }
-  swap(room) {
-    const old = this.room; this.room = room;
-    const s = room ? room.scene : this.outer.scene, c = room ? this.camera : this.outer.camera;
-    this.renderPass.scene = s; this.renderPass.camera = c; this.bubbles.camera = c;
-    if (old && old !== room) old.scene.traverse(o => { o.geometry?.dispose(); [o.material].flat().forEach(m => { m?.map?.dispose(); m?.dispose?.(); }); });
-  }
-  // r103 (Simon 21 Oct: « keep zooming while the veil appears »): one move from wherever the camera
-  // is to the glass, faster and faster in proportion, the veil on the same clock; the room camera
-  // then goes on closing in at the rate the valley camera had (lib/zoom.js)
-  async enter(name, beat, send, live = () => true) {
-    const tok = ++this.token, door = DOORS.a(); this.focus = door.focus;   // focus: what tools/zoom_trace.py measures to
-    // the room is built and its shaders compiled during the flight, so the swap does not stall
-    const room = this.build(name, send); room.machine.pose(beat, 0);
-    const ready = this.renderer.compileAsync(room.scene, this.camera).catch(() => {});
-    // and its textures (the tiles' letters) go to the GPU during the flight too: uploaded at the swap,
-    // they froze the first room frame for a quarter second under the veil (tools/zoom_trace.py)
-    const maps = new Set(); room.scene.traverse(o => [o.material].flat().forEach(m => m?.map && maps.add(m.map)));
-    [...maps].forEach((m, i) => setTimeout(() => { if (tok === this.token) this.renderer.initTexture(m); }, 100 + i * 8));
-    const cam = this.outer.camera, from = { pos: cam.position.clone(), target: this.rig.controls.target.clone() };
-    const path = windowPath({ from, focus: door.focus, normal: door.normal });
-    this.zooming = { tok, live };
-    await this.rig.fly({ pos: door.focus, target: door.focus }, this.instant ? .001 : ZOOM.T,
-      { path: k => { setVeil(this.veil, ZOOM.veil(k)); return path(k); } });
-    await ready;
-    this.zooming = null;
-    if (tok !== this.token || !live()) { setVeil(this.veil, 0); return false; }
-    this.swap(room); this.log.push(['in', performance.now()]);
-    this.beat(beat); this.fit(true);
-    if (this.instant) setVeil(this.veil, 0);
-    else this.arrival = { ...roomArrival(path.rate), tau: 0, out: false };
-    this.update(0);
-    return true;
-  }
-  beat(id) { if (!this.room) return; this.room.beat = id; this.time = this.instant ? this.room.machine.beats[id].end : 0; }
-  // out the way it came, the same move backwards: the room camera backs off faster and faster as the
-  // veil rises, then the valley camera pulls out of the window at that rate and slows onto shot
-  async leave(shot) {
-    if (!this.room) return;
-    const tok = ++this.token, door = DOORS.a(); this.focus = door.focus;   // focus: what tools/zoom_trace.py measures to
-    this.arrival = null;
-    if (!shot) { this.swap(null); setVeil(this.veil, 0); this.rig.jump(door.near); return; }   // a mode switch: a cut
-    const to = typeof shot === 'string' ? SHOTS[shot] : shot;
-    const path = windowPath({ from: to, focus: door.focus, normal: door.normal });
-    if (!this.instant) await new Promise(res => { this.arrival = { ...roomArrival(path.rate), tau: 0, out: true, res }; });
-    if (tok !== this.token) return;
-    this.swap(null); this.log.push(['out', performance.now()]);
-    return this.rig.fly(to, this.instant ? .001 : ZOOM.T,
-      { path: k => { setVeil(this.veil, ZOOM.veil(1 - k)); return path(1 - k); } });
-  }
-  rebuild(send = this.room?.send) {
-    if (!this.room) return;
-    const room = this.build(this.room.name, send), beat = this.room.beat;
-    room.beat = beat; this.swap(room); this.room.machine.pose(beat, this.time); this.fit(true);
-  }
-  play() { if (this.room) this.time = 0; }
-  // the speaker's bubble: the room's anchor, or the top of what the camera holds, a third in
-  anchor() {
-    if (!this.room) return;
-    const own = this.room.machine.anchor?.(this.room.beat), b = this.want?.box;
-    return own || (b ? v(b.min.x + (b.max.x - b.min.x) * .3, b.max.y + .3) : v(0, 8));
-  }
-
-  // the free band: below the top bar, above the story panel, left of an open corner card
-  band() {
-    const W = innerWidth, H = innerHeight, r = id => document.getElementById(id)?.getBoundingClientRect();
-    const bar = [r('topbar'), r('modes'), r('lang')].filter(b => b && b.height).reduce((m, b) => Math.max(m, b.bottom), 0);
-    const story = r('story'), card = document.getElementById('card'), cr = r('card');
-    let top = bar + 8, bottom = story && story.height ? story.top - 8 : H, left = 0, right = W;
-    if (cr && cr.height && !card.classList.contains('hidden')) {
-      if (card.classList.contains('folded') && W < 900) bottom = Math.min(bottom, cr.top - 4);   // a phone's card is folded to a line (r84)
-      else if (cr.left > W * .55) right = cr.left - 8;
-    }
-    if (bottom - top < H * .2) { top = 0; bottom = H; }
-    return { W, H, left, top, w: right - left, h: bottom - top };
-  }
-  // where the camera should be to hold the beat's frame in the band
-  fit(now = false) {
-    const pts = this.room.machine.frame(this.room.beat, this.time), box = new THREE.Box3().setFromPoints(pts);
-    const c = box.getCenter(v(0, 0)), size = box.getSize(v(0, 0)), b = this.band();
-    // the top of the band is kept for the speaker's bubble, which points at the top of the frame
-    const room = Math.min(BUBBLE, b.h * .25); b.top += room; b.h -= room;
-    const tan = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * 2, m = .9;
-    const d = Math.max(size.y * b.H / (m * b.h), size.x * b.H / (m * b.w)) / tan + 2.2;
-    this.want = { center: c, d, b, box };
-    if (now) { this.view.center.copy(c); this.view.d = d; }
-  }
-  update(dt) {
-    // a zoom in cut short (another step, another mode): its veil goes
-    if (this.zooming && (this.zooming.tok !== this.token || !this.zooming.live())) { this.zooming = null; setVeil(this.veil, 0); }
-    if (!this.room) return;
-    this.time += dt;
-    const m = this.room.machine;
-    m.pose(this.room.beat, this.time);
-    this.fit();
-    const k = this.instant ? 1 : 1 - Math.pow(SMOOTH, dt), w = this.want;
-    this.view.center.lerp(w.center, k);
-    const a = this.arrival;
-    if (a) {   // the zoom's room side (lib/zoom.js): in, closing on the framing; out, backing off it
-      a.tau += dt / a.T;
-      this.view.d = w.d * (a.out ? a.back(a.tau) : a.factor(a.tau));
-      setVeil(this.veil, a.out ? a.backVeil(a.tau) : a.veil(a.tau));
-      if (a.tau >= 1) { this.arrival = null; a.res?.(); }
-    } else this.view.d += (w.d - this.view.d) * k;
-    const c = this.view.center, d = this.view.d;
-    this.camera.position.set(c.x + Math.sin(this.time * .25) * .02 * d, c.y + d * .14, c.z + d);
-    this.camera.lookAt(c);
-    // the look-at point lands in the middle of the free band, not of the screen
-    const b = w.b; this.camera.setViewOffset(b.W, b.H, b.W / 2 - (b.left + b.w / 2), b.H / 2 - (b.top + b.h / 2), b.W, b.H);
-    for (const f of this.room.scene.userData.flames || []) f.light.intensity = 55 + Math.sin(this.time * 13 + f.light.position.x) * 6 + Math.sin(this.time * 7.3) * 4;
-  }
-}
+// the room, entered by Alice's keep's valley window; the engine's options (lib/room.js)
+export const ROOM = { rooms: { aes: { build: aesRoom, door: 'a' } } };

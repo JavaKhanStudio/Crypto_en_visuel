@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Cross-references of the saga (r119): every « épisode N » / « episode N » in a step's text or in the
-corner card of episodes 1.2 to 1.6, FR and EN, is a link (xref.js), and each link lands on a step that
-exists in the cited episode. Prints each link with the title of the step it lands on, for a reader to
+"""Cross-references (r119): every « épisode N » / « episode N » in a step's text or in the corner card
+of the episodes that link (the saga's 1.2 to 1.6, aes-interieur, pingouin, vpn), FR and EN, is a link
+(xref.js), and each link lands on a step that exists in the cited episode. A link that names the
+episode instead ({@N|name} in lib/md.js, r360: vpn) needs no mention: only a link reading « épisode N » is counted against the mentions. Prints each link with the title of the step it lands on, for a reader to
 check that it is the step that explains it. Serve the repo first (python3 -m http.server 8793), or
 pass a base URL. Exit 1 on any failure.
 
@@ -9,15 +10,17 @@ pass a base URL. Exit 1 on any failure.
 """
 import os, re, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 base = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
-EPISODES = ["eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "aes-interieur"]
+EPISODES = ["eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "aes-interieur", "pingouin", "vpn"]
 RX = re.compile(r"[ÉéEe]pisode \d+(?:\.\d+)?(?!\d)")
 fails = []
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     errors = []
 
     def open_(url):
@@ -51,10 +54,11 @@ with sync_playwright() as p:
                     links: [...el.querySelectorAll('a.xref')].map(a => [a.textContent, a.getAttribute('href')]) }))""")
                 for where, g in zip(["text", "card"], got):
                     mentions = RX.findall(g["text"])
-                    if len(mentions) != len(g["links"]):
-                        fails.append(f"{lang} {ep} step {i + 1} {where}: {len(mentions)} mentions, {len(g['links'])} links")
+                    plain = [l for l in g["links"] if RX.search(l[0])]   # a link naming the episode carries no mention
+                    if len(mentions) != len(plain):
+                        fails.append(f"{lang} {ep} step {i + 1} {where}: {len(mentions)} mentions, {len(plain)} links")
                     for txt, href in g["links"]:
-                        t = landing(href, lang)
+                        t = landing(href, lang) if href and "#story=" in href else None
                         print(f"{'ok  ' if t else 'FAIL'} {lang} {ep} #{i + 1} {where}: {txt} -> {href}  « {t} »")
                         if not t:
                             fails.append(f"{lang} {ep} step {i + 1}: {href} lands nowhere")

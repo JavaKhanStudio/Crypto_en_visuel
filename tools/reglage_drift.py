@@ -9,15 +9,16 @@ hand-driven clock of --dt seconds (1/60: a real screen's frame), or with --live 
 clock, each frame a screen refresh. Each frame logs, in pixels, the first point of the first path
 tube (the top of the key) and its middle, the camera, the key's height, and the left edge of the
 corner card's last row (key and cable cells); a line is printed whenever one of them moves by more
-than --eps pixels. --gpu renders on this machine's GPU (headless, no window) instead of SwiftShader.
+than --eps pixels. It renders on this machine's GPU (tools/browser.py, r401); --gpu is kept for old command lines, CRYPTO_GL=soft goes back to SwiftShader.
 """
 import argparse, json
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 ap = argparse.ArgumentParser(); ap.add_argument('step', type=int); ap.add_argument('acts', nargs='+')
 ap.add_argument('--dt', type=float, default=1 / 60); ap.add_argument('--base', default='http://localhost:8793/')
 ap.add_argument('--size', default='1440x860'); ap.add_argument('--eps', type=float, default=.05)
-ap.add_argument('--gpu', action='store_true', help="this machine's GPU (ANGLE on EGL) instead of SwiftShader")
+ap.add_argument('--gpu', action='store_true', help="the default now (r401); CRYPTO_GL=soft for SwiftShader")
 ap.add_argument('--live', action='store_true', help='the real clock (requestAnimationFrame) instead of a hand-driven one: a frame is then a screen refresh')
 ap.add_argument('--video', help='with --live: a folder to record the run in (webm)')
 a = ap.parse_args()
@@ -33,8 +34,7 @@ PROBE = """() => {
   return out;
 }"""
 with sync_playwright() as p:
-    gl = ["--use-gl=angle", "--use-angle=gl-egl", "--enable-gpu"] if a.gpu else ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
-    b = p.chromium.launch(args=gl + ["--ignore-gpu-blocklist"])
+    b = launch(p)
     vid = {'record_video_dir': a.video, 'record_video_size': {'width': W, 'height': H}} if a.video else {}
     pg = b.new_page(viewport={"width": W, "height": H}, **vid); errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))

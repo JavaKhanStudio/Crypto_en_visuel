@@ -7,6 +7,7 @@ out/<slug>-after-<step>-<lang>-<w>.png. On the machine's GPU (about 50 fps, as t
 """
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 args = sys.argv[1:]
 slug = args[0]
@@ -15,7 +16,7 @@ w, h = (390, 844) if "--phone" in args else (1440, 860)
 steps = [a for a in args[1:] if a.isdigit()]
 idle = "() => [...document.querySelectorAll('#play, #step-actions button')].every(b => !b.disabled)"
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": w, "height": h}, has_touch=w < 720, is_mobile=w < 720); errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
     for step in steps:

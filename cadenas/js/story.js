@@ -44,7 +44,7 @@ export const STEPS = [
   { id: 's10', ch: 4, shot: 'bob', orbit: .02, state: { made: 9, labels: true }, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../diffie-hellman/vignette.jpg', clip: 'img/door-next.mp4', href: '../diffie-hellman/' }] },
 ];
 

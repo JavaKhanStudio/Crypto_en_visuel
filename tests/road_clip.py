@@ -5,6 +5,8 @@ terrain with where it meets the road. Fails if the terrain anywhere rises above 
 (less than 2 cm under it). Serve the repo first (python3 -m http.server 8793)."""
 import argparse, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 ap = argparse.ArgumentParser(); ap.add_argument("--base", default="http://localhost:8793/"); a = ap.parse_args()
 PROBE = """() => {
@@ -26,7 +28,7 @@ PROBE = """() => {
   return { n, under, worst };
 }"""
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": 800, "height": 500})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))

@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
 import { renderDoors } from '../../lib/doors.js';
-import { CASTLE_A, CASTLE_B, CITY } from './world.js';
+import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
 import * as A from '../../lib/saga-aes.js';
 
 const anchors = {
@@ -50,7 +50,7 @@ export const STEPS = [
   { id: 'end', refs: { '6': 9 }, ch: 3, shot: 'overview', orbit: .06, view: 'packet', doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../assets/doors/home-2.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../cle-vallee/vignette.jpg', clip: 'img/door-next.mp4', href: '../cle-vallee/' }] },
 ];
 

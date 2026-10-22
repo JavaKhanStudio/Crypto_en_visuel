@@ -8,6 +8,8 @@ Another episode's last step (r121): tests/last_doors.py <slug> <last step> <next
 e.g. tests/last_doors.py scytale 12 enigma (--no-clips for an episode whose doors have none)"""
 import os, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 args = [x for x in sys.argv[1:] if not x.startswith("--")]
 SLUG, LAST, NEXT = args if args else ("deux-generaux", "14", "eve-lit-tout")
@@ -15,7 +17,7 @@ CLIPS = "--no-clips" not in sys.argv
 BASE = f"http://localhost:8793/{SLUG}/"
 bad = 0
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-gl=swiftshader", "--enable-unsafe-swiftshader"])
+    br = launch(p)
     for size, lang in [((1440, 860), "fr"), ((1440, 860), "en"), ((390, 844), "en")]:
         phone = size[0] < 720
         pg = br.new_page(viewport={"width": size[0], "height": size[1]}, has_touch=phone, is_mobile=phone)
@@ -42,12 +44,16 @@ with sync_playwright() as p:
             checks["no clip on a phone"] = pg.evaluate("document.querySelectorAll('#step-actions video').length") == 0
         else:
             checks["every door has a clip"] = pg.evaluate("document.querySelectorAll('#step-actions .door video').length") == 4
-            doors.nth(3).hover(); pg.wait_for_timeout(1500); t1, paused1, on = pg.evaluate(clip)
+            # wait on the clip, not the clock (r402): with preload 'none' it starts late on a busy machine
+            def until(cond, ms=15000):
+                try: pg.wait_for_function(f"() => {{ const c = ({clip})(); return c && ({cond}); }}", timeout=ms)
+                except Exception: pass
+            doors.nth(3).hover(); until("c[2] && !c[1] && c[0] > .5"); t1, paused1, on = pg.evaluate(clip)
             checks[f"hover plays the clip (t={t1:.2f})"] = t1 > .5 and not paused1 and on
             pg.mouse.move(5, 5); pg.wait_for_timeout(200); t2, paused2, _ = pg.evaluate(clip)
             pg.wait_for_timeout(800); t3, _, _ = pg.evaluate(clip)
             checks[f"leaving stops it where it is (t={t2:.2f})"] = paused2 and abs(t3 - t2) < .01
-            doors.nth(3).hover(); pg.wait_for_timeout(500); t4, _, _ = pg.evaluate(clip)
+            doors.nth(3).hover(); until(f"!c[1] && (c[0] > {t2} + .05 || c[0] < {t2} - 3)"); t4, _, _ = pg.evaluate(clip)
             checks[f"hovering again goes on from there (t={t4:.2f})"] = t4 > t2 or t4 < t2 - 3   # or looped past 4 s
         doors.nth(0).click(); pg.wait_for_timeout(300)
         checks["sandbox door opens the sandbox"] = pg.evaluate("location.hash") == "#sandbox"

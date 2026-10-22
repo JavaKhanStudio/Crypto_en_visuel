@@ -10,7 +10,7 @@ import { createPrivateKey, createPublicKey, createCipheriv, createDecipheriv, ve
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as A from '../lib/saga-aes.js';
-import * as R from '../encore-des-tours/js/rsa.js';
+import * as R from '../lib/rsa.js';
 import * as S from '../encore-des-tours/js/sign.js';
 import * as G from '../encore-des-tours/js/gcm.js';
 import * as P from '../encore-des-tours/js/packet.js';

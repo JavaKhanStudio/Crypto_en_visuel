@@ -32,6 +32,7 @@ const EPISODES = [
   { n: 8, slug: 'garde', icon: '⏱️', live: true },
   { n: 9, slug: 'kasiski', icon: '🛞', live: true },
   { n: 10, slug: 'vpn', icon: '🛡️', live: true },
+  { n: 11, slug: 'aes-interieur', icon: '🧊', live: true },
 ];
 
 // The concepts each episode shows (r191), so a student finds one fast: a tag bar above the cards filters
@@ -54,6 +55,7 @@ const TAGS = {
   garde: ['hmac', 'timing'],
   kasiski: ['hist', 'vigenere', 'subst', 'crypta'],
   vpn: ['vpn', 'kex', 'sym'],
+  'aes-interieur': ['sym', 'aes'],
 };
 
 const fr = {
@@ -97,6 +99,7 @@ const fr = {
     kasiski: ['La roue et le caillou', 'La clé de Vigenère tourne comme une roue, et ses traces trahissent sa longueur.'],
     garde: ['Le garde trop pressé', 'Un garde qui compare un badge lettre par lettre trahit le HMAC par son chronomètre.'],
     vpn: ['Le tunnel', 'Un VPN scelle chaque paquet jusqu’à un autre serveur : qui voit encore quoi ?'],
+    'aes-interieur': ['AES de l’intérieur', 'On ouvre la boîte AES de l’épisode 1.2 : 16 octets, 14 tours, et une lettre changée qui gagne tout le bloc.'],
   },
 };
 const en = {
@@ -140,6 +143,7 @@ const en = {
     kasiski: ['The Wheel and the Stone', 'The Vigenère key turns like a wheel, and its tracks give its length away.'],
     garde: ['The Hasty Guard', 'A guard who checks a badge letter by letter gives the HMAC away to a stopwatch.'],
     vpn: ['The Tunnel', 'A VPN seals every packet up to another server: who still sees what?'],
+    'aes-interieur': ['AES from the Inside', 'We open episode 1.2’s AES box: 16 bytes, 14 rounds, and one changed letter that spreads to the whole block.'],
   },
 };
 

@@ -4,7 +4,7 @@
 // seal); and 1.4's keys and padlock. padlock() and key() are
 // episode 2's (cadenas/js/props.js), copied so each episode stands alone.
 import * as THREE from 'three';
-import { COLORS } from './world.js';
+import { COLORS } from '../../lib/saga/world.js';
 
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: .6, flatShading: true, ...o });
 const brass = c => mat(c, { metalness: .75, roughness: .32, flatShading: false });

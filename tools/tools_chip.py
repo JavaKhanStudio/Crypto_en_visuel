@@ -8,6 +8,7 @@ chips and inside the screen. Serve the repo first (8793).
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 eps = sys.argv[1:] or sorted(p.parent.parent.name for p in Path(".").glob("*/js/main.js") if "qualityComposer" in p.read_text())
 SIZES = [(360, 780), (375, 812), (390, 844), (400, 844), (401, 844), (420, 844), (900, 800), (1100, 800), (1440, 860)]
@@ -19,7 +20,7 @@ PROBE = """() => {
 }"""
 bad = 0
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for ep in eps:
         for w, h in SIZES:
             pg = b.new_page(viewport={"width": w, "height": h})
