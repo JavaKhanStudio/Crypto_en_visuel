@@ -291,7 +291,10 @@ function machine(scene, data, portrait) {
       // round 1's SubBytes, slowly: the lookup of the byte going through, S(bc) = 65
       if (beat === 'sub1' && time >= o.t0 && k < .97) {
         const i = Math.max(0, Math.min(15, Math.round((k - .25) * 30)));   // cube i is mid-turn at k = .5 i / 15 + .25
-        relabel(L.note, `S(${hx(o.from[i])}) = ${hx(o.to[i])}`); L.note.position.copy(cell(i)).add(v(0, 1.25, 1.6)); show(L.note, 1);
+        relabel(L.note, `S(${hx(o.from[i])}) = ${hx(o.to[i])}`);
+        // beside the grid on the cube's row and side: above the cube, a top row's label ran into the step's name (r422)
+        const side = i < 8 ? -1 : 1, c = cell(i);
+        L.note.position.set(G.x + side * (1.5 * S + C / 2 + .3 + L.note.scale.x / 2), c.y, c.z + .6); show(L.note, 1);
       }
       // the changed run: outline every byte that differs from Alice's at the same moment
       if (P && BEATS[beat].cmp && ref) {
