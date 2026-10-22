@@ -13,7 +13,8 @@ import { CameraRig } from '../../lib/saga/camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from '../../lib/messenger.js';
 import { Bubbles } from '../../lib/bubbles.js';
-import { Inside } from './inside.js';
+import { Inside } from '../../lib/room.js';
+import { ROOM } from './inside.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
 import { Quiz } from '../../lib/quiz.js';
@@ -59,7 +60,7 @@ addEventListener('resize', resize); resize();
 // ---------- the pieces ----------
 const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
 // step 7 (Alice locks the padlock) happens inside Alice's keep, where a room shows OAEP and RSA at work (r103, r160)
-inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant }); resize();
+inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant, castles: { a: world.castleA, b: world.castleB }, ...ROOM }); resize();
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }

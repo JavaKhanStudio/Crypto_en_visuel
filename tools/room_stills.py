@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Stills of a castle room (r103) at chosen seconds of a beat, and a contact sheet: the room's clock is
 held (demo.inside.hold) so each shot is the pose at that second and the camera on its framing, the
-way a reader sees it once the camera has caught up. Needs the episode's inside.js to honour `hold`
-(cle-vallee, r160). Serve the repo first (python3 -m http.server 8793).
+way a reader sees it once the camera has caught up; lib/room.js honours `hold` for every saga room
+(r160, r424). Serve the repo first (python3 -m http.server 8793).
 
     tools/room_stills.py out/r160/fr-390 --page cle-vallee/ --step 7 --at 1,3,5,8,10.5,12,14,17,19 --size 390x844
 """
