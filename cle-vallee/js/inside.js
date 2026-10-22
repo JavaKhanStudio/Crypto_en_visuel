@@ -10,6 +10,7 @@
 // The engine (enter, beat, cut, leave, the free band, the doors) is lib/room.js (r424), as is its API;
 // this file keeps only the rooms (ROOM.rooms) and the engine options this episode needs.
 import * as THREE from 'three';
+import { face, side, tile, paint, label, relabel, show, buildRoom } from '../../lib/room-parts.js';
 import { t } from './i18n.js';
 import { padlock, key } from './props.js';
 import * as R from './rsa.js';
@@ -20,87 +21,13 @@ const clamp01 = k => Math.max(0, Math.min(1, k));
 const span = (time, a, b) => ease(clamp01((time - a) / (b - a)));
 const hx = x => x.toString(16).padStart(2, '0');
 
-// ---------- what a room is made of ----------
-// a square tile with a byte on it, two hex digits. 1.4's room has 768 tiles: one material per byte
-// and colour, shared, and one box, so the room builds and uploads in the zoom's time
-const faces = new Map();
-function face(text, { fg, bg, size = 74 }) {
-  const id = [text, fg, bg, size].join('|');
-  if (faces.has(id)) return faces.get(id);
-  const c = document.createElement('canvas'); c.width = c.height = 128;
-  const g = c.getContext('2d');
-  g.fillStyle = bg; g.fillRect(0, 0, 128, 128);
-  g.strokeStyle = fg; g.globalAlpha = .55; g.lineWidth = 6; g.strokeRect(5, 5, 118, 118); g.globalAlpha = 1;
-  g.fillStyle = fg; g.font = `700 ${size}px ui-monospace, Menlo, Consolas, monospace`;
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 64, 68);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-  // unlit, so a byte keeps the card's colour under the torches (a zero dim, a masked byte orange)
-  const m = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }); m.userData.shared = true;
-  faces.set(id, m); return m;
-}
-const side = new THREE.MeshStandardMaterial({ color: 0x1a120c }); side.userData.shared = true;
-const BOX = new THREE.BoxGeometry(1, 1, .22); BOX.userData.shared = true;
-function tile(b, ink) {
-  const m = new THREE.Mesh(BOX, [side, side, side, side, face(hx(b), ink), side]);
-  m.visible = false; m.userData.b = b; return m;
-}
-const paint = (m, b, ink) => { m.material[4] = face(hx(b), ink); m.userData.b = b; };   // b: what tests/cle_inside.py reads
+// ---------- what a room is made of: lib/room-parts.js (r485); here, the colours ----------
 // the colours of the corner card: the keys violet (AES) and green (HMAC), the seed and EM blue,
 // c yellow; OAEP's fixed bytes gold, its zeros dim, what a mask has passed over orange
 const INK = { key: { fg: '#e3b8ff', bg: '#2a1838', size: 62 }, mac: { fg: '#8fd18a', bg: '#12301a', size: 62 },
   iv: { fg: '#9fd3f0', bg: '#12283a', size: 62 }, pad: { fg: '#ffd27a', bg: '#5a3c10', size: 62 },
   zero: { fg: '#8a7c68', bg: '#221a12', size: 62 }, x: { fg: '#ffb070', bg: '#3a1e0c', size: 62 },
   c: { fg: '#ffd84d', bg: '#2a2008', size: 62 } };
-
-// a word floating in the room, always facing the camera; plate: on a dark ground (over the tiles);
-// align: 0 its left end at its position, .5 its middle, 1 its right end
-// h: the height of a line; a '\n' in text starts another (r363)
-function label(text, color, h = .8, { plate = false, align = .5 } = {}) {
-  const c = document.createElement('canvas'), g = c.getContext('2d'), font = '600 56px system-ui, sans-serif', lines = text.split('\n');
-  g.font = font; c.width = Math.ceil(Math.max(...lines.map(l => g.measureText(l).width))) + 40; c.height = 84 * lines.length;
-  if (plate) { g.fillStyle = 'rgba(14,10,7,.86)'; g.beginPath(); g.roundRect(2, 4, c.width - 4, c.height - 8, 18); g.fill(); }
-  g.font = font; g.fillStyle = color; g.textBaseline = 'middle'; lines.forEach((l, i) => g.fillText(l, 20, 44 + 84 * i));
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: !plate }));
-  s.scale.set(h * c.width / 84, h * lines.length, 1); s.center.set(align, .5); s.userData = { h, plate, text }; s.visible = false;
-  if (plate) s.renderOrder = 30;
-  return s;
-}
-function relabel(s, text, color) {
-  if (s.userData.text === text) return;
-  const n = label(text, color, s.userData.h, { plate: s.userData.plate }); s.material.map?.dispose(); s.material.map = n.material.map; s.scale.copy(n.scale);
-  s.userData.text = text;
-}
-const show = (o, k, opacity = 1) => { o.visible = k > .001; if (o.material?.opacity !== undefined && o.isSprite) o.material.opacity = k * opacity; };
-
-// the stone room, lit by two torches; rows: how high its back wall goes (a phone's upright machine is tall)
-function buildRoom(scene, portrait, rows) {
-  scene.background = new THREE.Color(0x120c08);
-  scene.fog = new THREE.Fog(0x120c08, 60, 130);
-  scene.add(new THREE.HemisphereLight(0xffe0b0, 0x2a1a10, .9));
-  const stone = new THREE.MeshStandardMaterial({ color: 0x8a7c68, roughness: .95, flatShading: true });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 40, 30, 20), new THREE.MeshStandardMaterial({ color: 0x4a3e32, roughness: 1, flatShading: true }));
-  { const p = floor.geometry.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, (Math.sin(i * 12.9898) * 43758.5453 % 1) * .08); floor.geometry.computeVertexNormals(); }
-  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-  const wall = new THREE.InstancedMesh(new THREE.BoxGeometry(1.95, 1.45, 1), stone, rows * 36), m4 = new THREE.Matrix4();
-  for (let y = 0, i = 0; y < rows; y++) for (let x = -18; x < 18; x++, i++)
-    wall.setMatrixAt(i, m4.makeTranslation(x * 2 + (y % 2), y * 1.5 + .75, -9 - Math.abs(Math.sin(x * 7 + y)) * .15));
-  wall.receiveShadow = true; scene.add(wall);
-  const tx = portrait ? 14 : 30, ty = portrait ? rows * 1.5 - 6 : 14;
-  for (const x of [-tx, tx]) {
-    const light = new THREE.PointLight(0xffa040, portrait ? 35 : 60, 40, 1.6); light.position.set(x, ty, -7.6); scene.add(light);
-    const flame = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffc070 }));
-    flame.position.copy(light.position); scene.add(flame);
-    const holder = new THREE.Mesh(new THREE.CylinderGeometry(.1, .16, 1, 6), new THREE.MeshStandardMaterial({ color: 0x2a1c12 }));
-    holder.position.set(x, ty - .7, -8); scene.add(holder);
-    scene.userData.flames = [...(scene.userData.flames || []), { light, flame }];
-  }
-  for (const y of portrait ? [rows * 1.5 - 8, rows * .6] : [16]) {
-    const over = new THREE.PointLight(0xffb060, portrait ? 45 : 90, 60, 1.4); over.position.set(0, y, 10); scene.add(over);
-  }
-  const key = new THREE.DirectionalLight(0xfff0dd, 1.2); key.position.set(6, 30, 14); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -30, right: 30, top: 50, bottom: -6 }); scene.add(key);
-}
 
 // ---------- the OAEP room of episode 1.4: one beat, 'close' ----------
 // The machine: a wall of 256 tiles, 16 rows of 16 like the card's, the size of n. The two keys fill
@@ -113,7 +40,7 @@ function buildRoom(scene, portrait, rows) {
 // top to bottom, the words on a dark plate over the part they name, and the camera follows the action.
 function oaepRoom(scene, pk, portrait) {
   const o = pk.s.locked, keys = pk.s.keys, H = R.H, k = R.BOB.k, z = k - keys.length - 2 * H - 2;   // z: 126 bytes of 00
-  buildRoom(scene, portrait, portrait ? 34 : 15);
+  buildRoom(scene, portrait, { rows: portrait ? 34 : 15 });
   const P = 1.1, half = 7.5 * P + .5;   // tile pitch; half the wall's side
   const WC = portrait ? v(0, 41) : v(-12, 10.2), BC = portrait ? v(0, 25.4) : v(4, 10.2), CC = portrait ? v(0, 9.6) : v(20, 10.2);
   const at = c => i => v(c.x + (i % 16 - 7.5) * P, c.y + (7.5 - Math.floor(i / 16)) * P);
@@ -277,7 +204,7 @@ function number(x, ink) {   // a big tile with a number on it; userData.n: what 
 }
 function rsaRoom(scene, send, portrait) {
   const K = R.TOY, c = R.lock(K, K.m), back = R.unlock(K, c), me = K.m ** K.e, B = R.BOB;
-  buildRoom(scene, portrait, portrait ? 36 : 15);
+  buildRoom(scene, portrait, { rows: portrait ? 36 : 15 });
   const ink = { p: INK.iv, n: INK.key, e: INK.pad, d: INK.mac, m: INK.x, c: INK.c, ok: INK.mac };
   // ---- beat 1: where each thing sits
   const at = portrait

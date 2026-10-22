@@ -7,6 +7,7 @@
 // The engine (enter, beat, cut, leave, the free band, the doors) is lib/room.js (r424), as is its API;
 // this file keeps only the rooms (ROOM.rooms) and the engine options this episode needs.
 import * as THREE from 'three';
+import { litTile, label, relabel, show, buildRoom } from '../../lib/room-parts.js';
 import { t } from './i18n.js';
 import * as A from '../../lib/saga-aes.js';
 import { hmac, hmacInner } from '../../lib/hmac.js';
@@ -17,76 +18,13 @@ const clamp01 = k => Math.max(0, Math.min(1, k));
 const span = (time, a, b) => ease(clamp01((time - a) / (b - a)));
 const hx = x => x.toString(16).padStart(2, '0');
 
-// ---------- what a room is made of ----------
-// a square tile with a byte on it: a letter of the order, or two hex digits
-function tileTex(text, { fg, bg, size = 74 }) {
-  const c = document.createElement('canvas'); c.width = c.height = 128;
-  const g = c.getContext('2d');
-  g.fillStyle = bg; g.fillRect(0, 0, 128, 128);
-  g.strokeStyle = fg; g.globalAlpha = .55; g.lineWidth = 6; g.strokeRect(5, 5, 118, 118); g.globalAlpha = 1;
-  g.fillStyle = fg; g.font = `700 ${size}px ui-monospace, Menlo, Consolas, monospace`;
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 64, 68);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-  return tex;
-}
-const side = new THREE.MeshStandardMaterial({ color: 0x1a120c });
-function tile(text, ink) {
-  const front = new THREE.MeshStandardMaterial({ map: tileTex(text, ink), roughness: .6 });
-  const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, .22), [side, side, side, side, front, side]);
-  m.castShadow = true; m.visible = false; return m;
-}
+// ---------- what a room is made of: lib/room-parts.js (r485); here, the colours ----------
 // the colours of the corner card: the order cream, padding gold, key violet, IV blue, ciphertext yellow
 const INK = { p: { fg: '#fff3dc', bg: '#3a2b1a', size: 80 }, pad: { fg: '#ffd27a', bg: '#5a3c10', size: 62 },
   key: { fg: '#e3b8ff', bg: '#2a1838', size: 62 }, iv: { fg: '#9fd3f0', bg: '#12283a', size: 62 },
   x: { fg: '#ffb070', bg: '#3a1e0c', size: 62 }, c: { fg: '#ffd84d', bg: '#2a2008', size: 62 },
   seal: { fg: '#8fd18a', bg: '#12301a', size: 62 }, bad: { fg: '#ffd0d4', bg: '#6a1420', size: 62 } };   // 1.3: the seal green, what changed red
-const byteTile = (b, ink) => tile(ink === INK.p ? (b === 32 ? '␣' : String.fromCharCode(b)) : hx(b), ink);
-
-// a word floating in the room, always facing the camera
-function label(text, color, h = .8) {
-  const c = document.createElement('canvas'), g = c.getContext('2d'), font = '600 56px system-ui, sans-serif';
-  g.font = font; c.width = Math.ceil(g.measureText(text).width) + 40; c.height = 84;
-  g.font = font; g.fillStyle = color; g.textBaseline = 'middle'; g.fillText(text, 20, 44);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-  s.scale.set(h * c.width / c.height, h, 1); s.userData.h = h; s.visible = false;
-  return s;
-}
-function relabel(s, text, color) {
-  if (s.userData.text === text) return;
-  const n = label(text, color, s.userData.h); s.material.map?.dispose(); s.material.map = n.material.map; s.scale.copy(n.scale);
-  s.userData.text = text;
-}
-const show = (o, k, opacity = 1) => { o.visible = k > .001; if (o.material?.opacity !== undefined && o.isSprite) o.material.opacity = k * opacity; };
-
-// the stone room, lit by two torches; tall enough for a phone's upright frame (and, 1.3, for a machine
-// whose keys hang above it: tall)
-function buildRoom(scene, portrait, tall = false) {
-  scene.background = new THREE.Color(0x120c08);
-  scene.fog = new THREE.Fog(0x120c08, 40, 90);
-  scene.add(new THREE.HemisphereLight(0xffe0b0, 0x2a1a10, .9));
-  const stone = new THREE.MeshStandardMaterial({ color: 0x8a7c68, roughness: .95, flatShading: true });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 40, 30, 20), new THREE.MeshStandardMaterial({ color: 0x4a3e32, roughness: 1, flatShading: true }));
-  { const p = floor.geometry.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, (Math.sin(i * 12.9898) * 43758.5453 % 1) * .08); floor.geometry.computeVertexNormals(); }
-  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-  const rows = portrait ? 20 : tall ? 14 : 10;
-  const wall = new THREE.InstancedMesh(new THREE.BoxGeometry(1.95, 1.45, 1), stone, rows * 28), m4 = new THREE.Matrix4();
-  for (let y = 0, i = 0; y < rows; y++) for (let x = -14; x < 14; x++, i++)
-    wall.setMatrixAt(i, m4.makeTranslation(x * 2 + (y % 2), y * 1.5 + .75, -9 - Math.abs(Math.sin(x * 7 + y)) * .15));
-  wall.receiveShadow = true; scene.add(wall);
-  const tx = portrait ? 9 : 22, ty = portrait ? 16 : tall ? 9 : 6.5;
-  for (const x of [-tx, tx]) {
-    const light = new THREE.PointLight(0xffa040, 60, 34, 1.6); light.position.set(x, ty, -7.6); scene.add(light);
-    const flame = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffc070 }));
-    flame.position.copy(light.position); scene.add(flame);
-    const holder = new THREE.Mesh(new THREE.CylinderGeometry(.1, .16, 1, 6), new THREE.MeshStandardMaterial({ color: 0x2a1c12 }));
-    holder.position.set(x, ty - .7, -8); scene.add(holder);
-    scene.userData.flames = [...(scene.userData.flames || []), { light, flame }];
-  }
-  const over = new THREE.PointLight(0xffb060, 80, 50, 1.4); over.position.set(0, portrait ? 22 : tall ? 17 : 13, 8); scene.add(over);
-  const key = new THREE.DirectionalLight(0xfff0dd, 1.2); key.position.set(6, 24, 14); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -18, right: 18, top: 28, bottom: -6 }); scene.add(key);
-}
+const byteTile = (b, ink) => litTile(ink === INK.p ? (b === 32 ? '␣' : String.fromCharCode(b)) : hx(b), ink);
 
 // ---------- the HMAC room of episode 1.3: three beats, key → hmac → avalanche ----------
 // The machine: the message (IV ‖ ciphertext, 48 bytes: the blocks IV, C1, C2, each a row of the
@@ -97,7 +35,7 @@ function buildRoom(scene, portrait, tall = false) {
 // room plays Bob's check: byte 11 of the IV changed by Eve, the same machine, his seal under Alice's,
 // the bytes that differ in red.
 function hmacRoom(scene, pk, portrait) {
-  buildRoom(scene, portrait, true);
+  buildRoom(scene, portrait, { tall: true });
   const s = pk.s, Y0 = portrait ? 17.5 : 7.8;
   const msg = A.concat([s.iv, ...s.C]), msgB = A.concat([pk.iv.iv, ...pk.iv.C]), nb = 1 + s.C.length;
   const tagB = hmac(s.macKey, msgB), inner = hmacInner(s.macKey, msg), innerB = hmacInner(s.macKey, msgB);

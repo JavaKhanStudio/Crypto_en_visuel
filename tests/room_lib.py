@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """r424: the keep-room engine is lib/room.js, once for the saga's rooms (1.2-1.6): no episode keeps a
 class Inside, every main.js imports it, and the doors it reads from the keep castles (userData.doors,
-lib/saga/world.js keepDoors) land in world space where the five copies hard-coded them.
+lib/saga/world.js keepDoors) land in world space where the five copies hard-coded them; r485: no
+episode keeps a room part (tile, face, label, buildRoom...) of its own, all come from lib/room-parts.js.
     python3 tests/room_lib.py [base]      (base: a served repo, default http://localhost:8793/)"""
 import re, sys, pathlib, json
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -18,6 +19,10 @@ for ep in ROOMS:
     checks.append((f"{ep}: no DOORS or keepWindow of its own", re.search(r"\b(DOORS|keepWindow)\b", ins) is None))
     checks.append((f"{ep}: main.js imports Inside from lib/room.js",
                    "import { Inside } from '../../lib/room.js';" in main and "castles: { a: world.castleA, b: world.castleB }, ...ROOM" in main))
+    # r485: the parts of a room (tiles, words, the stone room) are lib/room-parts.js's
+    left = re.findall(r"^(?:export )?(?:function (tileTex|face|tile|label|relabel|buildRoom)\b|const (side|BOX|faces|show|paint|glyph) =)", ins, re.M)
+    checks.append((f"{ep}: no room part of its own (lib/room-parts.js){' — ' + str(left) if left else ''}", not left))
+    checks.append((f"{ep}: imports lib/room-parts.js", "from '../../lib/room-parts.js';" in ins))
 
 # the windows the five copies wrote by hand (eve-lit-tout DOORS.a, paquet-complet DOORS.b, cle-vallee keepWindow)
 OLD = """(C, dx) => ({ focus: [C.x, C.y + 9, 0], normal: [0, 0, 1],
