@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- r330 lab: the cast from lib/cast.js, one row per setting (the disguise), one column per kind. The first row is
+     the episodes' own copies of person() today (kasiski, garde, vpn), so « today » from lib/cast.js can be checked
+     against them figure for figure. Drag a row to turn its figures; ?turn=RADIANS sets the angle for a shot. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The cast, in its disguises</title>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<style>
+  body { margin: 0; background: #0b0d12; color: #d8dce6; font: 15px system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 16px 16px 6px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 80ch; }
+  section { margin: 0 16px 18px; } h2 { font-size: 15px; margin: 0 0 4px; color: #ffd27a; } h2 small { color: #9aa3b5; font-weight: 400; }
+  canvas { display: block; width: 100%; max-width: 1400px; aspect-ratio: 7 / 2; border: 1px solid #252a35; border-radius: 8px; cursor: grab; }
+  .names { display: grid; grid-template-columns: repeat(7, 1fr); max-width: 1400px; font-size: 13px; color: #9aa3b5; text-align: center; }
+</style></head><body>
+<h1>The cast, in its disguises (lib/cast.js)</h1>
+<p>What never changes is the kind: the body, the cloth colour and the signature traits in the team colour (Alice's blue scarf and bun, Bob's gold belt, Eve's black mask and white eyes, the guard's badge and moustache, Victor's headset). A setting dresses three slots: head, body, held item. The top row is today's copies in the episodes, for comparison with « today ».</p>
+<div id="rows"></div>
+<script type="module">
+import * as THREE from 'three';
+import { person, DISGUISES, CAST } from '../../lib/cast.js';
+import { person as kasiski } from '../../kasiski/js/props.js';
+import { person as garde } from '../../garde/js/props.js';
+import { person as vpn } from '../../vpn/js/props.js';
+const KINDS = ['a', 'b', 'e', 'n', 'g', 'v', 'i'];
+const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45);
+const old = { a: () => kasiski('a'), b: () => kasiski('b'), e: () => kasiski('e'), n: () => kasiski('n'),
+  g: () => { const o = garde('g'); o.children[0].scale.setScalar(1); return o; }, v: () => vpn('v'), i: () => vpn('i') };
+const ROWS = [
+  ['the episodes today', 'their own props.js: kasiski, garde, vpn', k => old[k]()],
+  ...Object.keys(DISGUISES).map(d => [d, { today: 'lib/cast.js, as the episodes draw them now', roman: 'scytale', wartime: 'enigma 5.1-5.3', medieval: 'the saga 1.1-1.6' }[d],
+    k => (DISGUISES[d][k] || d === 'today') ? person(k, { disguise: d }) : null]),
+];
+for (const [title, note, make] of ROWS) {
+  const sec = document.createElement('section');
+  sec.innerHTML = `<h2>${title} <small>· ${note}</small></h2><canvas></canvas><div class="names">${KINDS.map(k => `<span>${CAST[k].name}</span>`).join('')}</div>`;
+  document.getElementById('rows').append(sec);
+  const canvas = sec.querySelector('canvas');
+  const r = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x141824);
+  scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x2a2418, 1.4));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(4, 8, 6); scene.add(sun);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 8), new THREE.MeshStandardMaterial({ color: 0x232838 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  const figs = [];
+  KINDS.forEach((k, i) => { const f = make(k); if (!f) return; f.position.x = (i - 3) * 2.5; f.rotation.y = turn0; scene.add(f); figs.push(f); });
+  // 7 columns of 2.5 m fill the width exactly, so the names under the canvas sit under their figures
+  const cam = new THREE.PerspectiveCamera(22, 7 / 2, .1, 100); cam.position.set(0, 2.2, 8.75 / (Math.tan(11 * Math.PI / 180) * 3.5)); cam.lookAt(0, 1.6, 0);
+  const draw = () => { const w = canvas.clientWidth; r.setSize(w, w * 2 / 7, false); r.render(scene, cam); };
+  let drag = null;
+  canvas.onpointerdown = e => { drag = e.clientX; canvas.setPointerCapture(e.pointerId); };
+  canvas.onpointermove = e => { if (drag === null) return; for (const f of figs) f.rotation.y += (e.clientX - drag) * .01; drag = e.clientX; draw(); };
+  canvas.onpointerup = () => drag = null;
+  addEventListener('resize', draw); draw();
+}
+window.labReady = true;
+</script>
+</body></html>
