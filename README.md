@@ -380,6 +380,34 @@ python3 -m http.server 8793
 
 puis http://localhost:8793/ (l'accueil) ou http://localhost:8793/deux-generaux/.
 
+## Déployer (simonbedardprog.com/ficelle/)
+
+Le dépôt est aussi servi tel quel, sans build, par le Worker Cloudflare `ficelle`
+(simonbedardprog r97) à https://simonbedardprog.com/ficelle/ ; GitHub Pages reste l'adresse
+que donne le cours.
+
+- `wrangler.jsonc` sert la racine du dépôt comme fichiers statiques et route
+  `simonbedardprog.com/ficelle*` et `www.simonbedardprog.com/ficelle*` vers le Worker ;
+  `worker/ficelle.js` retire le préfixe `/ficelle` (et le remet dans les redirections).
+- `.assetsignore` garde hors du web `tools/`, `tests/`, `out/`, `worker/`, `.atelier`, `.claude`,
+  `README.md` et `wrangler.jsonc`.
+- La mise en ligne passe par la branche `prod` (Workers Builds, tableau de bord Cloudflare) :
+  c'est Simon qui la pousse (`git push origin main:prod`). Les sessions du tableau ne poussent
+  jamais `prod` et ne lancent jamais `wrangler deploy`.
+
+Trois règles pour ne pas le casser :
+
+1. **Tout lien reste relatif.** Le site vit sous `/ficelle/` : un chemin absolu depuis la racine
+   (`/lib/...`, `src="/assets/..."`, `fetch('/...')`) vise simonbedardprog.com/lib/ et casse.
+   Écrire `../lib/...`, `../../lib/...`, `../assets/...`. Vérifier (ne doit rien trouver) :
+   `grep -rnE "(src|href)=./[a-z]|from ./[a-z]|fetch\(./[a-z]" --include=*.html --include=*.js --include=*.css . | grep -vE '^./(tools|tests|out|worker|vendor)/'`
+2. **Un nouveau dossier de premier niveau qui n'est pas pour le web** (outils, captures, données
+   de travail) va dans `.assetsignore` dans le même commit.
+3. **Après toute modification de `wrangler.jsonc` ou de `worker/`**, lancer
+   `tools/probe_ficelle_worker.sh` (sous `wrangler dev`, rien n'est déployé) : chaque ligne doit
+   être ✓ et la dernière dire `ok.` ; avec une adresse (`tools/probe_ficelle_worker.sh
+   https://simonbedardprog.com`), il vérifie le site en ligne.
+
 ## Ce qu'il y a dedans
 
 | Mode | Contenu |

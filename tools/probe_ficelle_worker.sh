@@ -16,7 +16,7 @@ if [ -z "$base" ]; then
   npx -y wrangler@4 dev --port "$PORT" --ip 127.0.0.1 >/tmp/probe_ficelle.$$.log 2>&1 &
   pid=$!
   trap 'kill $pid 2>/dev/null; rm -f /tmp/probe_ficelle.$$.log' EXIT
-  for _ in $(seq 90); do grep -q 'Ready on' /tmp/probe_ficelle.$$.log && break
+  for _ in $(seq 90); do grep -qs 'Ready on' /tmp/probe_ficelle.$$.log && break
     kill -0 $pid 2>/dev/null || { cat /tmp/probe_ficelle.$$.log; exit 2; }; sleep 1; done
 fi
 fails=0
