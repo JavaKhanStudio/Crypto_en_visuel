@@ -400,7 +400,9 @@ export class Room {
       if (card.classList.contains('folded') && W < 900) bottom = Math.min(bottom, (pr ? pr.top - 8 - cr.height : cr.top) - 4);
       else if (cr.left > W * .55) right = cr.left - 8;
     }
-    if (bottom - top < 110) { top = 0; bottom = H; }   // a band under 110 px holds nothing: the whole screen
+    // a band under 90 px holds nothing: the whole screen, or on a phone the room framed out behind the panel, where no word
+    // of it peeks out beside the card (r480). 104 px (360x780 en, the last step) still holds the grid, ~15 px cubes
+    if (bottom - top < 90) { top = pr && W < 900 ? pr.top : 0; bottom = H; }
     return { W, H, left, top, w: right - left, h: bottom - top };
   }
   // a phone whose band is under 200 px (360x780: the title wraps, r442, Simon's C) has no bubble: the cubes get it all
