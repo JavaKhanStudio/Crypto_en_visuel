@@ -48,6 +48,7 @@ addEventListener('resize', resize); resize();
 
 // ---------- the pieces ----------
 const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
+addEventListener('resize', () => { if (room.quiet) bubbles.clear(); });   // turned to a short phone band: the cubes take it (r442)
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }

@@ -360,7 +360,7 @@ function machine(scene, data, portrait) {
 }
 
 // ---------- the room, its camera and its framing ----------
-const SMOOTH = .04, BUBBLE = 84;   // the camera closes 96% of the way to its framing every second
+const SMOOTH = .04, BUBBLE = 84, QUIET = 200;   // the camera closes 96% of the way to its framing every second
 export class Room {
   constructor({ camera, instant }) {
     Object.assign(this, { camera, instant });
@@ -389,22 +389,26 @@ export class Room {
     const bar = [r('topbar'), r('modes'), r('lang')].filter(b => b && b.height).reduce((m, b) => Math.max(m, b.bottom), 0);
     const panel = ['story', 'sandbox'].map(id => document.getElementById(id)).find(p => p && !p.classList.contains('hidden') && p.offsetHeight);
     const card = document.getElementById('card'), cr = r('card');
-    let top = bar + 8, bottom = H, left = 0, right = W;
+    let top = bar + 8, bottom = H, left = 0, right = W, pr;
     if (panel) {
-      const pr = panel.getBoundingClientRect();
+      pr = panel.getBoundingClientRect();
       if (panel.id === 'story' || W < 900) bottom = pr.top - 8; else left = pr.right + 8;   // the sandbox is a side panel on a wide screen
     }
     if (cr && cr.height && !card.classList.contains('hidden')) {
-      if (card.classList.contains('folded') && W < 900) bottom = Math.min(bottom, cr.top - 4);   // a phone's card is folded to a line (r84)
+      // a phone's card is folded to a line (r84), docked 8 px over the panel by main.js dock(): taken from the
+      // panel, not from where the card is now, since dock() lands a frame after a step's text changes (r442)
+      if (card.classList.contains('folded') && W < 900) bottom = Math.min(bottom, (pr ? pr.top - 8 - cr.height : cr.top) - 4);
       else if (cr.left > W * .55) right = cr.left - 8;
     }
     if (bottom - top < 110) { top = 0; bottom = H; }   // a band under 110 px holds nothing: the whole screen
     return { W, H, left, top, w: right - left, h: bottom - top };
   }
+  // a phone whose band is under 200 px (360x780: the title wraps, r442, Simon's C) has no bubble: the cubes get it all
+  get quiet() { const b = this.band(); return b.W < 600 && b.h < QUIET; }
   fit(now = false) {
     const pts = this.m.frame(this.id, this.time), box = new THREE.Box3().setFromPoints(pts);
     const c = box.getCenter(v(0, 0)), size = box.getSize(v(0, 0)), b = this.band();
-    const room = Math.min(BUBBLE, b.h * (b.W < 600 ? .42 : .25)); b.top += room; b.h -= room;   // the top of the band is kept for the bubble (a phone's is taller for its width)
+    const room = this.quiet ? 0 : Math.min(BUBBLE, b.h * (b.W < 600 ? .42 : .25)); b.top += room; b.h -= room;   // the top of the band is kept for the bubble (a phone's is taller for its width)
     const tan = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * 2, m = .9;
     const d = Math.max(size.y * b.H / (m * b.h), size.x * b.H / (m * b.w)) / tan + 2.2;
     this.want = { center: c, d, b, box };

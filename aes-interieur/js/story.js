@@ -69,6 +69,7 @@ export class Story {
 
   say(who, text) {
     const step = STEPS[this.i];
+    if (this.ctx.room.quiet) return;   // a short phone's band holds the cubes, not Alice's line (r442)
     this.ctx.bubbles.show('story-' + who, who, text ?? raw('steps')[step.id][who], () => this.ctx.room.anchor());
   }
 
