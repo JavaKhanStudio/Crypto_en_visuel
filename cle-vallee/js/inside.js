@@ -395,11 +395,13 @@ function rsaRoom(scene, send, portrait) {
 
   function padlockBeat(time) {
     const T = T1;
+    // on a phone the key-making goes as the camera backs out to both boxes, which carry its numbers (r447)
+    const rest = portrait ? T.back + 1.2 : 99, gone = 1 - span(time, rest, rest + .5);
     for (const k of ['p', 'q', 'n', 'e', 'd']) {
-      put(big[k], at[k], span(time, T[k], T[k] + .5));
-      letters[k].position.copy(at[k]).add(v(0, 2.0)); seen(letters[k], T[k] + .2);
+      put(big[k], at[k], span(time, T[k], T[k] + .5) * gone);
+      letters[k].position.copy(at[k]).add(v(0, 2.0)); seen(letters[k], T[k] + .2, rest);
     }
-    seen(times, T.q); seen(equals, T.n - .3); seen(phi, T.phi); seen(dL, T.d);
+    seen(times, T.q, rest); seen(equals, T.n - .3, rest); seen(phi, T.phi, rest); seen(dL, T.d, rest);
     // n and e onto the first box, n and d onto the second
     for (const [m, from, to, a] of [[load.n1, at.n, at.box1, T.load], [load.e1, at.e, at.box1, T.load + .2],
                                     [load.n2, at.n, at.box2, T.load + .5], [load.d2, at.d, at.box2, T.load + .7]]) {
@@ -454,7 +456,7 @@ function rsaRoom(scene, send, portrait) {
 
   // what the camera holds. Landscape: all of beat 1; beat 2 p and q, then with n, then with e and the
   // padlock. A phone follows: beat 1 the key-making, then the first box with 7 and 13, then the
-  // second box; beat 2 p over q, n as it is laid, its foot with e and the padlock, then all of n, e and the
+  // second box, and at rest both boxes; beat 2 p over q, n as it is laid, its foot with e and the padlock, then all of n, e and the
   // padlock at its foot, the bracket's words above (r446: the whole wall, so the 829 bits read as the share of n they are)
   const wide1 = [v(at.m.x - 1.4, 0.6), v(at.back.x + 1.4, at.p.y + 2.6), v(at.box1.x, at.box1.y - 3.2)];
   const p1 = time => {
@@ -465,7 +467,8 @@ function rsaRoom(scene, send, portrait) {
     if (time < T1.m - .2) return rows(b2 - 2.4, b2 + 3.6);                    // the key onto the second
     if (time < T1.c + .8) return rows(b1 - 3.2, at.m.y + 1.4);                // 7 in, the padlock shuts
     if (time < T1.cin + 1) return rows(b2 - 2.4, at.c.y + 1.4);               // 13 out, on to the key
-    return rows(at.back.y - 1.4, b2 + 2.4);                                   // 7 back
+    if (time < T1.back + 1.2) return rows(at.back.y - 1.4, b2 + 2.4);          // 7 back
+    return rows(at.back.y - 1.4, b1 + capY + 1);                               // at rest: both boxes, the public plate on top (r447)
   };
   const pq = [v(C2.p.x - HW, C2.q.y - 4.4 - .5), v(C2.p.x + HW, C2.p.y + 4.4 + .5)];
   const nF = [v(C2.n.x - HW, C2.n.y - HW), v(C2.n.x + HW, C2.n.y + HW + 1.6)];
