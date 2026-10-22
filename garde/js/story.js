@@ -6,6 +6,7 @@
 import { t, raw, lang, onLang } from './i18n.js';
 import { KEY, MSG_A, MSG_E, MAC_A, guess } from './data.js';
 import { portrait } from './camera.js';
+import { render } from '../../lib/md.js';
 import { renderDoors } from '../../lib/doors.js';
 
 // A story step's state for the stage (see Stage.apply): the guard on duty, the message Eve is
@@ -112,7 +113,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; render(this.el.text, s.p);
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';
