@@ -2,8 +2,8 @@
 """No speech bubble covers another bubble, the corner card, the open panel or the top controls (r84).
 
 Serve the repo first (python3 -m http.server 8793). Walks every story step of every episode at
-390x844 and 1440x900 (?instant=1), measures the shown bubbles against each other and against the
-page's walls (lib/bubbles.js WALLS), and writes a phone contact sheet to out/bubble-room-<episode>.png.
+390x844 and 1440x900 (?instant=1), in fr and en (r444: English lines run longer), measures the shown bubbles against each other and against the
+page's walls (lib/bubbles.js WALLS), and writes a phone contact sheet to out/bubble-room-<episode>[-en].png.
     tests/bubble_room.py [episode ...]"""
 import sys
 from playwright.sync_api import sync_playwright
@@ -26,32 +26,36 @@ bad = []
 with sync_playwright() as p:
     br = launch(p)
     for ep in EPISODES:
-        for w, h in [(390, 844), (1440, 900)]:
-            pg = br.new_page(viewport={"width": w, "height": h})
-            errors = []
-            pg.on("pageerror", lambda e: errors.append(str(e)))
-            pg.goto(f"{BASE}{ep}/?instant=1#story=1", wait_until="load")
-            pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
-            pg.add_style_tag(content=".bubble { transition: opacity .35s !important; }")   # measure where a bubble goes, not its glide
-            n = int(pg.evaluate("document.getElementById('step-count').textContent.match(/(\\d+)\\D*$/)[1]"))
-            shots = []
-            for i in range(n):
-                pg.evaluate(f"demo.story.go({i})"); pg.wait_for_timeout(1300)
-                m = pg.evaluate(MEASURE)
-                bs = m["bubbles"]
-                for k, a in enumerate(bs):
-                    for b in bs[k + 1:] + m["walls"]:
-                        if over(a, b):
-                            bad.append(f"{ep} {w}px step {i + 1}: {a['name']} covers {b['name']}")
+        for lang in ["fr", "en"]:
+            sfx = "" if lang == "fr" else "-en"
+            before = len(bad)
+            for w, h in [(390, 844), (1440, 900)]:
+                pg = br.new_page(viewport={"width": w, "height": h})
+                errors = []
+                pg.on("pageerror", lambda e: errors.append(str(e)))
+                pg.goto(f"{BASE}{ep}/?instant=1&lang={lang}#story=1", wait_until="load")
+                pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
+                pg.add_style_tag(content=".bubble { transition: opacity .35s !important; }")   # measure where a bubble goes, not its glide
+                n = int(pg.evaluate("document.getElementById('step-count').textContent.match(/(\\d+)\\D*$/)[1]"))
+                shots = []
+                for i in range(n):
+                    pg.evaluate(f"demo.story.go({i})"); pg.wait_for_timeout(1300)
+                    m = pg.evaluate(MEASURE)
+                    bs = m["bubbles"]
+                    for k, a in enumerate(bs):
+                        for b in bs[k + 1:] + m["walls"]:
+                            if over(a, b):
+                                bad.append(f"{ep} {lang} {w}px step {i + 1}: {a['name']} covers {b['name']}")
+                    if w < 900:
+                        path = f"out/bubble-room-{ep}{sfx}-{i + 1}.png"; pg.screenshot(path=path); shots.append(path)
                 if w < 900:
-                    path = f"out/bubble-room-{ep}-{i + 1}.png"; pg.screenshot(path=path); shots.append(path)
-            if w < 900:
-                ims = [Image.open(s).resize((195, 422)) for s in shots]
-                sheet = Image.new("RGB", (195 * 7, 422 * ((len(ims) + 6) // 7)), "black")
-                for k, im in enumerate(ims): sheet.paste(im, (195 * (k % 7), 422 * (k // 7)))
-                sheet.save(f"out/bubble-room-{ep}.png")
-            if errors: bad.append(f"{ep} {w}px page errors: {errors[:2]}")
-            pg.close()
+                    ims = [Image.open(s).resize((195, 422)) for s in shots]
+                    sheet = Image.new("RGB", (195 * 7, 422 * ((len(ims) + 6) // 7)), "black")
+                    for k, im in enumerate(ims): sheet.paste(im, (195 * (k % 7), 422 * (k // 7)))
+                    sheet.save(f"out/bubble-room-{ep}{sfx}.png")
+                if errors: bad.append(f"{ep} {lang} {w}px page errors: {errors[:2]}")
+                pg.close()
+            print(f"{'ok ' if len(bad) == before else 'BAD'} {ep} {lang}", flush=True)
     br.close()
 print("\n".join(bad) or "all ok")
 sys.exit(1 if bad else 0)
