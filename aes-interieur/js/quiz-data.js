@@ -10,14 +10,14 @@ export const QUIZ = [
     fr: {
       q: "Pour accélérer son chiffrement, une développeuse propose de garder les 14 tours d'AES mais d'en retirer l'étape SubBytes (la S-box). Que devient son chiffrement ?",
       o: ['Aussi sûr, puisque la clé entre toujours à chaque tour', 'Plus sûr, car il reste plus de tours pour mélanger', 'Aussi sûr, tant que la clé fait 256 bits', 'Cassable : sans la S-box, tout se ramène à des équations simples', 'Illisible même pour Bob, qui ne peut plus déchiffrer'],
-      ok: "Correct! SubBytes est la seule étape non linéaire. ShiftRows, MixColumns et AddRoundKey ne font que déplacer et mélanger les bits par des XOR : sans la S-box, la sortie est une fonction simple de l'entrée et de la clé, et quelques paires connues suffisent pour résoudre les équations et retrouver la clé.",
-      ko: "Erreur. Le nombre de tours et la taille de la clé ne sauvent rien : sans SubBytes, chaque étape qui reste est un mélange de XOR, et 14 mélanges de XOR à la suite en font un seul. On résout alors les équations pour retrouver la clé.",
+      ok: "Correct! SubBytes est la seule étape non linéaire. ShiftRows, MixColumns et AddRoundKey ne font que déplacer et mélanger les bits par des XOR : sans la S-box, la sortie est une fonction simple de l'entrée et de la clé, et une seule paire connue suffit pour résoudre les équations et tout déchiffrer, même sans retrouver la clé.",
+      ko: "Erreur. Le nombre de tours et la taille de la clé ne sauvent rien : sans SubBytes, chaque étape qui reste est un mélange de XOR, et 14 mélanges de XOR à la suite en font un seul. Une seule paire connue suffit alors pour résoudre les équations et tout déchiffrer, même sans retrouver la clé.",
     },
     en: {
       q: "To speed up her encryption, a developer proposes to keep AES's 14 rounds but remove the SubBytes step (the S-box). What becomes of her encryption?",
       o: ['Just as safe, since the key still goes in every round', 'Safer, since more rounds are left to mix', 'Just as safe, as long as the key is 256 bits', 'Breakable: without the S-box, it all comes down to simple equations', 'Unreadable even to Bob, who can no longer decrypt'],
-      ok: 'Correct! SubBytes is the only non-linear step. ShiftRows, MixColumns and AddRoundKey only move and mix bits with XORs: without the S-box, the output is a simple function of the input and the key, and a few known pairs are enough to solve the equations and recover the key.',
-      ko: 'Wrong. The number of rounds and the key size save nothing: without SubBytes, every step left is a mix of XORs, and 14 mixes of XORs in a row make a single one. One then solves the equations to recover the key.',
+      ok: 'Correct! SubBytes is the only non-linear step. ShiftRows, MixColumns and AddRoundKey only move and mix bits with XORs: without the S-box, the output is a simple function of the input and the key, and a single known pair is enough to solve the equations and decrypt everything, even without recovering the key.',
+      ko: 'Wrong. The number of rounds and the key size save nothing: without SubBytes, every step left is a mix of XORs, and 14 mixes of XORs in a row make a single one. A single known pair is then enough to solve the equations and decrypt everything, even without recovering the key.',
     },
   },
   {
@@ -25,20 +25,20 @@ export const QUIZ = [
     fr: {
       q: "Un serveur chiffre une photo avec AES-256 en mode CBC. Quels 16 octets la boîte AES reçoit-elle pour le premier bloc ?",
       o: ['Les 16 premiers octets de la photo, tels quels', 'Les 16 premiers octets de la photo XOR l’IV', 'L’IV seul, la photo n’entre qu’au deuxième bloc', 'Les 16 premiers octets de la clé', 'Les 16 premiers octets de la photo XOR la clé'],
-      ok: "Correct! En CBC, chaque bloc est mélangé au bloc chiffré d'avant avant d'entrer dans AES ; le premier n'a pas de bloc d'avant, il est mélangé à l'IV. AES ne voit jamais le premier bloc de la photo tel quel.",
+      ok: "Correct! En CBC, chaque bloc est mélangé au bloc chiffré précédent avant d'entrer dans AES ; le premier n'a pas de bloc d'avant, il est mélangé à l'IV. AES ne voit jamais le premier bloc de la photo tel quel.",
       ko: "Erreur. En CBC, rien n'entre dans AES tel quel : le premier bloc est d'abord mélangé à l'IV par un XOR, les suivants au bloc chiffré d'avant. La clé, elle, entre par AddRoundKey, à l'intérieur de la boîte.",
     },
     en: {
       q: 'A server encrypts a photo with AES-256 in CBC mode. Which 16 bytes does the AES box receive for the first block?',
       o: ['The first 16 bytes of the photo, as they are', 'The first 16 bytes of the photo XOR the IV', 'The IV alone, the photo only goes in at the second block', 'The first 16 bytes of the key', 'The first 16 bytes of the photo XOR the key'],
-      ok: "Correct! In CBC, each block is mixed with the encrypted block before it before going into AES; the first has no block before it, so it is mixed with the IV. AES never sees the photo's first block as it is.",
+      ok: "Correct! In CBC, each block is mixed with the previous encrypted block before going into AES; the first has no block before it, so it is mixed with the IV. AES never sees the photo's first block as it is.",
       ko: 'Wrong. In CBC, nothing goes into AES as it is: the first block is first mixed with the IV by an XOR, the next ones with the encrypted block before. The key goes in through AddRoundKey, inside the box.',
     },
   },
   {
     correct: [4],
     fr: {
-      q: "Un tour d'AES compte quatre étapes. Si un espion connaissait le détail de trois d'entre elles mais pas la clé, laquelle l'empêcherait encore de défaire le tour ?",
+      q: "Un tour d'AES compte quatre étapes. Si un espion connaissait le détail des quatre étapes mais pas la clé, laquelle l'empêcherait encore de défaire le tour ?",
       o: ['SubBytes, parce que la S-box est secrète', 'ShiftRows, parce que le décalage change à chaque tour', 'MixColumns, parce que le mélange dépend du message', 'Aucune : connaître les étapes suffit à défaire le tour', 'AddRoundKey, la seule étape où la clé entre'],
       ok: "Correct! La S-box, le décalage des lignes et le mélange des colonnes sont publics et les mêmes pour tout le monde : n'importe qui peut les défaire. Seul AddRoundKey utilise la clé de tour, et sans elle on ne peut pas défaire le XOR.",
       ko: "Erreur. Tout AES est public : la S-box est une table publiée, ShiftRows décale toujours de 0, 1, 2 et 3 cases, MixColumns suit toujours la même règle. Le seul secret est la clé, qui entre par AddRoundKey.",
