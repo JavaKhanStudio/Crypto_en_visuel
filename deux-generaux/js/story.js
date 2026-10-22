@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import { wait } from './sim.js';
+import { render } from '../../lib/md.js';
 
 // a and b above their flags: the white city's flag tops out at +28.5, the great mallorn's at +27.7 (r345)
 const anchors = {
@@ -107,7 +108,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; render(this.el.text, s.p);
     // a step may lay its points out as tiles under the text (r93: Eve's four tricks, each with the episode that stops it)
     // (r105: the links to the episodes moved to the last step's doors)
     this.el.tiles.innerHTML = (s.tiles || []).map(([icon, name, what, ep]) =>
