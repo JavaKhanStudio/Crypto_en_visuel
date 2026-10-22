@@ -33,6 +33,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 8 | Le garde trop pressé (HMAC, timing attack) | https://javakhanstudio.github.io/Crypto_en_visuel/garde/ | publié |
 | 9 | La roue et le caillou (Vigenère, l'attaque de Kasiski) | https://javakhanstudio.github.io/Crypto_en_visuel/kasiski/ | publié |
 | 10 | Le tunnel (VPN, WireGuard : X25519 et ChaCha20-Poly1305) | https://javakhanstudio.github.io/Crypto_en_visuel/vpn/ | publié |
+| 11 | AES de l'intérieur (les 14 tours d'AES-256 sur un bloc) | https://javakhanstudio.github.io/Crypto_en_visuel/aes-interieur/ | publié |
 
 Dans un épisode, `#story=N` est l'**étape** N de son histoire (pas un numéro d'épisode),
 `#sandbox` et `#quiz` ses autres modes, `?lang=en` l'anglais. Les anciens liens vers la racine
@@ -351,6 +352,20 @@ places, un bit changé en chemin) et un quiz de 7 questions. X25519 et ChaCha20-
 calculés dans la page ; `node tests/vpn_values.mjs` les compare aux vecteurs des RFC 7748 et 8439
 et à `node:crypto`, et vérifie les adresses, octets et nombres écrits dans l'histoire ;
 `tests/vpn_story.py` clique chaque bouton de l'histoire et du bac à sable.
+
+## Épisode 11 — AES de l'intérieur
+
+La boîte AES-256 de l'épisode 1.2, ouverte, dans le donjon d'Alice. Le bloc qu'elle reçoit
+(P1 ⊕ IV, 16 octets) est posé en cubes, colonne par colonne : c'est l'état ; la clé d'Alice
+(32 octets) donne les 15 clés de tour. Le tour 1 en détail, une étape à la fois (AddRoundKey,
+SubBytes avec sa case de la S-box, ShiftRows, MixColumns, AddRoundKey), les tours 2 à 13 en
+accéléré, le tour 14 sans MixColumns, et la sortie est le C1 de l'épisode 1.2, octet pour octet.
+Puis une seule lettre du message changée : 1 octet diffère, 4 après le tour 1, les 16 après le tour 2.
+13 étapes en 4 chapitres, un bac à sable (changer un octet du bloc ou de la clé, lancer les
+14 tours, les cubes qui diffèrent cerclés de rouge) et un quiz de 6 questions. Le chiffrement est
+calculé dans la page par `lib/aes.js` ; `node tests/aes_interieur_values.mjs` le compare, tour
+par tour, à l'exemple C.3 de FIPS-197 et à l'épisode 1.2 ; `tests/aes_interieur_story.py` lit ce
+que montrent les cubes à chaque étape et dans le bac à sable.
 
 ## Lancer
 
