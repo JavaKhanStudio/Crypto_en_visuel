@@ -67,7 +67,8 @@
 @media (max-width: 900px) { #card.folded > :not(h3) { display: none; } #card h3 { cursor: pointer; }
   #card h3::after { content: ' ▾'; color: var(--muted); font-size: 12px; } #card.folded h3::after { content: ' ▸'; } }
 @media (max-width: 900px) { #card { top: auto; bottom: calc(var(--dock, 230px) + 8px); right: 8px; width: auto; max-width: calc(100% - 16px);
-  max-height: calc(100% - var(--dock, 230px) - var(--top, 0px) - 16px); overflow: auto; } }
+  max-height: calc(100% - var(--dock, 230px) - var(--top, 0px) - 16px); overflow: auto; }
+  #card.cramped { display: none; } }   /* no room for its line between the controls and the panel (main.js dock(), r481) */
 
 /* the sandbox's order field, and the story's link to another episode */
 #sb-order { width: 100%; font: 700 14px "Courier New", monospace; background: #1b1d2a; color: var(--ink); border: 1px solid var(--edge); border-radius: 8px; padding: 7px 8px; }

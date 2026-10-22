@@ -77,6 +77,10 @@ function dock() {
   const root = document.documentElement.style;
   root.setProperty('--dock', `${open ? innerHeight - open.getBoundingClientRect().top : 14}px`);
   root.setProperty('--top', `${top}px`);
+  // a phone whose panel leaves less than the folded card's line under the controls (360x640, the last step) has no
+  // card: hung from the panel it would climb over the modes row (r481)
+  const room = open ? open.getBoundingClientRect().top - top : innerHeight;
+  card.classList.toggle('cramped', innerWidth <= 900 && card.classList.contains('folded') && room < 56);
 }
 const docker = new ResizeObserver(dock);
 for (const el of [...Object.values(panels), document.getElementById('topbar')]) docker.observe(el);
