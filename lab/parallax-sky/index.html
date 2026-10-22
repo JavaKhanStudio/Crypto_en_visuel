@@ -1,0 +1,129 @@
+<!doctype html>
+<!-- r339 lab: episode 1.1's valley in full 3D, its sky dome replaced by a parallax page (Simon's library, calm-day,
+     Apache-2.0: ../parallax/page/NOTICE) that moves with the camera. sky.js holds the two ways:
+       ?way=flat   (a) the libGDX backdrop glued behind the world, slid by the camera's yaw and pan x each layer's speed
+       ?way=rings  (b) each layer a painted band around the valley at a radius from its speed: real parallax in a flight
+       ?way=dome   the episode as it is today, for reference
+     A timeline flies the episode's shots (deux-generaux/js/camera.js SHOTS) and two low ones of the lab's, night then dawn;
+     ?t=SECONDS freezes it there, window.lab.seek(t) moves it (tools/parallax_sky_film.py). ⏸ frees the camera
+     (drag to orbit) and the dawn slider. compare.html shows two ways side by side on one clock. -->
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parallaxe en fond · épisode 1.1</title>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #e8e4da; font: 15px system-ui, sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #ui { position: fixed; left: 12px; top: 12px; right: 12px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  #ui button, #ui a { font: inherit; padding: 7px 13px; border-radius: 8px; border: 1px solid #ffffff40; background: #141820d0; color: inherit; cursor: pointer; text-decoration: none; }
+  #ui button.on { background: #e8b34b; color: #1b1408; border-color: #e8b34b; }
+  #ui label { padding: 5px 10px; border-radius: 8px; background: #141820d0; display: flex; gap: 6px; align-items: center; }
+  #say { position: fixed; left: 12px; bottom: 12px; max-width: min(620px, calc(100vw - 48px)); padding: 9px 13px; border-radius: 8px; background: #141820d8; font-size: 14px; line-height: 1.4; }
+  #tag { position: fixed; left: 10px; top: 10px; padding: 4px 10px; border-radius: 6px; background: #141820d8; font-size: 14px; font-weight: 600; }
+  body.embed #ui, body.embed #say { display: none; } body:not(.embed) #tag { display: none; }
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <button data-way="dome">Aujourd'hui (dôme)</button>
+  <button data-way="flat">(a) Fond plat</button>
+  <button data-way="rings">(b) Anneaux</button>
+  <button id="play">⏸</button>
+  <label>aube <input id="dawn" type="range" min="0" max="1" step=".01" value="0"></label>
+  <label>hauteur <input id="lift" type="range" min="-10" max="6" step=".5"><output id="lift-o"></output></label>
+  <label>échelle <input id="scale" type="range" min=".3" max="1.2" step=".05"><output id="scale-o"></output></label>
+  <a id="cmp" href="compare.html">Côte à côte</a>
+</div>
+<div id="say"></div>
+<div id="tag"></div>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { buildWorld } from '../../deux-generaux/js/world.js';
+import { CameraRig, SHOTS } from '../../deux-generaux/js/camera.js';
+import { buildBackdrop, KNOBS } from './sky.js';
+
+const q = new URLSearchParams(location.search);
+const way = ['flat', 'rings', 'dome'].includes(q.get('way')) ? q.get('way') : 'flat';
+if (q.has('embed')) document.body.classList.add('embed');
+const SAY = {
+  dome: "Aujourd'hui : le ciel de l'épisode est un dôme peint par un shader (dégradé, étoiles, lune), à l'infini : il ne bouge pas avec la caméra.",
+  flat: "(a) Fond plat, comme libGDX : la page est collée derrière le monde, son pied sur l'horizon de la vallée ; chaque couche glisse selon la rotation et le déplacement de la caméra fois sa vitesse. Simple, fidèle à la bibliothèque, mais la profondeur est simulée.",
+  rings: "(b) Anneaux : chaque couche est une bande peinte autour de la vallée, d'autant plus loin qu'elle est lente (330 à 760 unités). En vol, la parallaxe vient de la perspective, sans rien piloter ; les montagnes 3D passent devant.",
+};
+const TAG = { dome: "Aujourd'hui · dôme", flat: '(a) Fond plat', rings: '(b) Anneaux' };
+document.getElementById('say').textContent = SAY[way]; document.getElementById('tag').textContent = TAG[way];
+document.querySelectorAll('[data-way]').forEach(b => { b.classList.toggle('on', b.dataset.way === way);
+  b.onclick = () => { q.set('way', b.dataset.way); location.search = q; }; });
+
+// ---------- the episode's renderer, as deux-generaux/js/main.js builds it ----------
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, .5, 1500);
+const world = buildWorld(scene);
+const rig = new CameraRig(camera, canvas);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .75, .55, .82));
+composer.addPass(new OutputPass());
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); composer.setSize(w, h);
+  camera.aspect = w / h; camera.fov = w < h ? 65 : 45; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+for (const k of ['lift', 'scale']) if (q.has(k)) KNOBS[k] = +q.get(k);   // ?lift=-3&scale=.7: a shot with other knobs
+const backdrop = way === 'dome' ? null : await buildBackdrop(world, camera, way);
+for (const k of ['lift', 'scale']) {
+  const el = document.getElementById(k), out = document.getElementById(k + '-o');
+  el.value = KNOBS[k]; out.textContent = KNOBS[k];
+  el.oninput = () => { backdrop?.set({ [k]: +el.value }); out.textContent = el.value; q.set(k, el.value); history.replaceState(null, '', '?' + q); if (!playing) frame(0); };
+}
+
+// ---------- the timeline: the episode's shots, flown as CameraRig.fly flies them (ease, lift), night, dawn, night ----------
+const FLY = 2.2, HOLD = 1.2;
+// The episode's shots mostly look down at the valley: only gateB shows the sky. lowW and lowE are the lab's own,
+// low across the valley at its ridge, so a flight shows what the backdrop does; [shot, dawn 0 night .. 1 day]
+const SH = { ...SHOTS, lowW: { pos: new THREE.Vector3(-70, 20, 55), target: new THREE.Vector3(30, 30, -70) },
+  lowE: { pos: new THREE.Vector3(75, 22, 50), target: new THREE.Vector3(-35, 30, -70) } };
+const PLAN = [['gateB', 0], ['lowW', 0], ['lowE', 0], ['castleA', 0], ['both', 1], ['lowW', 1], ['gateB', 1]];
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const LEG = FLY + HOLD, LOOP = LEG * (PLAN.length - 1) + HOLD;
+function poseAt(t) {
+  t = ((t % LOOP) + LOOP) % LOOP;
+  const i = Math.min(PLAN.length - 2, Math.floor(t / LEG)), u = t - i * LEG;
+  const a = SH[PLAN[i][0]], b = SH[PLAN[i + 1][0]];
+  const k = u < HOLD ? 0 : ease(Math.min(1, (u - HOLD) / FLY));
+  const pos = a.pos.clone().lerp(b.pos, k); pos.y += Math.sin(Math.PI * k) * Math.min(40, a.pos.distanceTo(b.pos) * .18);
+  const dawn = PLAN[i][1] + (PLAN[i + 1][1] - PLAN[i][1]) * k;
+  return { pos, target: a.target.clone().lerp(b.target, k), dawn };
+}
+
+let playing = !q.has('t'), time = parseFloat(q.get('t')) || 0, free = false;
+const dawnEl = document.getElementById('dawn');
+dawnEl.oninput = () => world.setDawn(+dawnEl.value);
+document.getElementById('play').onclick = e => { free = playing; playing = !playing; e.target.textContent = playing ? '⏸' : '▶'; };
+document.getElementById('cmp').href = 'compare.html' + (q.has('t') ? '?t=' + q.get('t') : '');
+
+function frame(dt) {
+  if (!free) {
+    const p = poseAt(time);
+    camera.position.copy(p.pos); rig.controls.target.copy(p.target); camera.lookAt(p.target);
+    world.setDawn(p.dawn); dawnEl.value = p.dawn;
+  } else rig.controls.update();
+  world.update(dt, time);
+  backdrop?.update(time);
+  composer.render();
+}
+const clock = new THREE.Clock();
+function loop() { const dt = Math.min(clock.getDelta(), .05); if (playing) time += dt; frame(dt); requestAnimationFrame(loop); }
+loop();
+window.lab = { way, world, camera, backdrop, LOOP, seek(t) { time = t; playing = false; free = false; frame(0); } };
+window.labReady = true;
+</script>
+</body></html>

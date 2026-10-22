@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- r339 lab: two ways of index.html side by side (one above the other on a portrait screen), on one clock: this page
+     seeks both frames to the same time every frame, and its sliders set both. ?l=flat&r=rings (dome, flat, rings). -->
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parallaxe en fond · côte à côte</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #e8e4da; font: 15px system-ui, sans-serif; }
+  #panes { display: grid; grid-template-columns: 1fr 1fr; height: 100%; gap: 2px; }
+  @media (orientation: portrait) { #panes { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
+  iframe { border: 0; width: 100%; height: 100%; display: block; }
+  #ui { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+    padding: 6px; border-radius: 10px; background: #141820d8; max-width: calc(100vw - 24px); }
+  #ui button, #ui select, #ui a { font: inherit; padding: 6px 11px; border-radius: 8px; border: 1px solid #ffffff40; background: #1d2230; color: inherit; cursor: pointer; text-decoration: none; }
+  #ui label { display: flex; gap: 6px; align-items: center; padding: 0 6px; }
+  #out { position: fixed; left: 50%; bottom: 120px; transform: translateX(-50%); width: min(520px, calc(100vw - 24px)); height: 120px; font: 12px ui-monospace, monospace; }
+</style></head><body>
+<div id="panes"><iframe id="L"></iframe><iframe id="R"></iframe></div>
+<div id="ui">
+  <select id="l"></select><select id="r"></select>
+  <button id="play">⏸</button>
+  <label>temps <input id="t" type="range" min="0" step=".1"></label>
+  <label>hauteur <input id="lift" type="range" min="-10" max="6" step=".5"></label>
+  <label>échelle <input id="scale" type="range" min=".3" max="1.2" step=".05"></label>
+  <button id="copy">Copier les réglages</button>
+  <a href="index.html">Un seul</a>
+</div>
+<textarea id="out" hidden readonly></textarea>
+<script type="module">
+const q = new URLSearchParams(location.search);
+const WAYS = { dome: "Aujourd'hui · dôme", flat: '(a) Fond plat', rings: '(b) Anneaux' };
+const side = { l: q.get('l') || 'flat', r: q.get('r') || 'rings' };
+const knobs = { lift: q.get('lift') ?? -2, scale: q.get('scale') ?? .7 };
+const frames = { l: document.getElementById('L'), r: document.getElementById('R') };
+const load = k => { frames[k].src = `index.html?way=${side[k]}&embed=1&t=0&lift=${knobs.lift}&scale=${knobs.scale}`; };
+for (const k of ['l', 'r']) {
+  const sel = document.getElementById(k);
+  for (const [w, label] of Object.entries(WAYS)) sel.add(new Option(label, w, false, w === side[k]));
+  sel.onchange = () => { side[k] = sel.value; q.set(k, sel.value); history.replaceState(null, '', '?' + q); load(k); };
+  load(k);
+}
+for (const k of ['lift', 'scale']) {
+  const el = document.getElementById(k); el.value = knobs[k];
+  el.oninput = () => { knobs[k] = +el.value; q.set(k, el.value); history.replaceState(null, '', '?' + q);
+    for (const f of Object.values(frames)) f.contentWindow.lab?.backdrop?.set({ [k]: knobs[k] }); };
+}
+// Copy settings (board skill, "A lab Simon tunes"): every knob, what it opened at, the ones moved; shown selected too
+const opened = { l: side.l, r: side.r, lift: +knobs.lift, scale: +knobs.scale };
+document.getElementById('copy').onclick = () => {
+  const now = { l: side.l, r: side.r, lift: +knobs.lift, scale: +knobs.scale };
+  const json = JSON.stringify({ lab: 'parallax-sky', ticket: 'r339', settings: now, opened,
+    moved: Object.keys(now).filter(k => now[k] !== opened[k]) }, null, 1);
+  const out = document.getElementById('out'); out.hidden = false; out.value = json; out.select();
+  navigator.clipboard?.writeText(json).catch(() => {});
+};
+let time = parseFloat(q.get('t')) || 0, playing = !q.has('t'), last = performance.now();
+const tEl = document.getElementById('t');
+document.getElementById('play').onclick = e => { playing = !playing; e.target.textContent = playing ? '⏸' : '▶'; };
+tEl.oninput = () => { time = +tEl.value; playing = false; document.getElementById('play').textContent = '▶'; };
+function tick(now) {
+  const dt = Math.min((now - last) / 1000, .05); last = now;
+  const labs = Object.values(frames).map(f => f.contentWindow?.lab).filter(Boolean);
+  if (labs.length === 2) {
+    if (playing) time = (time + dt) % labs[0].LOOP;
+    tEl.max = labs[0].LOOP; tEl.value = time;
+    for (const lab of labs) lab.seek(time);
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+</script>
+</body></html>
