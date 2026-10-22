@@ -7,6 +7,7 @@
 import { t, raw, lang, onLang } from './i18n.js';
 import { USERS, BCRYPT, PASSWORD } from './data.js';
 import { baseRow, ROWS } from './stage.js';
+import { render } from '../../lib/md.js';
 import { renderDoors } from '../../lib/doors.js';
 
 const [A, B] = USERS, pw = PASSWORD;
@@ -124,7 +125,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; render(this.el.text, s.p);
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';
