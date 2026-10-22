@@ -397,12 +397,17 @@ export class Room {
     if (cr && cr.height && !card.classList.contains('hidden')) {
       // a phone's card is folded to a line (r84), docked 8 px over the panel by main.js dock(): taken from the
       // panel, not from where the card is now, since dock() lands a frame after a step's text changes (r442)
-      if (card.classList.contains('folded') && W < 900) bottom = Math.min(bottom, (pr ? pr.top - 8 - cr.height : cr.top) - 4);
-      else if (cr.left > W * .55) right = cr.left - 8;
+      if (card.classList.contains('folded') && W < 900) {
+        const over = Math.min(bottom, (pr ? pr.top - 8 - cr.height : cr.top) - 4);
+        // a band over the card too short to hold anything (the last step's doors and the credit line: ~70 px at 360x780)
+        // gives the room the corner left of the card instead, down to the panel (r483). Only then: off-centre, the camera
+        // shows the wall's end and clips the step's name, so a band that holds the grid stays the full width
+        if (over - top < 90 && bottom - top >= 90 && cr.left - 8 >= 140) right = cr.left - 8; else bottom = over;
+      } else if (cr.left > W * .55) right = cr.left - 8;
     }
     // a band under 90 px holds nothing: the whole screen, or on a phone the room framed out behind the panel, where no word
     // of it peeks out beside the card (r480). 104 px (360x780 en, the last step) still holds the grid, ~15 px cubes
-    if (bottom - top < 90) { top = pr && W < 900 ? pr.top : 0; bottom = H; }
+    if (bottom - top < 90) { top = pr && W < 900 ? pr.top : 0; bottom = H; left = 0; right = W; }
     return { W, H, left, top, w: right - left, h: bottom - top };
   }
   // a phone whose band is under 200 px (360x780: the title wraps, r442, Simon's C) has no bubble: the cubes get it all
