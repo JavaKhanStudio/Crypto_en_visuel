@@ -9,7 +9,7 @@ import { createPrivateKey } from 'node:crypto';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as A from '../lib/saga-aes.js';
-import * as R from '../paquet-complet/js/rsa.js';
+import * as R from '../lib/rsa.js';
 import * as P from '../paquet-complet/js/packet.js';
 let bad = 0;
 const check = (name, got, want) => { const ok = got === want; ok || bad++; console.log(ok ? 'ok  ' : 'FAIL', name, String(got).slice(0, 80), ok ? '' : `(want ${want})`); };

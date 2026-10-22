@@ -106,7 +106,7 @@ où pend le cadenas ouvert de Bob, qui se ferme, et c en sort ; la caméra resso
 chiffrement hybride (190 octets au plus par bloc, RSA lent), des clés neuves à chaque ordre, et le
 paquet complet ; la fin renvoie aux épisodes 2 (le cadenas) et 3 (Diffie-Hellman). 13 étapes en 4
 chapitres, un bac à sable (votre ordre ; les clés en clair ou fermées ; Eve lit ou change l'ordre),
-un quiz de 7 questions. RSA et OAEP sont calculés dans la page sur BigInt (`cle-vallee/js/rsa.js`,
+un quiz de 7 questions. RSA et OAEP sont calculés dans la page sur BigInt (`lib/rsa.js`, partagé avec 1.5 et 1.6,
 la paire de Bob tirée une fois avec openssl, des graines fixes pour l'histoire) et vérifiés par
 `node tests/cle_values.mjs` contre openssl (`pkeyutl`, OAEP SHA-256), WebCrypto et `pow` de
 Python ; `tests/cle_story.py` joue chaque chevauchée et le bac à sable.

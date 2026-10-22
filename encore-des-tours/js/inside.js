@@ -20,7 +20,7 @@ import { t, raw } from './i18n.js';
 import { COLORS } from '../../lib/saga/world.js';
 import { key as keyProp } from './props.js';
 import * as A from '../../lib/saga-aes.js';
-import * as R from './rsa.js';
+import * as R from '../../lib/rsa.js';
 import * as S from './sign.js';
 import * as P from './packet.js';
 import { sha256 } from '../../lib/hmac.js';

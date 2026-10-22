@@ -27,7 +27,7 @@ export const STEPS = [
   { id: 'end', ch: 3, refs: { '1.2': 5 }, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', en: 'img/door-quiz.en.jpg', go: x => x.mode('quiz') },
-      { k: 'home', img: 'img/door-home.jpg', href: '../' },
+      { k: 'home', img: '../assets/doors/home-2.jpg', href: '../' },
       { k: 'next', img: '../eve-lit-tout/vignette.jpg', href: '../eve-lit-tout/', hash: '#story=5' }] },
 ];
 

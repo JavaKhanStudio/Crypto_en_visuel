@@ -8,7 +8,7 @@ import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
 import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
 import * as A from '../../lib/saga-aes.js';
-import * as R from './rsa.js';
+import * as R from '../../lib/rsa.js';
 import * as P from './packet.js';
 
 const anchors = {

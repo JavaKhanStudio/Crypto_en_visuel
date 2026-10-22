@@ -4,7 +4,7 @@
 // her own keys, locked with Bob's public padlock, an order of hers, a seal that checks. And the
 // same order in AES-256-GCM (gcm.js), encrypted and sealed in one move.
 import * as A from '../../lib/saga-aes.js';
-import * as R from './rsa.js';
+import * as R from '../../lib/rsa.js';
 import * as S from './sign.js';
 import * as G from './gcm.js';
 import { hmac, equal } from '../../lib/hmac.js';

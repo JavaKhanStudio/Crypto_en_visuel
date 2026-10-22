@@ -19,16 +19,20 @@ eps = argv or EPS
 LOCAL = "http://localhost:8793/"
 PROPS = ["display", "grid-template-columns", "gap", "padding", "border-radius", "border", "background-color",
          "color", "font-size", "line-height", "margin-bottom", "aspect-ratio", "object-fit", "opacity", "position"]
-READ = """props => {
+READ = """async props => {
   const box = document.getElementById('step-actions'), o = box.getBoundingClientRect();
   const st = el => { if (!el) return null; const c = getComputedStyle(el), r = el.getBoundingClientRect();
     return { ...Object.fromEntries(props.map(p => [p, c.getPropertyValue(p)])),
              rect: [r.x - o.x, r.y - o.y, r.width, r.height].map(Math.round) }; };
-  return { cls: box.className.replace(' doors-row', ''), grid: st(box), doors: [...box.querySelectorAll('.door')].map(d => ({
-    cls: d.className, href: d.getAttribute('href'), src: d.querySelector('img').getAttribute('src'),
+  const out = { cls: box.className.replace(' doors-row', ''), grid: st(box), doors: [...box.querySelectorAll('.door')].map(d => ({
+    cls: d.className, href: d.getAttribute('href'), src: d.querySelector('img').src,
     clip: d.querySelector('video')?.getAttribute('src') ?? null, door: st(d), pic: st(d.querySelector('.pic')),
     img: st(d.querySelector('img')), name: st(d.querySelector('b')), line: st(d.querySelector('b + span')),
     text: d.textContent })) };
+  // r431: a picture is its bytes, not its path (the home door moved to ../assets/doors/home.jpg)
+  for (const d of out.doors) d.src = [...new Uint8Array(await crypto.subtle.digest('SHA-256',
+    await (await fetch(d.src)).arrayBuffer()))].slice(0, 6).map(b => b.toString(16).padStart(2, '0')).join('');
+  return out;
 }"""
 
 def read(br, url, size):

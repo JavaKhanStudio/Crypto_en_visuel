@@ -5,7 +5,7 @@
 // browser's own RSA-PSS (WebCrypto), both ways.
 import { sha256 } from '../../lib/hmac.js';
 import { fromHex, concat, xor, random, same } from '../../lib/saga-aes.js';
-import { keyPair, lock, unlock, big, bytesOf, mgf1, H } from './rsa.js';
+import { keyPair, lock, unlock, big, bytesOf, mgf1, H } from '../../lib/rsa.js';
 
 // Alice's pair, RSA-2048: two primes of 1024 bits drawn once (openssl genpkey), so the story's
 // signature never moves. Her public key (n, e) is Bob's, as Bob's padlock is Alice's.

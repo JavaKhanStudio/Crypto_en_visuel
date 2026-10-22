@@ -42,7 +42,7 @@ export const STEPS = [
   { id: 'end', refs: { '6': 3 }, ch: 3, shot: 'overview', orbit: .06, view: 'packet', key: 2, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../octet-change/vignette.jpg', clip: 'img/door-next.mp4', href: '../octet-change/' }] },
 ];
 
