@@ -1,4 +1,20 @@
-.narration p { margin: 0; color: #e6dfcf; min-height: 3em; }
+.narration .step-text { color: #e6dfcf; min-height: 3em; }
+/* r235 (r176 roll-out): the step text's paragraphs and list (lib/md.js); the tones are the card's
+   brick colours: 1 violet the keys, 2 blue the IV and the nonce, 3 gold the ciphertext, 4 green the
+   seal and the GCM tag, b blue the signature, r red Eve's tricks and what Bob rejects */
+.step-text p { margin: 0; }
+.step-text p + p, .step-text ul + p { margin-top: 6px; }
+.step-text p + ul { margin-top: 3px; }
+.step-text ul { margin: 0; padding-left: 1.25em; }
+.step-text li { margin: 2px 0; }
+.step-text li::marker { color: var(--muted); }
+.step-text strong { color: #fff; }
+.tone-1 { color: #d9b0f7; font-weight: 700; }
+.tone-2 { color: #9fd3f0; font-weight: 700; }
+.tone-3 { color: #ffd84d; font-weight: 700; }
+.tone-4 { color: #8fd18a; font-weight: 700; }
+.tone-b { color: #8cc4ff; font-weight: 700; }
+.tone-r { color: #ff8f9a; font-weight: 700; }
 /* r93: a step's points as tiles under its text (Eve's four tricks); 2 by 2 on a phone */
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
 .tiles:empty { display: none; }
