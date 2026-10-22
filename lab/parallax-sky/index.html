@@ -1,9 +1,9 @@
 <!doctype html>
-<!-- r339 lab: episode 1.1's valley in full 3D, its sky dome replaced by a parallax page (Simon's library, calm-day,
-     Apache-2.0: ../parallax/page/NOTICE) that moves with the camera. sky.js holds the two ways:
-       ?way=flat   (a) the libGDX backdrop glued behind the world, slid by the camera's yaw and pan x each layer's speed
+<!-- r339 lab: episode 1.1's valley in full 3D, its sky a parallax page (Simon's library, calm-day,
+     Apache-2.0: ../../assets/parallax/calm-day/NOTICE) that moves with the camera. Simon picked way (b), the rings, and
+     since r449 the saga builds them itself (lib/saga/sky.js, through lib/saga/world.js): this lab shows the lib's, never a fork.
        ?way=rings  (b) each layer a painted band around the valley at a radius from its speed: real parallax in a flight
-       ?way=dome   the episode as it is today, for reference
+       ?way=dome   the old gradient dome, for reference (way (a), the flat backdrop, was not picked and is gone)
      A timeline flies the episode's shots (lib/saga/camera.js SHOTS) and two low ones of the lab's, night then dawn;
      ?t=SECONDS freezes it there, window.lab.seek(t) moves it (tools/parallax_sky_film.py). ⏸ frees the camera
      (drag to orbit) and the dawn slider. compare.html shows two ways side by side on one clock. -->
@@ -23,8 +23,7 @@
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="ui">
-  <button data-way="dome">Aujourd'hui (dôme)</button>
-  <button data-way="flat">(a) Fond plat</button>
+  <button data-way="dome">Avant (dôme)</button>
   <button data-way="rings">(b) Anneaux</button>
   <button id="play">⏸</button>
   <label>aube <input id="dawn" type="range" min="0" max="1" step=".01" value="0"></label>
@@ -42,17 +41,16 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld } from '../../lib/saga/world.js';
 import { CameraRig, SHOTS } from '../../lib/saga/camera.js';
-import { buildBackdrop, KNOBS } from './sky.js';
+import { KNOBS } from '../../lib/saga/sky.js';
 
 const q = new URLSearchParams(location.search);
-const way = ['flat', 'rings', 'dome'].includes(q.get('way')) ? q.get('way') : 'flat';
+const way = q.get('way') === 'dome' ? 'dome' : 'rings';
 if (q.has('embed')) document.body.classList.add('embed');
 const SAY = {
-  dome: "Aujourd'hui : le ciel de l'épisode est un dôme peint par un shader (dégradé, étoiles, lune), à l'infini : il ne bouge pas avec la caméra.",
-  flat: "(a) Fond plat, comme libGDX : la page est collée derrière le monde, son pied sur l'horizon de la vallée ; chaque couche glisse selon la rotation et le déplacement de la caméra fois sa vitesse. Simple, fidèle à la bibliothèque, mais la profondeur est simulée.",
+  dome: "Avant : le ciel de l'épisode était un dôme peint par un shader (dégradé, étoiles, lune), à l'infini : il ne bouge pas avec la caméra.",
   rings: "(b) Anneaux : chaque couche est une bande peinte autour de la vallée, d'autant plus loin qu'elle est lente (330 à 760 unités). En vol, la parallaxe vient de la perspective, sans rien piloter ; les montagnes 3D passent devant.",
 };
-const TAG = { dome: "Aujourd'hui · dôme", flat: '(a) Fond plat', rings: '(b) Anneaux' };
+const TAG = { dome: 'Avant · dôme', rings: '(b) Anneaux' };
 document.getElementById('say').textContent = SAY[way]; document.getElementById('tag').textContent = TAG[way];
 document.querySelectorAll('[data-way]').forEach(b => { b.classList.toggle('on', b.dataset.way === way);
   b.onclick = () => { q.set('way', b.dataset.way); location.search = q; }; });
@@ -78,7 +76,9 @@ function resize() {
 }
 addEventListener('resize', resize); resize();
 for (const k of ['lift', 'scale']) if (q.has(k)) KNOBS[k] = +q.get(k);   // ?lift=-3&scale=.7: a shot with other knobs
-const backdrop = way === 'dome' ? null : await buildBackdrop(world, camera, way);
+const backdrop = await world.skyReady;   // lib/saga/sky.js, as every saga episode builds it
+backdrop?.set({});   // the ?lift= ?scale= read above
+if (way === 'dome' && backdrop) { backdrop.root.visible = backdrop.gradient.mesh.visible = false; world.sky.children[0].visible = true; }
 for (const k of ['lift', 'scale']) {
   const el = document.getElementById(k), out = document.getElementById(k + '-o');
   el.value = KNOBS[k]; out.textContent = KNOBS[k];
@@ -117,7 +117,6 @@ function frame(dt) {
     world.setDawn(p.dawn); dawnEl.value = p.dawn;
   } else rig.controls.update();
   world.update(dt, time);
-  backdrop?.update(time);
   composer.render();
 }
 const clock = new THREE.Clock();

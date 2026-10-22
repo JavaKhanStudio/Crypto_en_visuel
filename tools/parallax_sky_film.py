@@ -4,7 +4,7 @@
 Serve the repo first (python3 -m http.server 8793), then:
     tools/parallax_sky_film.py out/r339 --stills 1,6.5,14,19.5      # a PNG per way per time: <out>/<way>-<size>-t<t>.png
     tools/parallax_sky_film.py out/r339 --film                      # <out>/film-<size>.mp4: the ways one above the other (side by side on a phone), one loop
-    --size 1440x810 (default) or 390x844; --ways dome,flat,rings; --fps 10
+    --size 1440x810 (default) or 390x844; --ways dome,rings; --fps 10
 Each frame is the lab frozen at its time (window.lab.seek), so the clip plays at true speed whatever the GPU;
 It draws on the GPU (tools/browser.py, r401); --gpu is kept for old command lines, CRYPTO_GL=soft goes back to SwiftShader. Prints page errors (must be none); exit 1 on any.
 """
@@ -15,7 +15,7 @@ from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 ap = argparse.ArgumentParser()
 ap.add_argument("out")
 ap.add_argument("--base", default="http://localhost:8793/")
-ap.add_argument("--ways", default="dome,flat,rings")
+ap.add_argument("--ways", default="dome,rings")
 ap.add_argument("--size", default="1440x810")
 ap.add_argument("--stills", default="")
 ap.add_argument("--film", action="store_true")
