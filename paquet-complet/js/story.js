@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
+import { renderDoors } from '../../lib/doors.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import * as A from '../../lib/saga-aes.js';
 import * as P from './packet.js';
@@ -47,8 +48,12 @@ export const STEPS = [
   { id: 'files', ch: 3, shot: 'valley', view: 'files', say: ['n'] },
   { id: 'main', ch: 3, shot: 'both', view: 'term', go: async x => { await x.scene(); } },
   { id: 'readme', ch: 3, shot: 'castleA', view: 'readme', show: ['a', ALL], say: ['a'] },
-  { id: 'end', refs: { '1.6': 2 }, ch: 3, shot: 'overview', orbit: .06, view: 'whole', go: x => x.mode('sandbox'), go2: x => x.mode('quiz'),
-    link: ['../eve-lit-tout/', '../octet-change/', '../cle-vallee/', '../encore-des-tours/'] },
+  // r105/r129: the last step is the doors out, each with its picture and its hover clip; the next episode is last, at the right
+  { id: 'end', refs: { '1.6': 2 }, ch: 3, shot: 'overview', orbit: .06, view: 'whole', doors: [
+      { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
+      { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
+      { k: 'home', img: 'img/door-home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'next', img: '../encore-des-tours/vignette.jpg', clip: 'img/door-next.mp4', href: '../encore-des-tours/' }] },
 ];
 
 export class Story {
@@ -126,7 +131,7 @@ export class Story {
       b.onclick = () => this.run(step[key]);
       if (anim && key === 'go') { b.id = 'play'; this.el.next.after(b); this.el.play = b; } else this.el.actions.appendChild(b);
     }
-    (step.link || []).forEach((href, k) => this.el.actions.insertAdjacentHTML('beforeend', `<a class="button" href="${href}?lang=${lang}">${s.link[k]}</a>`));
+    renderDoors(this.el.actions, step.doors, s.doors, { lang, setMode: m => this.ctx.setMode(m), phone: 'row' });
     this.el.next.classList.toggle('primary', !anim || this.seen);
     if (!this.seen) this.el.next.classList.remove('shine');
     if (langOnly) for (const s2 of step.say || []) this.say(s2, undefined, step.inside ? () => this.ctx.inside.anchor() : undefined);

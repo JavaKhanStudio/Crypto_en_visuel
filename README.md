@@ -128,7 +128,9 @@ padding, `compare_digest`), de nouveau dans le donjon de Bob : sur le paquet d'E
 rouge et AES reste fermé, puis l'erreur, déchiffrer d'abord, montre ce qu'AES rend des octets d'Eve
 (`paquet-complet/js/inside.js`, vérifié par `tests/paquet_inside.py`). Puis le code : les quatre fichiers et leurs fonctions, la scène de
 `main.py` rejouée par deux cavaliers dans un terminal (« Bonjour Bob ! », puis « ALERTE : HMAC
-invalide »), les choix que le README justifie ; la fin renvoie aux épisodes 1.2, 1.3 et 1.4. 14
+invalide »), les choix que le README justifie ; la fin renvoie aux épisodes 1.2, 1.3 et 1.4, et ouvre quatre portes avec
+leur clip au survol : bac à sable, quiz, tous les épisodes, puis l'épisode 1.6 en or à droite (`lib/doors.js`,
+`tests/last_doors.py paquet-complet 14 encore-des-tours`). 14
 étapes en 4 chapitres, un bac à sable (votre ordre ; Eve laisse passer ou change l'octet de votre
 choix dans la brique de votre choix ; Bob vérifie d'abord ou déchiffre d'abord), un quiz de 7
 questions. Le moteur et les valeurs sont ceux de 1.4 (`paquet-complet/js/packet.js` assemble) ;

@@ -124,8 +124,9 @@ const fr = {
       go: 'Lancer python main.py ▶' },
     readme: { t: 'Ce que le README justifie', p: "Le README dit pourquoi chaque choix. La carte en fait le tour : la taille des clés, le mode, le padding, le sceau, OAEP, l'ordre de la vérification et du déchiffrement, la comparaison en temps constant, et le hasard d'où tout part. Chaque ligne répond à un tour d'Eve vu dans la saga : lire, reconnaître un ordre qui revient, changer un octet, recopier une clé, mesurer un temps.",
       a: 'Chaque choix répond à un tour d’Eve.' },
-    end: { t: 'À vous', p: "Dans le bac à sable, écrivez votre ordre, choisissez l'octet qu'Eve change (dans quelle brique, à quelle place) et l'ordre des gestes de Bob : la carte montre chaque geste et ce que Bob lit. Chaque brique a son épisode, en détail : 1.2 pour AES-256-CBC, 1.3 pour le sceau HMAC, 1.4 pour le cadenas RSA. Et Eve a encore des tours : le cadenas de Bob est public, elle peut fabriquer un paquet entier avec ses propres clés. C'est l'épisode 1.6.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz', link: ['Épisode 1.2 : AES ▶', 'Épisode 1.3 : le sceau ▶', 'Épisode 1.4 : le cadenas RSA ▶', 'Épisode 1.6 : Eve a encore des tours ▶'] },
+    end: { t: 'À vous', p: "Dans le bac à sable, écrivez votre ordre, choisissez l'octet qu'Eve change (dans quelle brique, à quelle place) et l'ordre des gestes de Bob : la carte montre chaque geste et ce que Bob lit. Chaque brique a son épisode, en détail : l'épisode 1.2 pour AES-256-CBC, l'épisode 1.3 pour le sceau HMAC, l'épisode 1.4 pour le cadenas RSA. Et Eve a encore des tours : le cadenas de Bob est public, elle peut fabriquer un paquet entier avec ses propres clés. C'est l'épisode 1.6.",
+      doors: { sandbox: ['Bac à sable', 'Votre ordre, l’octet qu’Eve change, et l’ordre des gestes de Bob'], quiz: ['Quiz', 'Sept questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 1.6 · Eve a encore des tours ▶', 'Un paquet fabriqué, un paquet rejoué : ce que le sceau ne voit pas'] } },
   },
 
   // sandbox
@@ -260,8 +261,9 @@ const en = {
       go: 'Run python main.py ▶' },
     readme: { t: 'What the README justifies', p: "The README says why each choice was made. The card goes through them: the key sizes, the mode, the padding, the seal, OAEP, the order of checking and decrypting, the constant-time comparison, and the randomness everything starts from. Each line answers one of Eve's tricks seen in the saga: reading, spotting an order that comes back, changing a byte, copying a key, timing a comparison.",
       a: "Each choice answers one of Eve's tricks." },
-    end: { t: 'Your turn', p: "In the sandbox, write your order, choose the byte Eve changes (in which brick, at which place) and the order of Bob's moves: the card shows each move and what Bob reads. Each brick has its own episode, in detail: 1.2 for AES-256-CBC, 1.3 for the HMAC seal, 1.4 for the RSA padlock. And Eve still has tricks: Bob's padlock is public, so she can build a whole packet with keys of her own. That is episode 1.6.",
-      go: 'Try the sandbox', go2: 'Take the quiz', link: ['Episode 1.2: AES ▶', 'Episode 1.3: the seal ▶', 'Episode 1.4: the RSA padlock ▶', 'Episode 1.6: Eve Has More Tricks ▶'] },
+    end: { t: 'Your turn', p: "In the sandbox, write your order, choose the byte Eve changes (in which brick, at which place) and the order of Bob's moves: the card shows each move and what Bob reads. Each brick has its own episode, in detail: episode 1.2 for AES-256-CBC, episode 1.3 for the HMAC seal, episode 1.4 for the RSA padlock. And Eve still has tricks: Bob's padlock is public, so she can build a whole packet with keys of her own. That is episode 1.6.",
+      doors: { sandbox: ['Sandbox', 'Your order, the byte Eve changes, and the order of Bob’s moves'], quiz: ['Quiz', 'Seven questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 1.6 · Eve Has More Tricks ▶', 'A forged packet, a replayed packet: what the seal does not see'] } },
   },
 
   'sb.title': 'Sandbox',
