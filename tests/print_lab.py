@@ -2,7 +2,8 @@
 """r196: lab/print/ (the admin page that prints a scene) on one episode. Checks every asset of its
 print list resolves (or says why it cannot be printed), then reads the STL the page would put in the
 zip and checks it: a whole number of triangles, the size it shows (height or longest side as asked,
-within 1 mm), standing on z = 0, and closed pieces with a positive volume (outward faces: the export
+within 1 mm), standing on z = 0, repaired (r394: lib/print.js repair leaves 0 open, 0 flat, 0 thin, 0
+floating pieces, and PRINT.txt lists the fixes), and closed pieces with a positive volume (outward faces: the export
 turns Y up into Z up without mirroring). Prints each asset's line as the page shows it, shoots the
 page to out/print_lab-<ep>.png (a castle) and -<figure>.png. Serve the repo first (python3 -m http.server 8793), or pass a base URL.
 
@@ -38,12 +39,15 @@ with sync_playwright() as p:
     pg.goto(f"{base}lab/print/?ep={ep}")
     pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
     rows = pg.evaluate("""() => printLab.rows.map(r => ({ id: r.a.id, no: r.a.printable === false, why: r.a.why, err: r.error,
-        n: r.parts?.length, mm: r.mm, size: r.size, issues: r.issues, skipped: r.parts?.skipped,
-        closed: r.checks?.map(c => !c.open && !c.flat) }))""")
+        n: r.fix?.ps.length, mm: r.mm, size: r.size, issues: r.issues, left: r.left, skipped: r.parts?.skipped, fixes: r.fix?.log.length,
+        closed: r.after?.map(c => !c.open && !c.flat) }))""")
     for r in rows:
         if r["no"]:
             report(f"{r['id']}: not printable, says why", bool(r["why"]), r["why"][:70]); continue
         report(f"{r['id']}: read from the episode", not r["err"] and r["n"], r["err"] or f"{r['n']} pieces, {r['mm'][0]}x{r['mm'][2]}x{r['mm'][1]} mm, {r['issues']}, left out {r['skipped']}")
+        if not r["err"]:   # r394: the export repairs what check() and floating() flag
+            left = r["left"]
+            report(f"{r['id']}: repaired, 0 open, 0 flat, 0 thin, 0 floating", not (left["open"] or left["flat"] or left["thin"] or left["floats"]), f"{r['fixes']} fixes, left {left}")
     ids = [r["id"] for r in rows if not r["no"] and not r["err"]]
     fl = pg.evaluate("""ids => printLab.files(ids).map(f => ({ name: f.name,
         b64: typeof f.data === 'string' ? btoa(unescape(encodeURIComponent(f.data))) : btoa(Array.from(f.data, c => String.fromCharCode(c)).join('')) }))""", ids)
@@ -62,7 +66,7 @@ with sync_playwright() as p:
         report(f"{i}: one STL per piece", len(pieces) == r["n"])
         vols = [volume(read_stl(files[n])) for n, c in zip(pieces, r["closed"]) if c]
         report(f"{i}: closed pieces face outwards", all(v > 0 for v in vols), f"{len(vols)} closed, min volume {min(vols, default=0):.1f} mm3")
-        report(f"{i}: PRINT.txt", f"{i}/PRINT.txt" in files)
+        report(f"{i}: PRINT.txt", f"{i}/PRINT.txt" in files and (not r["fixes"] or "Fixed for printing" in files[f"{i}/PRINT.txt"].decode()))
     zb = base64.b64decode(pg.evaluate("""async ids => { const { zip } = await import('../../lib/print.js');
         const b = new Uint8Array(await zip(printLab.files(ids)).arrayBuffer()); let s = ''; for (const c of b) s += String.fromCharCode(c); return btoa(s); }""", ["guard", "tree"]))
     zf = zipfile.ZipFile(io.BytesIO(zb))
