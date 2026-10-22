@@ -237,6 +237,10 @@ function oaepRoom(scene, pk, portrait) {
       if (i >= D0) flip(i, clamp01((r1 - r) / .8));
       else if (i >= S0) flip(i, clamp01((r + 1 - r2) / .8));
     }
+    // on a phone EM's wall goes as the camera settles on the box and c: above them it would show cut
+    // under the top bar (r448); a copy of it is in the box, the card holds it
+    const rest = portrait ? T.c + 1.2 : 99, gone = 1 - span(time, rest, rest + .5);
+    if (gone < 1) W.forEach(m => { m.scale.multiplyScalar(gone); m.visible &&= gone > .02; });
     const sweep1 = time > T.m1 && time < T.m1e + .3, sweep2 = time > T.m2 && time < T.m2e + .3;
     bar.visible = sweep1 || sweep2;
     if (bar.visible) {
@@ -256,7 +260,7 @@ function oaepRoom(scene, pk, portrait) {
     seen(L.one, T.one, plateFor(T.one, T.m1 + 1.9)); seen(L.zeros, T.zeros, plateFor(T.zeros, T.m1 + .9));
     seen(L.lhash, T.lhash, plateFor(T.lhash, T.m1 + .1)); seen(L.seed, T.seed, plateFor(T.seed, T.m2 + .3));
     seen(L.mdb, T.m1e, portrait ? T.m1e + 1.6 : 99); seen(L.mseed, T.m2e - .2, portrait ? T.m2e + 1.4 : 99);
-    seen(em, T.em);
+    seen(em, T.em, rest);
     // the lock: a copy of EM into the box, the padlock snaps shut, the box works, c comes out
     E.forEach(m => { m.visible = false; });
     if (time > T.lock) into(time, T.lock, T.shut);
@@ -274,7 +278,7 @@ function oaepRoom(scene, pk, portrait) {
   // wall and the box while the padlock shuts, then the box and c, the wall's last columns beside. A phone's band is a short strip:
   // it follows the action five rows at a time (the keys, the zeros as they climb, the hash and the
   // seed, the first mask's bar on its way down, the second's on the seed), the whole wall once, as EM,
-  // then the box, then the padlock shut over the first rows of c
+  // then the box, then the padlock shut over all of c
   const rows = (a, b, up = 0) => [v(WC.x - half, rowY(b) - .6), v(WC.x + half, rowY(a) + .6 + up)];
   const win = r => { const a = Math.max(0, Math.min(11, Math.round(r - 2.5))); return rows(a, a + 4); };
   const wallF = [...rows(0, 15, 1.6), ...(portrait ? [] : [v(lx - 10.5, WC.y)])];
@@ -290,7 +294,7 @@ function oaepRoom(scene, pk, portrait) {
     if (time < T.em) return rows(0, 4, 1);
     if (time < T.lock) return rows(0, 15, 1.6);
     if (time < T.c + 1.2) return [...boxF, v(BC.x - 9, BC.y - 1), v(BC.x + 9, BC.y - 1)];
-    return [v(BC.x, BC.y + 2.7 + 1.4), v(CC.x - half, CC.y + (7.5 - 1.5) * P - .6), v(CC.x + half, CC.y + half + 1.6)];
+    return [v(BC.x, BC.y + 2.7 + 1.4), ...cF];   // at rest the shut box and all of c (r448: its last rows went under the card)
   };
   const frame = time => portrait ? phone(time)
     : time < T.zeros ? [...rows(10, 15), v(lx - 10.5, rowY(12))] : time < T.lock ? wallF : time < T.c ? [...wallF, ...boxF] : [v(WC.x + half - 4.4, WC.y), ...boxF, ...cF];
