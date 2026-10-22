@@ -3,7 +3,7 @@
 // what travels, Eve's notebook, the project's packet. The sandbox shows its own send and the notebook.
 import { t, raw, lang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import * as A from './aes.js';
+import * as A from './values.js';
 
 const el = document.getElementById('card');
 const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));

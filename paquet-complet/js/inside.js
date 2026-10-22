@@ -34,7 +34,7 @@ import { CASTLE_A, CASTLE_B, COLORS } from './world.js';
 import { SHOTS } from './camera.js';
 import { ZOOM, windowPath, roomArrival, setVeil } from '../../lib/zoom.js';
 import { key, padlock, packet } from './props.js';
-import * as A from './aes.js';
+import * as A from '../../lib/saga-aes.js';
 import * as P from './packet.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);

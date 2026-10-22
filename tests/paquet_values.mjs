@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { createPrivateKey } from 'node:crypto';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import * as A from '../paquet-complet/js/aes.js';
+import * as A from '../lib/saga-aes.js';
 import * as R from '../paquet-complet/js/rsa.js';
 import * as P from '../paquet-complet/js/packet.js';
 let bad = 0;

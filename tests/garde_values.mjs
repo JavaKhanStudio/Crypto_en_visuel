@@ -2,7 +2,7 @@
 // computed with hmac.new(b"cle_secrete_partagee", m, hashlib.sha256).hexdigest(), the slide « HMAC »).
 //     node tests/garde_values.mjs
 import { createHmac, createHash } from 'node:crypto';
-import { hmacHex, sha256Hex } from '../garde/js/hmac.js';
+import { hmacHex, sha256Hex } from '../lib/hmac.js';
 import { KEY, MSG_A, MSG_E, MAC_A, MAC_E, looks, guess } from '../garde/js/data.js';
 
 let bad = 0;

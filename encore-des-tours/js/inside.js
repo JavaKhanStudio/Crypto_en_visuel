@@ -36,11 +36,11 @@ import { CASTLE_A, CASTLE_B, COLORS } from './world.js';
 import { SHOTS } from './camera.js';
 import { ZOOM, windowPath, roomArrival, setVeil } from '../../lib/zoom.js';
 import { key as keyProp } from './props.js';
-import * as A from './aes.js';
+import * as A from '../../lib/saga-aes.js';
 import * as R from './rsa.js';
 import * as S from './sign.js';
 import * as P from './packet.js';
-import { sha256 } from './hmac.js';
+import { sha256 } from '../../lib/hmac.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;

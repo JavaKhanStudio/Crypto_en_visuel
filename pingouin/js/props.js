@@ -2,7 +2,7 @@
 // face a 4 x 4 grid of its bytes), the AES press, the XOR ring, the conveyor, the screens of the
 // penguin wall, and the characters. One unit is 10 cm: a crate is 70 cm, a person 1.70 m.
 import * as THREE from 'three';
-import { glyph } from './aes.js';
+import { glyph } from './values.js';
 
 export const COLORS = { a: 0x4da3ff, b: 0xffc24d, e: 0xff3347 };
 export const CRATE = 7;                     // a crate's side

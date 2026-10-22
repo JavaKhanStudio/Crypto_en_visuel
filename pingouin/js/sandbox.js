@@ -2,7 +2,7 @@
 // one), then the sending to Bob: Eve may flip the bit of one's choice, Alice may seal with an
 // HMAC. The status says, block by block, what Bob reads: intact, changed, or unreadable.
 import { t, onLang } from './i18n.js';
-import * as A from './aes.js';
+import * as A from './values.js';
 import { SLOT } from './world.js';
 import { show } from './stage.js';
 import { sfx } from '../../lib/sound.js';

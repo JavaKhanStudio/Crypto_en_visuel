@@ -4,7 +4,7 @@
 import { t, raw, lang, onLang, fill } from './i18n.js';
 import { linkify } from '../../xref.js';
 import { render } from '../../lib/md.js';
-import * as A from './aes.js';
+import * as A from './values.js';
 import { renderDoors } from '../../lib/doors.js';
 
 // which run the room plays: Alice's, or the same block with its first letter changed (the last chapter)

@@ -3,8 +3,8 @@
 // and HMAC (WebCrypto, node's crypto.subtle); then what the story claims of Eve's changed bytes.
 //     node tests/octet_values.mjs
 import { execFileSync } from 'node:child_process';
-import * as A from '../octet-change/js/aes.js';
-import { hmac, sha256, equal } from '../octet-change/js/hmac.js';
+import * as A from '../lib/saga-aes.js';
+import { hmac, sha256, equal } from '../lib/hmac.js';
 let bad = 0;
 const check = (name, got, want) => { const ok = got === want; ok || bad++; console.log(ok ? 'ok  ' : 'FAIL', name, got, ok ? '' : `(want ${want})`); };
 const plain = b => A.hex(b).replace(/ /g, '');

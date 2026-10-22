@@ -3,7 +3,7 @@
 // differs from Alice's own run at the same moment, and the card counts them after each round.
 // The inputs are made once and never re-rendered (a cursor in one stays where it is).
 import { t, onLang, lang } from './i18n.js';
-import * as A from './aes.js';
+import * as A from './values.js';
 
 const $ = id => document.getElementById(id);
 

@@ -3,8 +3,8 @@
 // against episode 1.2: the same key, IV and order, and the last state equal to 1.2's C1 byte for byte.
 //     node tests/aes_interieur_values.mjs
 import { readFileSync } from 'node:fs';
-import * as A from '../aes-interieur/js/aes.js';
-import * as E from '../eve-lit-tout/js/aes.js';
+import * as A from '../aes-interieur/js/values.js';
+import * as E from '../eve-lit-tout/js/values.js';
 let bad = 0;
 const check = (name, got, want) => { const ok = got === want; ok || bad++; console.log(ok ? 'ok  ' : 'FAIL', name, ok ? '' : `${got} (want ${want})`); };
 const flat = b => A.hex(b).replace(/ /g, '');

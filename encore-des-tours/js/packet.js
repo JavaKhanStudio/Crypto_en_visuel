@@ -3,11 +3,11 @@
 // Alice's signature (RSA-PSS, sign.js) over the number and the four bricks. Eve's forged packet:
 // her own keys, locked with Bob's public padlock, an order of hers, a seal that checks. And the
 // same order in AES-256-GCM (gcm.js), encrypted and sealed in one move.
-import * as A from './aes.js';
+import * as A from '../../lib/saga-aes.js';
 import * as R from './rsa.js';
 import * as S from './sign.js';
 import * as G from './gcm.js';
-import { hmac, equal } from './hmac.js';
+import { hmac, equal } from '../../lib/hmac.js';
 
 // The story's keys, IV and OAEP seed are 1.4's and 1.5's
 export const STORY = { key: A.KEY, macKey: A.MACKEY, iv: A.IV, seed: R.SEED };

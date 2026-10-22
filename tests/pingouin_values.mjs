@@ -4,7 +4,7 @@
 // The header block is VIREMENT URGENT! where the slides have the school's name (r78), so every value
 // that depends on P1 or P3 differs from the slides; each one was recomputed apart with openssl enc
 // -aes-128-ecb / -aes-128-cbc and Python's hmac (r78), the rest (C2, C4 in ECB, the flip mask) is the slides'.
-import * as A from '../pingouin/js/aes.js';
+import * as A from '../pingouin/js/values.js';
 let bad = 0;
 const check = (name, got, want) => { const ok = got === want; ok || bad++; console.log(ok ? 'ok  ' : 'FAIL', name, got, ok ? '' : `(want ${want})`); };
 const h6 = b => A.hex(b, 6);

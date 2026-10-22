@@ -3,7 +3,7 @@
 // built by the episode's own builder; size is its board-game size (lib/print.js fit: h = height in
 // mm, max = longest side in mm); omit names the parts that are light, not matter. An asset that
 // cannot be printed says why. A new asset in the scene gets its line here.
-import { buildRider, guard } from './messenger.js';
+import { buildRider, guard } from '../../lib/messenger.js';
 
 const kids = (o, test) => o.children.find(test);
 

@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process';
 import { createPrivateKey, createPublicKey, createCipheriv, createDecipheriv, verify, constants } from 'node:crypto';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import * as A from '../encore-des-tours/js/aes.js';
+import * as A from '../lib/saga-aes.js';
 import * as R from '../encore-des-tours/js/rsa.js';
 import * as S from '../encore-des-tours/js/sign.js';
 import * as G from '../encore-des-tours/js/gcm.js';

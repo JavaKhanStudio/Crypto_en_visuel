@@ -9,7 +9,7 @@
 </head><body><div id="l"></div>
 <script type="module">
 import * as THREE from 'three';
-import { buildRider, guard, gallop } from '../deux-generaux/js/messenger.js';
+import { buildRider, guard, gallop } from '../lib/messenger.js';
 const q = new URLSearchParams(location.search);
 const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(devicePixelRatio);
 document.body.appendChild(renderer.domElement);

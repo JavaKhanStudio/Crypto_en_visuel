@@ -11,7 +11,7 @@ import { buildWorld, CASTLE_A, CASTLE_B } from './world.js';
 import { cargo as buildCargo } from './props.js';
 import { CameraRig } from './camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
-import { Messenger } from './messenger.js';
+import { Messenger } from '../../lib/messenger.js';
 import { Bubbles } from '../../lib/bubbles.js';
 import { Inside } from './inside.js';
 import { Story, STEPS } from './story.js';

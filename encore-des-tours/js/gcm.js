@@ -3,8 +3,8 @@
 // the ciphertext is as long as the order), and GHASH, a polynomial over GF(2^128) keyed by
 // AES(key, 0), folds the ciphertext into a 16-byte tag. One key, a 12-byte nonce never used twice
 // with it. tests/tours_values.mjs checks it against node's crypto and WebCrypto.
-import { encryptBlock, concat, xor } from './aes.js';
-import { equal } from './hmac.js';
+import { encryptBlock, concat, xor } from '../../lib/saga-aes.js';
+import { equal } from '../../lib/hmac.js';
 
 const toBig = b => b.reduce((x, y) => (x << 8n) | BigInt(y), 0n);
 const toBytes = x => Uint8Array.from({ length: 16 }, (_, i) => Number((x >> BigInt(8 * (15 - i))) & 0xffn));

@@ -14,7 +14,7 @@
 // in: the page opens in the room. The free band and the framing are 1.2's (Inside.band, Inside.fit).
 import * as THREE from 'three';
 import { t } from './i18n.js';
-import * as A from './aes.js';
+import * as A from './values.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;

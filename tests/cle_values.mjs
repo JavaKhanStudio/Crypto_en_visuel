@@ -4,7 +4,7 @@
 //     node tests/cle_values.mjs
 import { execFileSync } from 'node:child_process';
 import { createPrivateKey, createPublicKey } from 'node:crypto';
-import * as A from '../cle-vallee/js/aes.js';
+import * as A from '../lib/saga-aes.js';
 import * as R from '../cle-vallee/js/rsa.js';
 import * as P from '../cle-vallee/js/packet.js';
 let bad = 0;

@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { X, AT } from './world.js';
 import { badge, drawBoard, drawLedger, drawChart } from './props.js';
-import { hmacHex } from './hmac.js';
+import { hmacHex } from '../../lib/hmac.js';
 import { KEY, MSG_E, HEX, N, guess, looks } from './data.js';
 import { burst, icon } from '../../lib/fx.js';
 import { sfx } from '../../lib/sound.js';

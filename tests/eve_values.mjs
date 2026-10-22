@@ -2,7 +2,7 @@
 // (aes-256-cbc, PKCS#7 by default) and the browser's AES-CBC (WebCrypto, node's crypto.subtle).
 //     node tests/eve_values.mjs
 import { execFileSync } from 'node:child_process';
-import * as A from '../eve-lit-tout/js/aes.js';
+import * as A from '../eve-lit-tout/js/values.js';
 let bad = 0;
 const check = (name, got, want) => { const ok = got === want; ok || bad++; console.log(ok ? 'ok  ' : 'FAIL', name, got, ok ? '' : `(want ${want})`); };
 const plain = b => A.hex(b).replace(/ /g, '');

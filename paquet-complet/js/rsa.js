@@ -3,8 +3,8 @@
 // her two keys (AES ‖ HMAC, 64 bytes) with Bob's public key (n, e); Bob opens them with his private
 // key d. Everything on screen is computed here, in the page; tests/cle_values.mjs checks it against
 // openssl and the browser's own RSA-OAEP (WebCrypto).
-import { sha256 } from './hmac.js';
-import { fromHex, hex, concat, xor, random, same } from './aes.js';
+import { sha256 } from '../../lib/hmac.js';
+import { fromHex, hex, concat, xor, random, same } from '../../lib/saga-aes.js';
 
 // ---------- numbers ----------
 export const big = b => BigInt('0x' + (hex(b).replace(/ /g, '') || '0'));

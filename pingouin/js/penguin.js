@@ -4,7 +4,7 @@
 // each encrypted byte is shown as a colour, its hue and its lightness spread over the 256 values.
 // In ECB a run of 16 pixels of one colour always gives the same block: the silhouette comes back
 // as a pattern.
-import { KEY, IV1, ecb, cbc } from './aes.js';
+import { KEY, IV1, ecb, cbc } from './values.js';
 import * as THREE from 'three';
 
 export const W = 192, H = 224;            // 12 blocks a row, 224 rows

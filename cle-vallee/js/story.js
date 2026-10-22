@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
-import * as A from './aes.js';
+import * as A from '../../lib/saga-aes.js';
 import * as R from './rsa.js';
 import * as P from './packet.js';
 

@@ -3,8 +3,8 @@
 // computes with her PRIVATE key (only she can), anyone checks with her PUBLIC key. Everything on
 // screen is computed here, in the page; tests/tours_values.mjs checks it against openssl and the
 // browser's own RSA-PSS (WebCrypto), both ways.
-import { sha256 } from './hmac.js';
-import { fromHex, concat, xor, random, same } from './aes.js';
+import { sha256 } from '../../lib/hmac.js';
+import { fromHex, concat, xor, random, same } from '../../lib/saga-aes.js';
 import { keyPair, lock, unlock, big, bytesOf, mgf1, H } from './rsa.js';
 
 // Alice's pair, RSA-2048: two primes of 1024 bits drawn once (openssl genpkey), so the story's

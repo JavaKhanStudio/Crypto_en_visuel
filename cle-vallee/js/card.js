@@ -4,7 +4,7 @@
 // carries what, two sends of the same order, the whole packet. The sandbox shows its own send.
 import { t, raw, lang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import * as A from './aes.js';
+import * as A from '../../lib/saga-aes.js';
 import * as R from './rsa.js';
 import * as P from './packet.js';
 

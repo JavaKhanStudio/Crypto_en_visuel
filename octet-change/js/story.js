@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
-import * as A from './aes.js';
+import * as A from '../../lib/saga-aes.js';
 
 const anchors = {
   a: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y + 27, 0),

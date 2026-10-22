@@ -3,7 +3,7 @@
 // who reads what she can and keeps it in her notebook: a ciphertext (or a text) she has already
 // seen is flagged. The card shows the send's key, blocks, padding and ciphertext.
 import { t, lang, onLang, ORDER_DEFAULT } from './i18n.js';
-import * as A from './aes.js';
+import * as A from './values.js';
 
 const $ = id => document.getElementById(id);
 

@@ -63,7 +63,7 @@ d'Alice : la caméra entre par sa fenêtre, et une machine montée sur les vrais
 bruit » (`eve-lit-tout/js/inside.js`, vérifié par `tests/eve_inside.py`). 12 étapes en 4 chapitres, un bac à sable
 (votre ordre, envoyé en clair, avec la même clé, ou avec une clé et un IV neufs ; le carnet d'Eve
 montre ce qu'elle reconnaît), un quiz de 7 questions. Même vallée et même distribution que
-`deux-generaux/`. Le chiffrement est calculé dans la page (`eve-lit-tout/js/aes.js`, vrai AES-256)
+`deux-generaux/`. Le chiffrement est calculé dans la page (`lib/aes.js`, vrai AES-256, avec les valeurs de `eve-lit-tout/js/values.js`)
 et vérifié par `node tests/eve_values.mjs` contre FIPS-197, openssl et WebCrypto ;
 `tests/eve_story.py` joue chaque chevauchée et le bac à sable.
 
@@ -80,8 +80,8 @@ l'autre (la clé HMAC à côté de la clé AES, le sceau de l'IV et du chiffré 
 puis le calcul de Bob sur le paquet changé : un autre sceau), puis ressort à « Le sceau à la porte de
 Bob » (`octet-change/js/inside.js`, vérifié par `tests/octet_inside.py`). 13 étapes en 4 chapitres, un bac à sable (votre ordre ; Eve ne
 touche à rien, change un octet de l'IV ou du chiffré, ou envoie son cavalier ; Bob vérifie le sceau
-ou non), un quiz de 7 questions. Tout est calculé dans la page (`octet-change/js/aes.js`,
-`octet-change/js/hmac.js`) et vérifié par `node tests/octet_values.mjs` contre FIPS-197, RFC 4231,
+ou non), un quiz de 7 questions. Tout est calculé dans la page (`lib/saga-aes.js`,
+`lib/hmac.js`) et vérifié par `node tests/octet_values.mjs` contre FIPS-197, RFC 4231,
 openssl, le module `hmac` de Python et WebCrypto ; `tests/octet_story.py` joue chaque chevauchée et
 le bac à sable.
 
@@ -268,7 +268,7 @@ anneau XOR avec le bloc chiffré précédent (l'IV 7e fa 5a… pour le premier) 
 Bob lit P1 détruit et montant=90100EUR. La parade : un HMAC sur l'IV et le chiffré, vérifié par Bob
 avant de déchiffrer. La diapo ne donne pas de clé HMAC : l'épisode prend `cle-hmac-secrete`.
 13 étapes en 6 chapitres, un bac à sable (votre message, ECB ou CBC, le bit qu'Eve retourne, avec
-ou sans HMAC), un quiz de 7 questions. `pingouin/js/aes.js` est un vrai AES-128 (ECB, CBC, PKCS#7),
+ou sans HMAC), un quiz de 7 questions. `lib/aes.js` est un vrai AES, ici AES-128 (ECB, CBC, PKCS#7),
 `tests/pingouin_values.mjs` le compare aux diapos et au vecteur de FIPS-197
 (`node tests/pingouin_values.mjs`), `tests/pingouin_story.py` clique chaque bouton de l'histoire et
 du bac à sable et vérifie les caisses, le tableau et le verdict de Bob. La dernière étape ouvre quatre
@@ -309,7 +309,7 @@ chaque position et garde la plus lente — au plus 64 × 16 = 1 024 essais, au l
 reconstitue le HMAC lettre par lettre ; son faux ordre passe. `hmac.compare_digest` regarde
 toujours les 64 lettres : seize barres égales, l'attaque s'effondre. 10 étapes en 5 chapitres, un
 bac à sable (choisir l'ordre d'Eve et le garde en service, == ou compare_digest, puis lancer
-l'attaque) et un quiz de 6 questions. `garde/js/hmac.js` est un vrai SHA-256 (FIPS 180-4) et un
+l'attaque) et un quiz de 6 questions. `lib/hmac.js` est un vrai SHA-256 (FIPS 180-4) et un
 vrai HMAC-SHA256 (RFC 2104), calculés dans la page. `tests/garde_values.mjs` les compare à
 `node:crypto` et aux valeurs de Python (`node tests/garde_values.mjs`), `tests/garde_story.py`
 clique chaque bouton de l'histoire et du bac à sable et vérifie le verdict du garde, le registre
@@ -391,7 +391,6 @@ deux-generaux/      l'épisode 1 :
   js/castles.js       les deux châteaux de la Terre du Milieu : la cité blanche des humains (Alice), Caras Galadhon, la cité des mallorns des elfes (Bob)
   lab/castles.html    les mêmes de près, sans l'histoire (?view=, ?cam=x,y,z,tx,ty,tz)
   js/camera.js        plans nommés, vols, poursuite d'un messager
-  js/messenger.js     un cavalier : livré ou capturé (le faux cavalier refusé au HMAC y reste pour l'épisode 1.3)
   js/sim.js           le protocole : numéros de message, qui sait quoi, l'aube
   js/ladder.js        l'échelle de connaissance (texte + 3D)
   js/bubbles.js       bulles de dialogue accrochées à la scène

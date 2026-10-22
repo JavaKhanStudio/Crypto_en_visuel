@@ -4,7 +4,7 @@
 // auto: the step's action plays by itself once the camera has landed (its button replays it).
 import { t, raw, lang, onLang } from './i18n.js';
 import { render } from '../../lib/md.js';
-import * as A from './aes.js';
+import * as A from './values.js';
 import { SLOT, CRATE_Y } from './world.js';
 import { CRATE } from './props.js';
 import { ROWS } from './stage.js';
