@@ -29,12 +29,14 @@ export const eveSays = pkt => pkt.eve ? t('m.eveFlip', { b: raw('m.of')[pkt.eve.
 export const bobSays = r => r.rejected === 'keys' ? t('m.bobNoKeys') : r.rejected ? t(r.decrypted ? 'm.bobLate' : 'm.bobReject') : t('m.bobRead', { m: A.printable(r.back) });
 
 const ALL = P.BRICKS;
+// r369: Alice's four moves happen inside her keep, one room of four beats (inside.js aliceRoom): one
+// zoom in at 'draw', out at 'ride'. Bob's three moves are a room of his keep, one per chapter (r161)
 export const STEPS = [
   { id: 'intro', refs: { '1.4': 7 }, ch: 0, shot: 'castleA', view: 'whole', show: ['a', ALL], say: ['a'] },
-  { id: 'draw', ch: 0, shot: 'castleA', view: 'draw', show: ['a', ['iv']], say: ['a'] },
-  { id: 'encrypt', ch: 0, shot: 'castleA', view: 'encrypt', show: ['a', ['iv', 'ct']], say: ['a'] },
-  { id: 'seal', ch: 0, shot: 'castleA', view: 'seal', show: ['a', ['iv', 'ct', 'tag']], say: ['a'] },
-  { id: 'lock', refs: { '1.4': 7 }, ch: 0, shot: 'castleA', view: 'lock', show: ['a', ALL], say: ['a'] },
+  { id: 'draw', ch: 0, shot: 'castleA', view: 'draw', show: ['a', ['iv']], say: ['a'], inside: 'alice' },
+  { id: 'encrypt', ch: 0, shot: 'castleA', view: 'encrypt', show: ['a', ['iv', 'ct']], say: ['a'], inside: 'alice' },
+  { id: 'seal', ch: 0, shot: 'castleA', view: 'seal', show: ['a', ['iv', 'ct', 'tag']], say: ['a'], inside: 'alice' },
+  { id: 'lock', refs: { '1.4': 7 }, ch: 0, shot: 'castleA', view: 'lock', show: ['a', ALL], say: ['a'], inside: 'alice' },
   { id: 'ride', ch: 1, shot: 'both', view: 'whole', go: async x => { await x.ride('s'); } },
   // r103/r161: Bob's three moves happen inside his keep, in a room where RSA, HMAC and AES run on the
   // real packet (inside.js): one zoom per chapter, and each chapter has one step in his keep

@@ -111,10 +111,11 @@ Python ; `tests/cle_story.py` joue chaque chevauchée et le bac à sable.
 
 ## Épisode 1.5 — Le paquet complet
 
-Les quatre briques dans l'ordre, et ce que les étudiants construisent. Côté Alice, quatre gestes, et
-le paquet se monte brique par brique devant son château : trois tirages neufs (`os.urandom`),
-chiffrer l'ordre (PKCS7 souligné, AES-256-CBC), sceller IV ‖ chiffré (HMAC-SHA256), fermer clé AES ‖
-clé HMAC au cadenas de Bob (RSA-2048-OAEP). Le paquet traverse (336 octets, Eve n'ouvre rien) ; côté
+Les quatre briques dans l'ordre, et ce que les étudiants construisent. Côté Alice, quatre gestes,
+dans son donjon : la caméra entre par sa fenêtre, et le paquet se monte brique par brique à mesure
+que les vrais octets passent par quatre machines : trois tirages neufs (`os.urandom`), chiffrer
+l'ordre (PKCS7, AES-256-CBC), sceller IV ‖ chiffré (HMAC-SHA256), fermer clé AES ‖ clé HMAC au
+cadenas de Bob (RSA-2048-OAEP), vérifié par `tests/paquet_alice.py`. Le paquet traverse (336 octets, Eve n'ouvre rien) ; côté
 Bob, trois gestes : ouvrir les clés, vérifier le sceau, seulement alors déchiffrer, dans son donjon :
 la caméra entre par sa fenêtre, et les vrais octets passent par trois machines (les clés fermées dans
 RSA-2048 avec sa clé privée, IV ‖ chiffré dans HMAC-SHA256 et son sceau comparé octet par octet à

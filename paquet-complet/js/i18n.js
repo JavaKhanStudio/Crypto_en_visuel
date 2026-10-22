@@ -91,6 +91,9 @@ const fr = {
   'in.sealBad': '✖ égaux à la même place : {n} sur 32 · rejeté', 'in.dec': 'avec la clé AES et l’IV', 'in.unpad': 'padding retiré : {n} octets de valeur {n}',
   'in.flip': 'changé par Eve', 'in.shut': 'AES reste fermé : rien n’est déchiffré', 'in.first': 'L’erreur : déchiffrer d’abord',
   'in.pad': 'ce qu’AES rend des octets d’Eve · padding {pad}',
+  'al.iv': 'IV · 16 octets', 'al.plain': 'l’ordre · {n} octets + {p} de padding', 'al.ct': 'le chiffré · {n} octets', 'al.hk': 'avec la clé HMAC',
+  'al.tag': 'le sceau · 32 octets', 'al.keys': 'clé AES ‖ clé HMAC · 64 octets', 'al.pub': 'le cadenas de Bob : sa clé publique',
+  'al.oaep': 'OAEP, puis m^e mod n', 'al.packet': 'le paquet',
 
   // story
   ch: ['Côté Alice', 'Côté Bob', 'L’octet d’Eve', 'Le code'],
@@ -225,6 +228,9 @@ const en = {
   'in.sealBad': '✖ equal at the same place: {n} of 32 · rejected', 'in.dec': 'with the AES key and the IV', 'in.unpad': 'padding removed: {n} bytes of value {n}',
   'in.flip': 'changed by Eve', 'in.shut': 'AES stays shut: nothing is decrypted', 'in.first': 'The mistake: decrypting first',
   'in.pad': "what AES gives from Eve's bytes · padding {pad}",
+  'al.iv': 'IV · 16 bytes', 'al.plain': 'the order · {n} bytes + {p} of padding', 'al.ct': 'the ciphertext · {n} bytes', 'al.hk': 'with the HMAC key',
+  'al.tag': 'the seal · 32 bytes', 'al.keys': 'AES key ‖ HMAC key · 64 bytes', 'al.pub': "Bob's padlock: his public key",
+  'al.oaep': 'OAEP, then m^e mod n', 'al.packet': 'the packet',
 
   ch: ["Alice's side", "Bob's side", "Eve's byte", 'The code'],
   steps: {
