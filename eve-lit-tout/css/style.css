@@ -62,13 +62,6 @@ button.icon { padding: .4em .6em; }
 .chapters button { font-size: 12px; padding: .25em .7em; border-radius: 999px; }
 .narration h2 { font: 600 22px/1.2 var(--serif); margin: 4px 0 6px; }
 .narration .step-text { color: #e6dfcf; min-height: 3em; }
-/* r368, Simon's pick A: on a phone, in Alice's keep, the text folds to its first 3 lines so the room
-   keeps the screen; « Lire la suite ▾ » opens it (story.js render) */
-#step-more { display: none; margin-top: 4px; padding: .2em .6em; font-size: 13px; }
-@media (max-width: 900px) {
-  #story.roomy:not(.open) #step-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; min-height: 0; }
-  #story.roomy.long #step-more { display: inline-block; }
-}
 /* r231 (r176 roll-out): the step text's paragraphs and list (js/md.js); the tones are the card's:
    gold the ciphertext and its padding, blue the IV, red what Eve's notebook recognises */
 .step-text p { margin: 0; }
