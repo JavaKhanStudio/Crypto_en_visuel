@@ -31,7 +31,7 @@ export const STEPS = [
   { id: 'key', ch: 1, shot: 'castleA', view: 'key', say: ['a'], inside: 'aes' },
   { id: 'aes', ch: 1, shot: 'castleA', view: 'aes', say: ['a'], inside: 'aes' },
   { id: 'pad', ch: 1, shot: 'castleA', view: 'pad', say: ['a'], inside: 'aes' },
-  { id: 'cbc', ch: 1, shot: 'castleA', view: 'cbc', say: ['a'], inside: 'aes' },
+  { id: 'cbc', refs: { '11': 2 }, ch: 1, shot: 'castleA', view: 'cbc', say: ['a'], inside: 'aes' },
   { id: 'cipher', ch: 1, shot: 'both', view: 'cipher', go: async x => { await x.ride({ cipher: true }); } },
   { id: 'again', ch: 2, shot: 'city', view: 'book', book: () => [day(1, 1)],
     go: async x => { await x.ride({ cipher: true, seen: true, log: day(2, 1, { seen: true, tag: 'same' }) }); x.say('e'); } },
