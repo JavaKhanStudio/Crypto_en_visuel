@@ -4,12 +4,13 @@ Before/after a change to lib/print.js: serve the old tree on another port and pa
     tools/print_shot.py out/x.png --asset castle-b [--ep deux-generaux] [--zoom 1] [--base http://localhost:8793/]"""
 import argparse
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--asset", required=True)
 ap.add_argument("--ep", default="deux-generaux"); ap.add_argument("--zoom", type=float, default=1)
 ap.add_argument("--base", default="http://localhost:8793/")
 a = ap.parse_args()
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": 1400, "height": 860})
     errors = []; pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(f"{a.base}lab/print/?ep={a.ep}&show={a.asset}")

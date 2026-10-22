@@ -11,6 +11,8 @@ page to out/print_lab-<ep>.png (a castle) and -<figure>.png. Serve the repo firs
 """
 import sys, struct, base64, io, zipfile
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 base = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
 ep = sys.argv[2] if len(sys.argv) > 2 else "deux-generaux"
@@ -33,7 +35,7 @@ def volume(tris):   # signed volume: > 0 when the faces point out
     return v
 
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+    br = launch(p)
     pg = br.new_page(viewport={"width": 1400, "height": 860})
     errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(f"{base}lab/print/?ep={ep}")

@@ -8,6 +8,7 @@ the veil rises, and shows any stop.
 """
 import argparse, csv, json
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image, ImageDraw
 
 
@@ -49,7 +50,7 @@ HOOK = """() => { window.__trace = []; const t0 = performance.now(), d = window.
     last = { p, t: now }; requestAnimationFrame(tick); };
   requestAnimationFrame(tick); }"""
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": w, "height": h}); errs = []
     pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(f"{a.base}{a.page}#story={a.step - 1}", wait_until="load")

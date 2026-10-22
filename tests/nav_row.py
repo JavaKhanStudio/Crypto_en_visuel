@@ -5,6 +5,8 @@ two buttons sit on its row. Serve the repo first (python3 -m http.server 8793).
     python3 tests/nav_row.py pingouin [more episodes]"""
 import sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 BASE = "http://localhost:8793/"
 MEASURE = """() => { const r = id => document.getElementById(id).getBoundingClientRect(), c = r('step-count'), p = r('prev'), n = r('next');
@@ -12,7 +14,7 @@ MEASURE = """() => { const r = id => document.getElementById(id).getBoundingClie
   return { h: c.height, line, prevMid: p.top + p.height / 2, nextMid: n.top + n.height / 2, mid: c.top + c.height / 2, text: document.getElementById('step-count').textContent }; }"""
 bad = 0
 with sync_playwright() as pw:
-    b = pw.chromium.launch(args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+    b = launch(pw)
     for ep in sys.argv[1:] or ["pingouin"]:
         for w in (360, 390):
             for lang in ("fr", "en"):

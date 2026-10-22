@@ -2,9 +2,10 @@
 bubbles each second, then saves OUT_<lang>.png (r373, r374). tools/vpn_crowd_phone_shot.py OUT [fr|en] [base]"""
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 out=sys.argv[1]; lang=sys.argv[2] if len(sys.argv) > 2 else 'fr'; base=sys.argv[3] if len(sys.argv) > 3 else 'http://localhost:8793/'
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    br = launch(p)
     pg = br.new_page(viewport={"width": 390, "height": 844})
     pg.goto(f"{base}vpn/?instant=1&lang={lang}#story=12"); pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
     pg.add_style_tag(content=".bubble { transition: opacity .35s !important; }")

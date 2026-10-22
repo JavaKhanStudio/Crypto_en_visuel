@@ -6,10 +6,11 @@ Serve the repo first (python3 -m http.server 8793), then:
     tools/parallax_sky_film.py out/r339 --film                      # <out>/film-<size>.mp4: the ways one above the other (side by side on a phone), one loop
     --size 1440x810 (default) or 390x844; --ways dome,flat,rings; --fps 10
 Each frame is the lab frozen at its time (window.lab.seek), so the clip plays at true speed whatever the GPU;
---gpu uses the machine's GPU instead of SwiftShader. Prints page errors (must be none); exit 1 on any.
+It draws on the GPU (tools/browser.py, r401); --gpu is kept for old command lines, CRYPTO_GL=soft goes back to SwiftShader. Prints page errors (must be none); exit 1 on any.
 """
 import argparse, pathlib, subprocess, tempfile, sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 ap = argparse.ArgumentParser()
 ap.add_argument("out")
@@ -26,9 +27,8 @@ out = pathlib.Path(a.out); out.mkdir(parents=True, exist_ok=True)
 ways = a.ways.split(",")
 phone = w < h
 bad = 0
-args = ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=vulkan"] if a.gpu else ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]
 with sync_playwright() as p:
-    b = p.chromium.launch(args=args)
+    b = launch(p)
     pages = {}
     for way in ways:
         pg = b.new_page(viewport={"width": w, "height": h})   # every way at the full size; the film stacks them

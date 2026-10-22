@@ -4,6 +4,7 @@ its poles, the VPN's hall, the café and its Wi-Fi box. Serve the repo first (py
     tools/vpn_world_shots.py OUT.png [base]"""
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image, ImageDraw
 
 OUT = sys.argv[1]
@@ -22,7 +23,7 @@ VIEWS = [   # name, camera, target
 ]
 W, H = 720, 430
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    br = launch(p)
     pg = br.new_page(viewport={"width": W, "height": H})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))

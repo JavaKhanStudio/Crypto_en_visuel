@@ -9,6 +9,8 @@ is the panel's last line: the check scrolls to it first. Serve the repo first (p
     tests/credit_stamp.py deux-generaux [more episodes] [--base URL]"""
 import argparse
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image
 
 ap = argparse.ArgumentParser(); ap.add_argument("episodes", nargs="*")
@@ -32,7 +34,7 @@ CHECK = """() => { const el = document.getElementById('credit'); if (!el) return
 
 bad = 0
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+    b = launch(p)
     for page in [""] + a.episodes:
         cases = [("home", "")] if not page else [("story", "#story=2"), ("sandbox", "#sandbox"), ("quiz", "#quiz")]
         crops = []

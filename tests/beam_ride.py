@@ -5,10 +5,12 @@ and shoots the caught moment to out/beam-s<N>.png. Serve the repo first
 (python3 -m http.server 8793). Exit 1 if either outcome never happens."""
 import sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 ok = True
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for step in (4, 6):
         pg = b.new_page(viewport={"width": 1440, "height": 860})
         errors = []

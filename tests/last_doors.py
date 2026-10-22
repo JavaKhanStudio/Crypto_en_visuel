@@ -8,6 +8,8 @@ Another episode's last step (r121): tests/last_doors.py <slug> <last step> <next
 e.g. tests/last_doors.py scytale 12 enigma (--no-clips for an episode whose doors have none)"""
 import os, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 args = [x for x in sys.argv[1:] if not x.startswith("--")]
 SLUG, LAST, NEXT = args if args else ("deux-generaux", "14", "eve-lit-tout")
@@ -15,7 +17,7 @@ CLIPS = "--no-clips" not in sys.argv
 BASE = f"http://localhost:8793/{SLUG}/"
 bad = 0
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-gl=swiftshader", "--enable-unsafe-swiftshader"])
+    br = launch(p)
     for size, lang in [((1440, 860), "fr"), ((1440, 860), "en"), ((390, 844), "en")]:
         phone = size[0] < 720
         pg = br.new_page(viewport={"width": size[0], "height": size[1]}, has_touch=phone, is_mobile=phone)

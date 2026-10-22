@@ -9,6 +9,7 @@ seconds of story time. Writes out/name-NN.png and out/name.png (a contact sheet)
 """
 import argparse
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image
 
 ap = argparse.ArgumentParser(); ap.add_argument('out'); ap.add_argument('step', type=int); ap.add_argument('acts', nargs='+')
@@ -17,7 +18,7 @@ ap.add_argument('--lang', default='fr'); ap.add_argument('--size', default='960x
 a = ap.parse_args()
 W, H = map(int, a.size.split('x'))
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": W, "height": H}); errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(f"{a.base}enigma-reglage/?lang={a.lang}#story={a.step}", wait_until="load")

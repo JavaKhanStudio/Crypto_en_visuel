@@ -7,6 +7,8 @@ The series' floor is 360 px (tools_chip, credit_stamp); at 320 the 27-digit tota
 step 16, glued to « tableaux = », runs 27 px past the panel."""
 import argparse, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 ap = argparse.ArgumentParser(); ap.add_argument('shots', nargs='+')
 ap.add_argument('--sizes', default='390x844,360x740'); ap.add_argument('--base', default='http://localhost:8793/')
 a = ap.parse_args()
@@ -27,7 +29,7 @@ PROBE = r"""() => {
 }"""
 fails = 0
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for shot in a.shots:
         ep, step = shot.split(':')
         for size in a.sizes.split(','):

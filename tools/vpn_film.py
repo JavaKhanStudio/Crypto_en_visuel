@@ -8,6 +8,7 @@ Runs headless on the real GPU (ANGLE over EGL), so the animation plays near true
 """
 import argparse, pathlib
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image, ImageDraw
 
 ap = argparse.ArgumentParser()
@@ -25,7 +26,7 @@ w, h = map(int, a.size.split("x"))
 out = pathlib.Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
 shots = []
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--enable-gpu", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": w, "height": h})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))

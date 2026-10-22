@@ -9,6 +9,8 @@ The bytes are checked apart by tests/eve_values.mjs. Serve the repo first (pytho
 """
 import sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 base = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/") + "eve-lit-tout/"
 lang = sys.argv[2] if len(sys.argv) > 2 else "fr"
@@ -23,9 +25,9 @@ def report(name, bad):
 
 
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     errors = []
-    idle = "() => [...document.querySelectorAll('#play, #step-actions button, #sb-send')].every(b => !b.disabled) && !demo.riders.size"
+    idle = "() => [...document.querySelectorAll('#play, #step-actions button, #sb-send')].every(b => !b.disabled) && !demo.riders.size && !demo.world.busy"   # busy: the sandbox refuses a send until its ride resolves (r401: on the GPU the riders leave first)
 
     def page(hash_, size=(1440, 860)):
         pg = b.new_page(viewport={"width": size[0], "height": size[1]})

@@ -21,6 +21,7 @@ in French, for every language (r290, Simon: a clip per language is a cost with n
 """
 import argparse, base64, os, subprocess, tempfile, time
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 ap = argparse.ArgumentParser()
 ap.add_argument("slug")
@@ -96,7 +97,7 @@ doors = {"sandbox": sandbox, "quiz": quiz, "home": home, "next": nxt}
 only = [k for k in doors if k in a.only.split(",")] if a.only else list(doors)
 with sync_playwright() as p, tempfile.TemporaryDirectory() as tmp:
     # the machine's GPU (about 50 fps at 1280×720); SwiftShader's 6 fps would make a slideshow
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for name in only:
         pg = b.new_page(viewport={"width": W, "height": H}); errors = []; frames = []
         pg.on("pageerror", lambda e: errors.append(str(e)))

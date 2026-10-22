@@ -6,12 +6,14 @@ Serve the repo first (python3 -m http.server 8793), or pass a base URL:
 Exit 1 on any failure."""
 import sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 base = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
 SOON = []   # episodes not built yet: their folder is a stub that forwards to the card (none since 1.6, r99)
 fails = []
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page()
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))

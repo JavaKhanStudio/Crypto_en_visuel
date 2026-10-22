@@ -7,6 +7,8 @@ the grid. Any difference is printed. Serve the repo root on 8793 first.
     python3 tests/doors_lib.py [--base URL] [ep ...]"""
 import json, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 EPS = "aes-interieur cadenas deux-generaux diffie-hellman enigma eve-lit-tout garde pingouin scytale sel".split()
 argv = sys.argv[1:]
@@ -46,7 +48,7 @@ def diff(a, b, path=""):
 
 bad = 0
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-gl=swiftshader", "--enable-unsafe-swiftshader"])
+    br = launch(p)
     for ep in eps:
         for size, lang in [((1440, 860), "fr"), ((1440, 860), "en"), ((390, 844), "fr")]:
             q = f"{ep}/?instant=1&lang={lang}#story=99"

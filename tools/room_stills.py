@@ -8,6 +8,7 @@ way a reader sees it once the camera has caught up. Needs the episode's inside.j
 """
 import argparse, time
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image, ImageDraw
 
 ap = argparse.ArgumentParser()
@@ -23,7 +24,7 @@ a = ap.parse_args()
 w, h = map(int, a.size.split("x"))
 errors, shots = [], []
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": w, "height": h}, is_mobile=w < 900, has_touch=w < 900)
     pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto(f"{a.base}{a.page}?instant=1&lang={a.lang}#story={a.step}")

@@ -10,12 +10,13 @@ however slowly SwiftShader draws.
 """
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image
 
 out, how = sys.argv[1], sys.argv[2]
 base = sys.argv[3] if len(sys.argv) > 3 else "http://localhost:8793/"
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": 960, "height": 574})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))

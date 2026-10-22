@@ -6,10 +6,11 @@ Serve the repo first (python3 -m http.server 8793).
 BASE=http://localhost:8795/ tools/bubble_spots.py ...   reads another server (a worktree of HEAD, to diff against)."""
 import os, sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 JS = """() => [...document.querySelectorAll('#bubbles .bubble.show')].map(e => e.querySelector('.who').textContent + ' ' + e.style.transform)"""
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for case in sys.argv[1:]:
         ep, step, size = case.split(":"); w, h = map(int, size.split("x"))
         pg = b.new_page(viewport={"width": w, "height": h})

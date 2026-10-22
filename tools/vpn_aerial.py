@@ -6,11 +6,12 @@ stand against each other (r197: a house in the middle of the road). Serve the re
 """
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 out = sys.argv[1]
 cam = [float(a) for a in sys.argv[2:8]] if len(sys.argv) >= 8 else [-6, 95, -14.9, -6, 0, -15]
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=angle", "--use-angle=gl-egl", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": 1440, "height": 900}); errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
     pg.goto("http://localhost:8793/vpn/?instant=1#story=1", wait_until="load")

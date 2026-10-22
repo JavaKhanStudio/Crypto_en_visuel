@@ -7,6 +7,8 @@ page's walls (lib/bubbles.js WALLS), and writes a phone contact sheet to out/bub
     tests/bubble_room.py [episode ...]"""
 import sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 from PIL import Image
 
 BASE = "http://localhost:8793/"
@@ -22,7 +24,7 @@ MEASURE = """() => {
 over = lambda a, b: min(a["x"] + a["w"], b["x"] + b["w"]) - max(a["x"], b["x"]) > 1 and min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]) > 1
 bad = []
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    br = launch(p)
     for ep in EPISODES:
         for w, h in [(390, 844), (1440, 900)]:
             pg = br.new_page(viewport={"width": w, "height": h})

@@ -7,6 +7,7 @@ Shoots cubes 0 (top left), 4 (top, 2nd column), 8 (top, 3rd column), 3 (bottom l
     tools/aes_sub1_labels.py [fr|en] [base]"""
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 lang = sys.argv[1] if len(sys.argv) > 1 else "fr"
 base = sys.argv[2] if len(sys.argv) > 2 else "http://localhost:8793/"
@@ -17,7 +18,7 @@ scan = """() => { const r = demo.room, seen = [];
     if (s && (!seen.length || seen.at(-1).s !== s)) seen.push({ s, t }); }
   return seen; }"""
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     errors = []
     for (w, h), tag in [((1440, 860), ""), ((390, 844), "-phone"), ((360, 780), "-360")]:
         pg = b.new_page(viewport={"width": w, "height": h}); pg.on("pageerror", lambda e: errors.append(str(e)))

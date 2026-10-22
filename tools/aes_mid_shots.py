@@ -6,11 +6,12 @@ the frame is the same on any machine. Serve the repo first (python3 -m http.serv
     tools/aes_mid_shots.py [fr|en]"""
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 lang = sys.argv[1] if len(sys.argv) > 1 else "fr"
 SHOTS = [("sub1", 6, 3.3), ("shift1", 7, 2.2), ("mix1", 8, 2.75), ("last", 11, 99)]   # (beat, step, time in the beat)
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     errors = []
     for (w, h), tag in [((1440, 860), ""), ((390, 844), "-phone")]:
         pg = b.new_page(viewport={"width": w, "height": h}); pg.on("pageerror", lambda e: errors.append(str(e)))

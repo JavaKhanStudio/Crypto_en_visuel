@@ -5,6 +5,7 @@ audit costs four page loads instead of one per shot. Serve the repo first (pytho
 Writes out/r240-<lang>-<w>-s<n>.png and prints the page errors, which must be none."""
 import argparse
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 ap = argparse.ArgumentParser(); ap.add_argument('out'); ap.add_argument('--page', required=True)
 ap.add_argument('--steps', required=True); ap.add_argument('--langs', default='fr,en')
 ap.add_argument('--sizes', default='1440x860,390x844'); ap.add_argument('--base', default='http://localhost:8793/')
@@ -12,7 +13,7 @@ ap.add_argument('--wait', type=int, default=2500)
 a = ap.parse_args()
 steps = [int(s) for s in a.steps.split(',')]
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for lang in a.langs.split(','):
         for size in a.sizes.split(','):
             W, H = map(int, size.split('x'))

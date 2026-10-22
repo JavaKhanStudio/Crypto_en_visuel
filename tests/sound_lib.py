@@ -8,6 +8,8 @@
     python3 tests/sound_lib.py [ep ...]      (default: scytale deux-generaux, one with lib/quality.js, one without; serve the repo on 8793)"""
 import re, subprocess, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 OLD, BASE = '57dbbb6', 'http://localhost:8793/'
 eps = sys.argv[1:] or ['scytale', 'deux-generaux']
 bad = 0
@@ -27,7 +29,7 @@ PROBE = """() => { const b = document.getElementById('sound');
   return { text: b?.textContent, inTools: !!b?.parentElement?.matches('.tools') && !!document.getElementById('quality'),
            inRight: !!b?.closest('.right') }; }"""
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    br = launch(p)
     def page(ep, strip=False):
         pg = br.new_page(viewport={'width': 1440, 'height': 860}); errors = []
         pg.on('pageerror', lambda e: errors.append(str(e)))

@@ -10,6 +10,8 @@ pass a base URL. Exit 1 on any failure.
 """
 import os, re, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 base = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
 EPISODES = ["eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "aes-interieur", "pingouin", "vpn"]
@@ -18,7 +20,7 @@ fails = []
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     errors = []
 
     def open_(url):

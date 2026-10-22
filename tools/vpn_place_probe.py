@@ -2,10 +2,11 @@
 page's walls: says which name pinTags hid and why (r364). tools/vpn_place_probe.py STEP [base]"""
 import sys, json
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 step = sys.argv[1]
 base = sys.argv[2] if len(sys.argv) > 2 else 'http://localhost:8793/'
 with sync_playwright() as p:
-    b = p.chromium.launch(); pg = b.new_page(viewport={'width':390,'height':844})
+    b = launch(p); pg = b.new_page(viewport={'width':390,'height':844})
     pg.goto(f'{base}vpn/?instant=1#story={step}'); pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
     pg.wait_for_timeout(9000)
     print(json.dumps(pg.evaluate("""async () => { const s=demo.stage, c=demo.camera, o={};

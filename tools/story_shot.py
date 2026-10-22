@@ -4,6 +4,7 @@ name tags cut by the screen edge or under a bubble or panel. Serve the repo firs
 A page whose bubbles have no tagBoxes() (enigma-casse) gets its tags projected here from every sprite with userData.text."""
 import argparse, json, sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 sys.path.insert(0, 'tests')
 ap = argparse.ArgumentParser(); ap.add_argument('out'); ap.add_argument('step', type=int)
 ap.add_argument('--lang', default='fr'); ap.add_argument('--base', default='http://localhost:8793/'); ap.add_argument('--size', default='1440x860')
@@ -26,7 +27,7 @@ TAGS = TAGS.replace('demo.bubbles.tagBoxes()', """(demo.bubbles?.tagBoxes ? demo
           if (!behind) o.push({ x: x0, y: y0, w: x1 - x0, h: y1 - y0, text: s.userData.text }); });
         return o; })())""")
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": W, "height": H}); errs = []
     pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(f"{a.base}{a.page}/?instant=1&lang={a.lang}#story={a.step}", wait_until="load")

@@ -4,11 +4,13 @@ walls once the march is over, and both come back to normal on the next step. Sho
 out/dawn-camp.png long after the march. Serve the repo first (python3 -m http.server 8793)."""
 import sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 COUNT = "demo.scene.children.filter(o => o.isInstancedMesh && o.count === 48).length"
 BEAM = "demo.world.city.userData.pivot.visible"
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page(viewport={"width": 1440, "height": 860})
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))

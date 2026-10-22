@@ -20,6 +20,8 @@ the repo first (python3 -m http.server 8793).
 """
 import sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/") + "cle-vallee/"
 bad = 0
@@ -45,7 +47,7 @@ PLACE = """() => { const i = demo.inside, cam = i.camera, b = i.want.b, box = i.
            bubble: br && { top: br.top, bottom: br.bottom, left: br.left, right: br.right } }; }"""
 
 with sync_playwright() as p:
-    br = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    br = launch(p)
     def held(pg, tag, step, times):
         for at in times:
             pg.evaluate(f"demo.inside.hold = {at}"); pg.wait_for_timeout(900)

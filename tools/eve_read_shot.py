@@ -5,6 +5,7 @@ story step with a ride: out/eve-read-<lang>-<step>-<w>.png. Serve the repo first
     tools/eve_read_shot.py [step ...] [--lang en] [--phone] [--page cle-vallee]"""
 import sys
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
 args = sys.argv[1:]
 lang = args[args.index("--lang") + 1] if "--lang" in args else "fr"
@@ -13,7 +14,7 @@ name = "eve" if page == "eve-lit-tout" else page
 w, h = (390, 844) if "--phone" in args else (1440, 860)
 steps = [a for a in args if a.isdigit() and (args.index(a) == 0 or args[args.index(a) - 1] not in ("--lang", "--page"))] or ["2", "8"]
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for step in steps:
         pg = b.new_page(viewport={"width": w, "height": h}); errors = []
         pg.on("pageerror", lambda e: errors.append(str(e)))

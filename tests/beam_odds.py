@@ -6,6 +6,8 @@ checks world.inBeam() at torso height. An optional JSON argument overrides BEAM,
 e.g. '{"radius": 4}'. Serve the repo first (python3 -m http.server 8793)."""
 import json, sys
 from playwright.sync_api import sync_playwright
+import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 JS = """(opts) => {
   const w = demo.world, B = w.BEAM, saved = { ...B }; Object.assign(B, opts);
   const path = w.road.path, len = path.getLength(), speed = demo.sim.speed, dt = 1 / 60, period = 2 * Math.PI / B.swing;
@@ -28,7 +30,7 @@ JS = """(opts) => {
 }"""
 opts = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     pg = b.new_page()
     pg.goto("http://localhost:8793/deux-generaux/index.html#story=4", wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)

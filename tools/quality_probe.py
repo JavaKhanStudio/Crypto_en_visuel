@@ -6,6 +6,7 @@ maxSamples and the frame time, so a level is proved to do what it says.
 """
 import argparse, json
 from playwright.sync_api import sync_playwright
+from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 ap = argparse.ArgumentParser(); ap.add_argument("episode"); ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--size", default="1440x860")
 ap.add_argument("--defaults", action="store_true", help="check the level an empty localStorage opens on, phone / tablet / desktop")
@@ -23,7 +24,7 @@ DEVICES = [("phone", dict(viewport={"width": 390, "height": 844}, screen={"width
 if a.defaults:   # lib/quality.js is imported straight from the episode's page (its importmap gives 'three')
     bad = 0
     with sync_playwright() as p:
-        b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+        b = launch(p)
         for name, opts, want in DEVICES:
             ctx = b.new_context(**opts); pg = ctx.new_page()
             pg.goto(f"{a.base}{a.episode}/", wait_until="load")
@@ -32,7 +33,7 @@ if a.defaults:   # lib/quality.js is imported straight from the episode's page (
         b.close()
     print("all ok" if not bad else "FAILED"); raise SystemExit(1 if bad else 0)
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    b = launch(p)
     for q in ["eco", "normal", "fine"]:
         pg = b.new_page(viewport={"width": w, "height": h}); errs = []
         pg.on("pageerror", lambda e: errs.append(str(e)))
