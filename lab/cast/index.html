@@ -1,38 +1,53 @@
 <!doctype html>
-<!-- r330 lab: the cast from lib/cast.js, one row per setting (the disguise), one column per kind. The first row is
-     the episodes' own copies of person() today (kasiski, garde, vpn), so « today » from lib/cast.js can be checked
-     against them figure for figure. Drag a row to turn its figures; ?turn=RADIANS sets the angle for a shot. -->
+<!-- r330 lab: the cast from lib/cast.js as toys made of pieces. Row 1 pulls figures apart (body, rings on the neck
+     pin, head with its pin and stud, hat, held item); row 2 shows the satchel on anyone; then the kinds bare,
+     today (against the episodes' own copies), and one row per setting. Drag a row to turn its figures;
+     ?turn=RADIANS sets the angle for a shot. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The cast, in its disguises</title>
+<title>The cast, as toys</title>
 <script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
 <style>
   body { margin: 0; background: #0b0d12; color: #d8dce6; font: 15px system-ui, sans-serif; }
-  h1 { font-size: 18px; margin: 16px 16px 6px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 80ch; }
+  h1 { font-size: 18px; margin: 16px 16px 6px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 90ch; }
   section { margin: 0 16px 18px; } h2 { font-size: 15px; margin: 0 0 4px; color: #ffd27a; } h2 small { color: #9aa3b5; font-weight: 400; }
-  canvas { display: block; width: 100%; max-width: 1400px; aspect-ratio: 7 / 2; border: 1px solid #252a35; border-radius: 8px; cursor: grab; }
-  .names { display: grid; grid-template-columns: repeat(7, 1fr); max-width: 1400px; font-size: 13px; color: #9aa3b5; text-align: center; }
+  canvas { display: block; width: 100%; max-width: 1400px; border: 1px solid #252a35; border-radius: 8px; cursor: grab; }
+  .names { display: grid; max-width: 1400px; font-size: 13px; color: #9aa3b5; text-align: center; }
 </style></head><body>
-<h1>The cast, in its disguises (lib/cast.js)</h1>
-<p>What never changes is the kind: the body, the cloth colour and the signature traits in the team colour (Alice's blue scarf and bun, Bob's gold belt, Eve's black mask and white eyes, the guard's badge and moustache, Victor's headset). A setting dresses three slots: head, body, held item. The top row is today's copies in the episodes, for comparison with « today ».</p>
+<h1>The cast as toys (lib/cast.js), round 2</h1>
+<p>Every figure is five pieces that come apart. <b>Body</b>: robe, arms and hands in one print, the kind's colour, a socket at the neck, a hole through the right fist.
+<b>Rings</b>: every ring drops over the neck pin and sits on the shoulders; what hangs from it (a scarf tail, a toga's sash, a strap, a tabard) hangs between the arms, so it goes on and off with the arms printed on. The head holds it down.
+<b>Head</b>: the face and its fixed trait, a pin under it (the neck, hidden once assembled), a stud on top. <b>Hat</b>: hair or a hat pressed onto the stud. Eve's is always black. <b>Item</b>: pinned into the fist.
+Printed 40 mm tall: neck pin 3.5 mm, fist hole 2 mm, rings 1.1 mm thick.</p>
+<p>What never changes (the kind): Alice: blue robe, bun, blue scarf ring. Bob: yellow robe, leather belt with a gold buckle, flush with the robe. Eve: red robe, black mask with white eyes, a black hat. Messenger: the satchel (strap, wax seal, post horn), the piece the others can borrow.</p>
 <div id="rows"></div>
 <script type="module">
 import * as THREE from 'three';
-import { person, DISGUISES, CAST } from '../../lib/cast.js';
+import { person, explode, CAST } from '../../lib/cast.js';
 import { person as kasiski } from '../../kasiski/js/props.js';
 import { person as garde } from '../../garde/js/props.js';
 import { person as vpn } from '../../vpn/js/props.js';
-const KINDS = ['a', 'b', 'e', 'n', 'g', 'v', 'i'];
 const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45);
+const ALL = ['a', 'b', 'e', 'n', 'g', 'v', 'i'], MAIN = ['a', 'b', 'e', 'n'];
+const col = (k, f) => [CAST[k].name, f];
 const old = { a: () => kasiski('a'), b: () => kasiski('b'), e: () => kasiski('e'), n: () => kasiski('n'),
   g: () => { const o = garde('g'); o.children[0].scale.setScalar(1); return o; }, v: () => vpn('v'), i: () => vpn('i') };
+const apart = (k, o) => () => { const f = person(k, o); explode(f, 1); return f; };
+const SETTING = { roman: 'scytale', wartime: 'enigma 5.1-5.3: the German navy\'s radio room, Eve at Bletchley Park', medieval: 'the saga 1.1-1.6: the two generals, their messenger, Eve the spy' };
 const ROWS = [
-  ['the episodes today', 'their own props.js: kasiski, garde, vpn', k => old[k]()],
-  ...Object.keys(DISGUISES).map(d => [d, { today: 'lib/cast.js, as the episodes draw them now', roman: 'scytale', wartime: 'enigma 5.1-5.3', medieval: 'the saga 1.1-1.6' }[d],
-    k => (DISGUISES[d][k] || d === 'today') ? person(k, { disguise: d }) : null]),
+  ['pieces', 'pulled apart: body, rings, head (pin and stud), hat, item', 1.9, [
+    ['Alice, today', apart('a')], ['Bob, today', apart('b')], ['messenger, today', apart('n')],
+    ['Alice, roman', apart('a', { disguise: 'roman' })], ['Eve, medieval', apart('e', { disguise: 'medieval' })], ['Bob, medieval', apart('b', { disguise: 'medieval' })]]],
+  ['the satchel on anyone', 'the messenger\'s ring on the other kinds\' pins', 1.0, [
+    ['Alice', () => person('a', { shoulder: 'satchel', hand: 'letter' })], ['Bob', () => person('b', { shoulder: 'satchel', hand: 'letter' })],
+    ['Eve', () => person('e', { shoulder: 'satchel', hat: 'fedora' })], ['messenger', () => person('n', { hand: 'letter', hat: 'travellerHat' })]]],
+  ['bare', 'the kinds with no costume: what never changes', 1.0, MAIN.map(k => col(k, () => person(k, { disguise: 'none' })))],
+  ['the episodes today', 'their own props.js: kasiski, garde, vpn', 1.0, ALL.map(k => col(k, old[k]))],
+  ['today', 'lib/cast.js, what the roll-out puts in the episodes (Bob turns yellow)', 1.0, ALL.map(k => col(k, () => person(k)))],
+  ...Object.keys(SETTING).map(d => [d, SETTING[d], 1.0, MAIN.map(k => col(k, () => person(k, { disguise: d })))]),
 ];
-for (const [title, note, make] of ROWS) {
-  const sec = document.createElement('section');
-  sec.innerHTML = `<h2>${title} <small>· ${note}</small></h2><canvas></canvas><div class="names">${KINDS.map(k => `<span>${CAST[k].name}</span>`).join('')}</div>`;
+for (const [title, note, tall, cols] of ROWS) {
+  const n = Math.max(cols.length, 4), aspect = n / 2 / tall, sec = document.createElement('section');
+  sec.innerHTML = `<h2>${title} <small>· ${note}</small></h2><canvas style="aspect-ratio:${aspect}"></canvas><div class="names" style="grid-template-columns:repeat(${n},1fr)">${cols.map(c => `<span>${c[0]}</span>`).join('')}</div>`;
   document.getElementById('rows').append(sec);
   const canvas = sec.querySelector('canvas');
   const r = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
@@ -40,12 +55,14 @@ for (const [title, note, make] of ROWS) {
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0x141824);
   scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x2a2418, 1.4));
   const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(4, 8, 6); scene.add(sun);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 8), new THREE.MeshStandardMaterial({ color: 0x232838 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
-  const figs = [];
-  KINDS.forEach((k, i) => { const f = make(k); if (!f) return; f.position.x = (i - 3) * 2.5; f.rotation.y = turn0; scene.add(f); figs.push(f); });
-  // 7 columns of 2.5 m fill the width exactly, so the names under the canvas sit under their figures
-  const cam = new THREE.PerspectiveCamera(22, 7 / 2, .1, 100); cam.position.set(0, 2.2, 8.75 / (Math.tan(11 * Math.PI / 180) * 3.5)); cam.lookAt(0, 1.6, 0);
-  const draw = () => { const w = canvas.clientWidth; r.setSize(w, w * 2 / 7, false); r.render(scene, cam); };
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 8), new THREE.MeshStandardMaterial({ color: 0x232838 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  const figs = [], W = 2.5;
+  cols.forEach(([, make], i) => { const f = make(); f.position.x = (i - (n - 1) / 2) * W; f.rotation.y = turn0; scene.add(f); figs.push(f); });
+  // n columns of W metres fill the width exactly, so the names sit under their figures
+  const fov = 22, h = n * W / aspect, cam = new THREE.PerspectiveCamera(fov, aspect, .1, 200);
+  const dist = h / 2 / Math.tan(fov / 2 * Math.PI / 180), cy = tall > 1 ? 2.75 : 1.6;
+  cam.position.set(0, cy + .6, dist); cam.lookAt(0, cy, 0);
+  const draw = () => { const w = canvas.clientWidth; r.setSize(w, w / aspect, false); r.render(scene, cam); };
   let drag = null;
   canvas.onpointerdown = e => { drag = e.clientX; canvas.setPointerCapture(e.pointerId); };
   canvas.onpointermove = e => { if (drag === null) return; for (const f of figs) f.rotation.y += (e.clientX - drag) * .01; drag = e.clientX; draw(); };
