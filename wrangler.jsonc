@@ -1,0 +1,34 @@
+{
+  // Cloudflare Workers: serves this repo as is (no build step) under
+  // simonbedardprog.com/ficelle/, as its own Worker so it deploys on its own
+  // (simonbedardprog_frontend r97: Simon, 2026-10-22). The site's other
+  // Worker (simonbedardprog) keeps every other path.
+  //
+  // Deployed by Workers Builds (Cloudflare dashboard, connected to this repo):
+  // no build command, deploy command `npx wrangler deploy`, production
+  // branch `prod`: board sessions push main unattended, so going live is
+  // Simon's `git push origin main:prod`.
+  //
+  // Files are matched first: a path that is a file here is served as itself
+  // (that is what workers.dev/ shows). A path under /ficelle/ is no file, so
+  // it reaches worker/ficelle.js, which strips the prefix. .assetsignore keeps
+  // tools/, tests/, out/ and the board files off the web.
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+
+  "name": "ficelle",
+  "main": "worker/ficelle.js",
+  "compatibility_date": "2026-10-22",
+
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+
+  "workers_dev": true,
+  // A route runs before the simonbedardprog Worker's custom domain on the
+  // same host (Cloudflare docs, Custom Domains > Interaction with Routes).
+  "routes": [
+    { "pattern": "simonbedardprog.com/ficelle*", "zone_name": "simonbedardprog.com" },
+    { "pattern": "www.simonbedardprog.com/ficelle*", "zone_name": "simonbedardprog.com" }
+  ]
+}

@@ -1,0 +1,16 @@
+# Not served by the ficelle Worker (wrangler.jsonc): dev tools, tests,
+# captures, board files, and the Worker itself.
+.git
+.atelier
+.claude
+.assetsignore
+.gitignore
+out
+tools
+tests
+worker
+wrangler.jsonc
+README.md
+node_modules
+.wrangler
+__pycache__

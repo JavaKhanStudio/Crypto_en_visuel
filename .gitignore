@@ -6,3 +6,4 @@ out/
 .claude/skills/start-worker
 .claude/skills/write-context-pack
 .claude/skills/write-lexicon
+.wrangler/
