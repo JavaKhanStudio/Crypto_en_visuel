@@ -70,7 +70,7 @@ const sim = new Sim(world, {
     if (ev === 'sent') sfx.send();
     else if (ev === 'captured') {
       sfx.capture();
-      bubbles.show('caught', 'e', t('m.capturedE'), m.position.clone().add(new THREE.Vector3(0, 7, 0)), { ttl: 3500 });
+      if (!m.burst) bubbles.show('caught', 'e', t('m.capturedE'), m.position.clone().add(new THREE.Vector3(0, 7, 0)), { ttl: 3500 });
     } else if (ev === 'delivered') {
       sfx.arrive();
       const text = m.seq <= sim.L[to] ? t('m.duplicate', { n: m.seq })
