@@ -16,6 +16,8 @@
 
 /* r335: ↻ replays the step's beat; on a phone it is the arrow alone, so the nav stays one row */
 @media (max-width: 720px) { #replay .word, #step-count .word { display: none; } .nav { gap: 6px; } }
+/* r433: at 360px the ↻ is one button more than lib/episode.css's under-380px row holds in French (299 of 294px): a hair tighter here */
+@media (max-width: 380px) { .nav { gap: 4px; } .nav button { padding: .5em .45em; } }
 
 /* Episode 1.2: the corner card (the order, the key, the blocks, what travels, Eve's notebook) */
 #card { top: 96px; right: 14px; width: min(430px, calc(100% - 28px)); padding: 10px 14px 10px; }
