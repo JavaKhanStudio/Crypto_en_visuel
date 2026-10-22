@@ -153,16 +153,29 @@ function buildWaves() {
 }
 
 const solid = o => { o.userData.solid = true; return o; };
-// many copies of a shape at the given spots: one InstancedMesh per mesh of the shape
-function instanced(shape, spots) {
-  const g = new THREE.Group(), m = new THREE.Matrix4();
+// many copies of a shape at the given spots: one InstancedMesh per mesh of the shape; g.userData.turn(a)
+// turns the part named `spin` (the racks' Fan) of every copy to the angle a about its own y (r408)
+function instanced(shape, spots, spin) {
+  const g = new THREE.Group(), m = new THREE.Matrix4(), turning = [];
+  const part = spin && shape.getObjectByName(spin);
   shape.updateMatrixWorld(true);
+  const place = (im, o) => {
+    spots.forEach((p, k) => im.setMatrixAt(k, m.makeTranslation(p.x, p.y, p.z).multiply(o.matrixWorld)));
+    im.instanceMatrix.needsUpdate = true;
+  };
   shape.traverse(o => {
     if (!o.isMesh) return;
     const im = new THREE.InstancedMesh(o.geometry, o.material, spots.length);
-    spots.forEach((p, k) => im.setMatrixAt(k, m.makeTranslation(p.x, p.y, p.z).multiply(o.matrixWorld)));
+    place(im, o);
     im.castShadow = true; im.receiveShadow = true; g.add(im);
+    let up = o; while (up && up !== part) up = up.parent;
+    if (part && up) turning.push([im, o]);
   });
+  g.userData.turn = a => {
+    if (!part) return;
+    part.rotation.y = a; part.updateMatrixWorld(true);
+    for (const [im, o] of turning) place(im, o);
+  };
   return g;
 }
 
@@ -207,20 +220,19 @@ export async function buildWorld(scene) {
   const [rack, tower, laptop] = await Promise.all(['server_rack', 'tower', 'laptop'].map(n => loadShape(`../assets/shapes/${n}.json`)));
   const shadows = o => { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; };
   const items = { racks: [], fans: [], screens: [] };
-  // in each hall, rows of racks across its width: the ones at the packet's stop are whole racks whose
-  // fans turn, the rest one instanced mesh per part of Shadow's rack (a few draw calls for the lot)
+  // in each hall, full rows of racks across its width (no aisle, r408): the ones at the packet's stop
+  // are whole racks, the rest one instanced mesh per part of Shadow's rack (a few draw calls for the lot)
   const crowd = [];
   for (const [k, n] of [['i', 4], ['v', 3]]) {
     const H = HALLS[k], at = NODES[k], span = H.w / 2 - .9;
     for (const z of H.rows) for (let x = H.x - span; x <= H.x + span + .01; x += .62) {
       const mid = z === H.rows[0] && Math.abs(x - at.x) < n * .31;
-      if (Math.abs(x - H.x) < .25 && z !== H.rows[0]) continue;   // an aisle down the middle, from the door
       if (!mid) { crowd.push(v(x, 0, z)); continue; }
       const r = shadows(rack.clone()); r.position.set(x, 0, z); scene.add(r); items.racks.push(r);
       items.fans.push(r.getObjectByName('Fan'));
     }
   }
-  scene.add(instanced(rack, crowd));
+  const many = instanced(rack, crowd, 'Fan'); scene.add(many);   // their fans turn too (r408)
   const tw = shadows(tower.clone()); tw.position.set(NODES.b.x, 0, NODES.b.z - .4); scene.add(tw);
   const laptops = {};
   for (const [k, spot, turn] of [['a', SPOTS.tableA, .5], ['e', SPOTS.tableE, -.5]]) {
@@ -232,10 +244,13 @@ export async function buildWorld(scene) {
   scene.updateMatrixWorld(true);
   const obstacles = scene.children.filter(o => o.userData.solid).map(o => new THREE.Box3().setFromObject(o));
   const world = { scene, sun, laptops, items, router: box, cables, obstacles };
+  let fan = 0;
   world.update = (dt, time) => {
     waves.userData.update(time);
     box.userData.led.material.emissiveIntensity = 1.5 + Math.sin(time * 9) * 1.2;
-    for (const f of items.fans) if (f) f.rotation.y += dt * 9;
+    fan += dt * 9;   // every rack's fan, whole or instanced, at the same angle
+    for (const f of items.fans) if (f) f.rotation.y = fan;
+    many.userData.turn(fan);
     for (const s of items.screens) if (s) s.material.emissiveIntensity = 1.2 + Math.sin(time * 2) * .15;
   };
   return world;
