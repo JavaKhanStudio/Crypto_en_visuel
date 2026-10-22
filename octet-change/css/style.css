@@ -62,6 +62,13 @@ button.icon { padding: .4em .6em; }
 .chapters button { font-size: 12px; padding: .25em .7em; border-radius: 999px; }
 .narration h2 { font: 600 22px/1.2 var(--serif); margin: 4px 0 6px; }
 .narration p { margin: 0; color: #e6dfcf; min-height: 3em; }
+/* r368, Simon's pick A: on a phone, in Alice's keep, the text folds to its first 3 lines so the room
+   keeps the screen; « Lire la suite ▾ » opens it (story.js render) */
+#step-more { display: none; margin-top: 4px; padding: .2em .6em; font-size: 13px; }
+@media (max-width: 900px) {
+  #story.roomy:not(.open) #step-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; min-height: 0; }
+  #story.roomy.long #step-more { display: inline-block; }
+}
 /* r93: a step's points as tiles under its text (Eve's four tricks); 2 by 2 on a phone */
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
 .tiles:empty { display: none; }
