@@ -3,7 +3,7 @@
 // somewhere consistent), flies the camera, pins its bubbles, and offers buttons.
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
-import { CASTLE_A, CASTLE_B, CITY } from './world.js';
+import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
 import { wait } from './sim.js';
 import { render } from '../../lib/md.js';
 import { renderDoors } from '../../lib/doors.js';

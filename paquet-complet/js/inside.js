@@ -30,8 +30,8 @@
 // machine large in the strip it has, not a far view of the whole room.
 import * as THREE from 'three';
 import { t, raw } from './i18n.js';
-import { CASTLE_A, CASTLE_B, COLORS } from './world.js';
-import { SHOTS } from './camera.js';
+import { CASTLE_A, CASTLE_B, COLORS } from '../../lib/saga/world.js';
+import { SHOTS } from '../../lib/saga/camera.js';
 import { ZOOM, windowPath, roomArrival, setVeil } from '../../lib/zoom.js';
 import { key, padlock, packet } from './props.js';
 import * as A from '../../lib/saga-aes.js';

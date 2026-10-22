@@ -9,7 +9,7 @@ const fs = await import('node:fs');
 globalThis.document ??= { createElement: () => ({ getContext: () => null, style: {} }) };
 const THREE = await import('three');
 const { person } = await import('../../scytale/js/props.js');
-const castles = await import('../../deux-generaux/js/castles.js').catch(e => ({ err: e.message }));
+const castles = await import('../../lib/saga/castles.js').catch(e => ({ err: e.message }));
 
 const MM = +(process.argv[2] ?? 20), out = new URL('../../out/print_probe/', import.meta.url).pathname;
 function stl(geo) {

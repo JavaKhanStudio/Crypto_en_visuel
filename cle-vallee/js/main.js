@@ -7,9 +7,9 @@ import { qualityComposer } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B } from './world.js';
+import { buildWorld, CASTLE_A, CASTLE_B } from '../../lib/saga/world.js';
 import { cargo as buildCargo } from './props.js';
-import { CameraRig } from './camera.js';
+import { CameraRig } from '../../lib/saga/camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from '../../lib/messenger.js';
 import { Bubbles } from '../../lib/bubbles.js';
@@ -36,7 +36,7 @@ renderer.toneMappingExposure = 1.3;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1, .5, 1500);
-const world = buildWorld(scene);
+const world = buildWorld(scene, { castles: 'keep' });   // the keeps their rooms are built in (r423)
 const tickers = new Set(); world.tickers = tickers;
 initFx(scene);
 const rig = new CameraRig(camera, canvas);

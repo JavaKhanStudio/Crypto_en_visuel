@@ -4,7 +4,7 @@
        ?way=flat   (a) the libGDX backdrop glued behind the world, slid by the camera's yaw and pan x each layer's speed
        ?way=rings  (b) each layer a painted band around the valley at a radius from its speed: real parallax in a flight
        ?way=dome   the episode as it is today, for reference
-     A timeline flies the episode's shots (deux-generaux/js/camera.js SHOTS) and two low ones of the lab's, night then dawn;
+     A timeline flies the episode's shots (lib/saga/camera.js SHOTS) and two low ones of the lab's, night then dawn;
      ?t=SECONDS freezes it there, window.lab.seek(t) moves it (tools/parallax_sky_film.py). ⏸ frees the camera
      (drag to orbit) and the dawn slider. compare.html shows two ways side by side on one clock. -->
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,8 +40,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld } from '../../deux-generaux/js/world.js';
-import { CameraRig, SHOTS } from '../../deux-generaux/js/camera.js';
+import { buildWorld } from '../../lib/saga/world.js';
+import { CameraRig, SHOTS } from '../../lib/saga/camera.js';
 import { buildBackdrop, KNOBS } from './sky.js';
 
 const q = new URLSearchParams(location.search);

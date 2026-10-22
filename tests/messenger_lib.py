@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
-"""r323: lib/messenger.js holds the two values it used to import from an episode's world.js, the
-cast's COLORS and Eve's CITY; they must still be what each of the six saga episodes' world.js says.
+"""r323, r423: lib/messenger.js reads the cast's COLORS and Eve's CITY from the saga's one valley,
+lib/saga/world.js, and keeps no copy of them; no saga episode keeps a js/world.js or js/camera.js of its own.
     python3 tests/messenger_lib.py"""
 import re, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SAGA = "deux-generaux eve-lit-tout octet-change cle-vallee paquet-complet encore-des-tours".split()
-grab = lambda t: [re.search(r"(?:export )?const COLORS = (\{[^}]*\});", t).group(1),
-                  re.search(r"(?:export )?const CITY = (new THREE\.Vector3\([^)]*\));", t).group(1)]
-lib = grab((ROOT / "lib/messenger.js").read_text())
-bad = 0
+msg = (ROOT / "lib/messenger.js").read_text()
+checks = [("lib/messenger.js imports COLORS and CITY from ./saga/world.js",
+           re.search(r"import \{ COLORS, CITY \} from './saga/world\.js';", msg) is not None),
+          ("lib/messenger.js declares no COLORS or CITY of its own",
+           re.search(r"^(?:export )?const (COLORS|CITY) =", msg, re.M) is None),
+          ("lib/saga/world.js exports COLORS and CITY",
+           all(re.search(rf"^export const {n} =", (ROOT / "lib/saga/world.js").read_text(), re.M) for n in ("COLORS", "CITY")))]
 for ep in SAGA:
-    ok = grab((ROOT / ep / "js/world.js").read_text()) == lib
-    print(("ok   " if ok else "BAD  ") + f"{ep}/js/world.js COLORS and CITY match lib/messenger.js"); bad += not ok
+    for f in ("world.js", "camera.js", "castles.js"):
+        checks.append((f"{ep}/js/{f} gone (lib/saga/{f})", not (ROOT / ep / "js" / f).exists()))
+bad = 0
+for what, ok in checks:
+    print(("ok   " if ok else "BAD  ") + what); bad += not ok
 print("all ok" if not bad else f"{bad} failed"); raise SystemExit(bad > 0)

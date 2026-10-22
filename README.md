@@ -427,16 +427,17 @@ Liens directs : `deux-generaux/#story=5`, `#sandbox`, `#quiz` ; `?lang=en`.
 ```
 index.html, home.js, home.css   l'accueil de la série (liste des épisodes, renvoi des anciens liens)
 vendor/three/       three.js r170, partagé par les épisodes
+lib/saga/           la vallée de la saga 1.1-1.6, une seule copie (r423) :
+  world.js            terrain, châteaux, ville d'Eve, route, ciel, aube (buildWorld(scene, { castles: 'middle-earth' | 'keep' }))
+  castles.js          les deux châteaux de la Terre du Milieu : la cité blanche des humains (Alice), Caras Galadhon, la cité des mallorns des elfes (Bob)
+  camera.js           plans nommés, vols, poursuite d'un messager
 <slug>/index.html   épisode pas encore construit : renvoie à sa carte sur l'accueil
 deux-generaux/      l'épisode 1 :
   index.html          la page, les panneaux
   vignette.jpg        sa carte sur l'accueil
   css/style.css
   js/main.js          rendu, bloom, boucle, modes
-  js/world.js         terrain, châteaux, ville d'Eve, route, ciel, aube
-  js/castles.js       les deux châteaux de la Terre du Milieu : la cité blanche des humains (Alice), Caras Galadhon, la cité des mallorns des elfes (Bob)
-  lab/castles.html    les mêmes de près, sans l'histoire (?view=, ?cam=x,y,z,tx,ty,tz)
-  js/camera.js        plans nommés, vols, poursuite d'un messager
+  lab/castles.html    les châteaux de lib/saga/ de près, sans l'histoire (?view=, ?cam=x,y,z,tx,ty,tz)
   js/sim.js           le protocole : numéros de message, qui sait quoi, l'aube
   js/ladder.js        l'échelle de connaissance (texte + 3D)
   js/bubbles.js       bulles de dialogue accrochées à la scène

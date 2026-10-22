@@ -29,8 +29,8 @@
 // machine large in the strip it has, not a far view of the whole room.
 import * as THREE from 'three';
 import { t } from './i18n.js';
-import { CASTLE_A, CASTLE_B } from './world.js';
-import { SHOTS } from './camera.js';
+import { CASTLE_A, CASTLE_B } from '../../lib/saga/world.js';
+import { SHOTS } from '../../lib/saga/camera.js';
 import { ZOOM, windowPath, roomArrival, setVeil } from '../../lib/zoom.js';
 import { padlock, key } from './props.js';
 import * as R from './rsa.js';
