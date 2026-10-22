@@ -147,8 +147,9 @@ const fr = {
       b: 'Un octet changé : InvalidTag. Je ne lis rien.' },
     final: { t: 'Un paquet qui arrête les quatre tours', p: "Mis bout à bout, voici une façon de tout arrêter. Le numéro ; une seule clé AES, fermée au cadenas de Bob ; le nonce ; l'ordre, chiffré et scellé en AES-256-GCM ; et la signature d'Alice sur tout cela. Bob vérifie la signature et le numéro, ouvre la clé, déchiffre, et GCM vérifie le tag avant de rendre l'ordre. Eve ne lit pas (AES), ne modifie pas (le tag, et la signature), ne se fait pas passer pour Alice (la signature), ne rejoue pas (le numéro). La carte montre ce paquet avec ses vrais octets. Ce n'est pas la seule façon : chaque brique a sa variante.",
       a: 'Lire, modifier, usurper, rejouer : quatre tours, et de quoi les arrêter.' },
-    end: { t: 'À votre tour de jouer Eve', p: "Dans l'atelier attaque-défense, c'est vous qui jouez Eve, contre la messagerie d'un autre binôme. La carte donne les questions à poser à leur code, tour par tour : chaque réponse qui ouvre une porte est une faiblesse à consigner sur votre fiche. Dans le bac à sable, choisissez le tour d'Eve et les défenses de Bob, et regardez ce qui passe. Le paquet de base a son épisode, en détail : 1.5 pour le paquet complet, 1.3 pour le sceau, 1.4 pour le cadenas.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz', link: ['Épisode 1.5 : le paquet complet ▶', 'Épisode 1.3 : le sceau ▶', 'Épisode 1.4 : le cadenas RSA ▶'] },
+    end: { t: 'À votre tour de jouer Eve', p: "Dans l'atelier attaque-défense, c'est vous qui jouez Eve, contre la messagerie d'un autre binôme. La carte donne les questions à poser à leur code, tour par tour : chaque réponse qui ouvre une porte est une faiblesse à consigner sur votre fiche. Dans le bac à sable, choisissez le tour d'Eve et les défenses de Bob, et regardez ce qui passe. Le paquet de base a son épisode, en détail : l'épisode 1.5 pour le paquet complet, l'épisode 1.3 pour le sceau, l'épisode 1.4 pour le cadenas.",
+      doors: { sandbox: ['Bac à sable', 'Le tour d’Eve contre les défenses de Bob : ce qui passe'], quiz: ['Quiz', 'Sept questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 2 · Le cadenas de Bob ▶', 'Tout le monde peut fermer le cadenas, seul Bob peut l’ouvrir'] } },
   },
 
   // sandbox
@@ -306,8 +307,9 @@ const en = {
       b: 'One byte changed: InvalidTag. I read nothing.' },
     final: { t: 'A packet that stops all four tricks', p: "Put end to end, here is one way to stop it all. The number; a single AES key, locked with Bob's padlock; the nonce; the order, encrypted and sealed with AES-256-GCM; and Alice's signature over all of it. Bob checks the signature and the number, opens the key, decrypts, and GCM checks the tag before giving the order back. Eve does not read (AES), does not modify (the tag, and the signature), does not pose as Alice (the signature), does not replay (the number). The card shows this packet with its real bytes. It is not the only way: every brick has its variant.",
       a: 'Read, modify, pose, replay: four tricks, and what stops them.' },
-    end: { t: 'Your turn to play Eve', p: "In the attack-defense workshop, you play Eve, against another pair's messenger. The card gives the questions to ask of their code, trick by trick: every answer that opens a door is a weakness to write down on your sheet. In the sandbox, choose Eve's trick and Bob's defenses, and watch what gets through. The base packet has its own episode, in detail: 1.5 for the whole packet, 1.3 for the seal, 1.4 for the padlock.",
-      go: 'Try it in the sandbox', go2: 'Take the quiz', link: ['Episode 1.5: the whole packet ▶', 'Episode 1.3: the seal ▶', 'Episode 1.4: the RSA padlock ▶'] },
+    end: { t: 'Your turn to play Eve', p: "In the attack-defense workshop, you play Eve, against another pair's messenger. The card gives the questions to ask of their code, trick by trick: every answer that opens a door is a weakness to write down on your sheet. In the sandbox, choose Eve's trick and Bob's defenses, and watch what gets through. The base packet has its own episode, in detail: episode 1.5 for the whole packet, episode 1.3 for the seal, episode 1.4 for the padlock.",
+      doors: { sandbox: ['Sandbox', 'Eve’s trick against Bob’s defenses: what gets through'], quiz: ['Quiz', 'Seven questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 2 · Bob’s Padlock ▶', 'Anyone can snap the padlock shut, only Bob can open it'] } },
   },
 
   'sb.title': 'Sandbox',

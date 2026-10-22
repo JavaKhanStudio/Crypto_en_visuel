@@ -13,6 +13,8 @@
 /* Episode 1.3: the corner card (the packet, the byte Eve changes, the seals, what Bob decrypts) */
 #card { top: 96px; right: 14px; width: min(430px, calc(100% - 28px)); padding: 10px 14px 10px; }
 #card:empty { display: none; }
+/* r130 (r129's fix): on a desktop a tall card stops above the story panel (the last step's doors raise it) and scrolls, never covering the step's text */
+@media (min-width: 901px) { #card { max-height: calc(100% - var(--dock, 14px) - 104px); overflow: auto; } }
 #card h3 { font: 600 15px var(--serif); margin: 0; color: var(--b); }
 #card .note { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; }
 #card .lbl { display: block; margin: 8px 0 2px; color: var(--muted); font: 600 11px var(--sans); letter-spacing: .06em; text-transform: uppercase; }

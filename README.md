@@ -156,7 +156,9 @@ Puis le rejeu : Eve garde la copie d'un vrai paquet signé et la renvoie le lend
 numéro sous la signature (n° 42, Bob retient le plus grand reçu) l'arrête, et changer 42 en 43
 casse la signature. AES-256-GCM chiffre et scelle d'un geste (InvalidTag, le piège du nonce
 réutilisé) ; un paquet qui arrête les quatre tours ; la fin donne les questions de l'atelier
-attaque-défense et renvoie à 1.5, 1.3 et 1.4. 14 étapes en 5 chapitres, un bac à sable (le tour
+attaque-défense et renvoie à 1.5, 1.3 et 1.4, et ouvre quatre portes avec leur clip au survol : bac à
+sable, quiz, tous les épisodes, puis l'épisode 2 en or à droite (`lib/doors.js`,
+`tests/last_doors.py encore-des-tours 14 cadenas`). 14 étapes en 5 chapitres, un bac à sable (le tour
 d'Eve : laisser passer, changer un octet, fabriquer, rejouer ; les défenses de Bob : signature,
 numéro), un quiz de 7 questions. `encore-des-tours/js/sign.js` (RSA-PSS sur le RSA BigInt de 1.4) et
 `js/gcm.js` (GCM sur l'AES de 1.2) calculent tout dans la page ; `node tests/tours_values.mjs` les
