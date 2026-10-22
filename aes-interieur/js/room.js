@@ -172,6 +172,18 @@ function machine(scene, data, portrait) {
     xor: label('⊕', '#ffd27a', 1.3), is: label('=', '#ffd27a', 1.3),
   };
   for (const s of Object.values(L)) scene.add(s);
+  // the S-box lookup's leader (r435): from its label beside the grid, through the gap above the row, down onto the turning cube
+  const leadMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .85, depthTest: false, depthWrite: false });
+  // and a frame round the turning cube, where the leader lands
+  const lead = [0, 1, 2, 3, 4, 5, 6].map(() => { const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), leadMat); m.renderOrder = 10; m.visible = false; scene.add(m); return m; });
+  const leadTo = (pts, c, w = .07) => {
+    const f = C / 2 + .1, sides = [[v(-f, f), v(f, f)], [v(f, f), v(f, -f)], [v(f, -f), v(-f, -f)], [v(-f, -f), v(-f, f)]]
+      .map(([a, b]) => [a.add(c), b.add(c)]);
+    [...pts.slice(1).map((b, j) => [pts[j], b]), ...sides].forEach(([a, b], j) => {
+      const m = lead[j]; m.position.copy(a).add(b).multiplyScalar(.5);
+      m.scale.set(Math.abs(b.x - a.x) + w, Math.abs(b.y - a.y) + w, w); m.visible = true;
+    });
+  };
   const top = c => v(c.x, c.y + 2.95);
   L.name.position.copy(v(G.x, G.y + 3.55)); L.op.position.copy(v(G.x, G.y + 3.45)); L.round.position.copy(v(G.x, G.y - 3.45));
   L.P1.position.copy(top(at.P1)); L.IV.position.copy(top(at.IV)); L.X.position.copy(top(at.X));
@@ -240,7 +252,7 @@ function machine(scene, data, portrait) {
   const hideAll = () => {
     for (const m of [...cubes, ...keyT, ...Object.values(T).flat(), ...RK.flat()]) { m.visible = false; m.userData.outline && (m.userData.outline.visible = false); }
     for (const s of [...Object.values(L), ...RKL]) show(s, 0);
-    box.visible = false;
+    box.visible = false; lead.forEach(m => { m.visible = false; });
   };
   const pop = (list, c, time, a, gap = .03, p = 1.12, sc = 1) => list.forEach((m, i) => {
     const k = span(time, a + i * gap, a + i * gap + .45); m.position.copy(tileAt(c, i, p)); m.scale.set(k * sc, k * sc, sc); m.rotation.set(0, 0, 0); m.visible = k > .02;
@@ -295,6 +307,9 @@ function machine(scene, data, portrait) {
         // beside the grid on the cube's row and side: above the cube, a top row's label ran into the step's name (r422)
         const side = i < 8 ? -1 : 1, c = cell(i);
         L.note.position.set(G.x + side * (1.5 * S + C / 2 + .3 + L.note.scale.x / 2), c.y, c.z + .6); show(L.note, 1);
+        // beside the grid it sits by the row's outer cube: the leader names the one turning (r435)
+        const xe = G.x + side * (1.5 * S + C / 2 + .18), yg = c.y + S / 2, z = c.z + .6;
+        leadTo([v(xe, c.y, z), v(xe, yg, z), v(c.x, yg, z), v(c.x, c.y + C / 2 + .1, z)], v(c.x, c.y, z));
       }
       // the changed run: outline every byte that differs from Alice's at the same moment
       if (P && BEATS[beat].cmp && ref) {

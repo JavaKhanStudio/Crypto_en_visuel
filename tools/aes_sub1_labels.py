@@ -2,7 +2,7 @@
 """« AES de l'intérieur » round 1 SubBytes (step 6), held while one cube is mid-lookup, so its
 S(..) = .. label can be checked against the step's title and the other cubes (r422). The beat is
 scanned in time for the labels; the n-th label is cube n (column-major: row n % 4, column n / 4).
-Shoots cubes 0 (top left), 4 (top, 2nd column), 3 (bottom left) and 13 (row 1, last column) at
+Shoots cubes 0 (top left), 4 (top, 2nd column), 8 (top, 3rd column), 3 (bottom left) and 13 (row 1, last column) at
 1440x860 and 390x844 to out/aes-sub1-cube<n>[-phone]-<lang>.png. Serve the repo first.
     tools/aes_sub1_labels.py [fr|en] [base]"""
 import sys
@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 
 lang = sys.argv[1] if len(sys.argv) > 1 else "fr"
 base = sys.argv[2] if len(sys.argv) > 2 else "http://localhost:8793/"
-CUBES = [0, 4, 3, 13]
+CUBES = [0, 4, 8, 3, 13]
 scan = """() => { const r = demo.room, seen = [];
   for (let t = 0; t < r.end; t += .02) { r.time = t; r.m.pose(r.id, t);
     const s = r.m.read().words.find(w => w.startsWith('S('));
