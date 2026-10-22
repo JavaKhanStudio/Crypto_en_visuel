@@ -2,7 +2,7 @@
 // The penguin and the chain (episode 6 of « Crypto en visuel »). Deep links: #story=5, #sandbox, #quiz. ?lang=en. ?instant=1 skips camera flights and
 // plays the props' animations at once (used by the headless screenshots in tools/shoot.py).
 import * as THREE from 'three';
-import { qualityComposer } from '../../lib/quality.js';
+import { qualityComposer } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';

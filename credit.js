@@ -1,10 +1,15 @@
-// The credit stamp (r185): Simon's logo and Atelier's, with « Fait par SimonBedardProg, avec Atelier ».
-// One line in a page loads it: <script type="module" src="../credit.js"></script> in an episode,
-// src="credit.js" on the home. It brings its own style and follows the page's language (<html lang>).
-// Simon (21 Oct): both logos AND the words, everywhere, and a link to simonbedardprog.com/ficelle.
-// Episode, wide screen (over 1240px, room beside the step panel): a stamp in the bottom-left corner.
-// Narrower, or in the quiz (a modal over everything): it moves into the foot of the panel on show,
-// #story, #sandbox or #quiz, so it is never hidden behind one nor gone with one. Home: in <footer>.
+// The credit stamp (r185): Simon's logo and Atelier's, with « Fait par SimonBedardProg, avec Atelier »,
+// a link to simonbedardprog.com/ficelle. It brings its own style and follows the page's language (<html lang>).
+// The home loads it with one line in its <footer> (src="credit.js"); an episode gets it through
+// lib/episode.js (r340), a page that is neither keeps one line, src="../credit.js".
+// Simon (22 Oct, r340): « In the scene selection it's fine to have the whole thing. Everywhere else, the
+// simonbedardprog logo is enough. It should be subtle, but visible to anyone who is looking. »
+// So: the home's <footer> has the whole stamp (both logos and the words). An episode has Simon's logo
+// alone, small and dimmed, a badge on the lower corner of the episode's crest in the top bar's title chip:
+// the same place at every size and in every mode, adding no height to any panel nor any size to the chip
+// (on the series line it pushed « CRYPTO, VISUALIZED » past the chip at 360px; under the crest it made a
+// one-line title's chip taller, and 1.2's card no longer opened above the panel); the words are its title.
+// A page with no .brand .crest (none today) gets the same logo in the bottom-left corner.
 const base = new URL('.', import.meta.url).href, HREF = 'https://simonbedardprog.com/ficelle';
 const words = {
   fr: ['Fait par', 'avec'],
@@ -21,38 +26,39 @@ const css = `
 .credit.corner { position: fixed; left: 12px; bottom: 12px; z-index: 5; padding: 5px 9px 5px 5px;
   border-radius: 10px; background: rgba(12, 16, 30, .55); backdrop-filter: blur(4px); }
 a.credit:hover b, a.credit:focus-visible b { color: #fff; text-decoration: underline; }
-.credit.foot { justify-content: center; margin-top: 8px; font-size: 10px; }
-.credit.foot img { height: 22px; width: 22px; }
-.credit.foot .atelier { border-radius: 5px; }
 footer .credit { justify-content: center; margin: 10px 0 0; font-size: 12px; }
 footer .credit img { height: 32px; width: 32px; }
+.crest-col { position: relative; display: inline-block; }
+.crest-col .credit.mark { position: absolute; left: -9px; bottom: -3px; }
+.credit.mark { gap: 0; opacity: .5; transition: opacity .2s; }
+.credit.mark:hover, .credit.mark:focus-visible { opacity: 1; }
+.credit.mark .simon { height: 15px; width: 15px; padding: 1px; }
+.credit.mark.corner { padding: 0; background: none; backdrop-filter: none; }
+.credit.mark.corner .simon { height: 22px; width: 22px; }
 `;
 
+const footer = document.querySelector('body > footer');   // the home (scene selection): the whole stamp
 const el = document.createElement('a');
-el.className = 'credit'; el.id = 'credit'; el.href = HREF; el.target = '_blank'; el.rel = 'noopener';
+el.className = footer ? 'credit' : 'credit mark'; el.id = 'credit'; el.href = HREF; el.target = '_blank'; el.rel = 'noopener';
 el.innerHTML = `<img class="simon" alt="SimonBedardProg" src="${base}assets/credit/simon.png">`
-  + `<img class="atelier" alt="Atelier" src="${base}assets/credit/atelier.svg">`
-  + '<span class="words"><span class="by"></span> <b>SimonBedardProg</b><br><span class="with"></span> <b>Atelier</b></span>';
+  + (footer ? `<img class="atelier" alt="Atelier" src="${base}assets/credit/atelier.svg">`
+    + '<span class="words"><span class="by"></span> <b>SimonBedardProg</b><br><span class="with"></span> <b>Atelier</b></span>' : '');
 
 function text() {
   const [by, w] = words[document.documentElement.lang === 'en' ? 'en' : 'fr'];
-  el.querySelector('.by').textContent = by;
-  el.querySelector('.with').textContent = w;
+  if (footer) { el.querySelector('.by').textContent = by; el.querySelector('.with').textContent = w; }
   el.title = `${by} SimonBedardProg, ${w} Atelier`;
+  el.setAttribute('aria-label', el.title);
 }
 
-// where it sits: the home's footer; else the quiz when it is open; else, narrow, the panel on show; else the corner
-const footer = document.querySelector('body > footer');
-const panels = ['story', 'sandbox', 'quiz'].map(id => document.getElementById(id)).filter(Boolean);
-const narrow = matchMedia('(max-width: 1240px)');
-const shown = id => panels.find(p => p.id === id && !p.classList.contains('hidden'));
+// where it sits: the home's footer; in an episode, under the crest of the top bar's title chip
 function place() {
-  if (footer) { if (el.parentNode !== footer) footer.append(el); return; }
-  const host = shown('quiz') || (narrow.matches && panels.find(p => p.id !== 'quiz' && !p.classList.contains('hidden'))) || null;
-  el.classList.toggle('foot', !!host);
-  el.classList.toggle('corner', !host);
-  const parent = host?.id === 'quiz' ? host.querySelector('.card') || host : host || document.body;   // the quiz: inside its card
-  if (el.parentNode !== parent) parent.append(el);
+  if (footer) { footer.append(el); return; }
+  const crest = document.querySelector('.brand .crest');
+  if (!crest) { el.classList.add('corner'); document.body.append(el); return; }
+  const col = document.createElement('span');
+  col.className = 'crest-col';
+  crest.replaceWith(col); col.append(crest, el);
 }
 
 const style = document.createElement('style');
@@ -60,6 +66,3 @@ style.textContent = css;
 document.head.append(style);
 text(); place();
 new MutationObserver(text).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
-narrow.addEventListener('change', place);
-// a mode switch hides and shows the panels (class hidden): follow it
-for (const p of panels) new MutationObserver(place).observe(p, { attributes: true, attributeFilter: ['class'] });
