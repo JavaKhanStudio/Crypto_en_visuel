@@ -303,13 +303,16 @@ function machine(scene, data, portrait) {
       // round 1's SubBytes, slowly: the lookup of the byte going through, S(bc) = 65
       if (beat === 'sub1' && time >= o.t0 && k < .97) {
         const i = Math.max(0, Math.min(15, Math.round((k - .25) * 30)));   // cube i is mid-turn at k = .5 i / 15 + .25
+        // a phone draws the grid about 60 px wide: the lookup is the beat's point, so its words grow there (r436)
+        const nh = narrow() ? 1.7 : .62;
+        if (L.note.userData.h !== nh) Object.assign(L.note.userData, { h: nh, text: null });
         relabel(L.note, `S(${hx(o.from[i])}) = ${hx(o.to[i])}`);
         // beside the grid on the cube's row and side: above the cube, a top row's label ran into the step's name (r422)
         const side = i < 8 ? -1 : 1, c = cell(i);
         L.note.position.set(G.x + side * (1.5 * S + C / 2 + .3 + L.note.scale.x / 2), c.y, c.z + .6); show(L.note, 1);
         // beside the grid it sits by the row's outer cube: the leader names the one turning (r435)
         const xe = G.x + side * (1.5 * S + C / 2 + .18), yg = c.y + S / 2, z = c.z + .6;
-        leadTo([v(xe, c.y, z), v(xe, yg, z), v(c.x, yg, z), v(c.x, c.y + C / 2 + .1, z)], v(c.x, c.y, z));
+        leadTo([v(xe, c.y, z), v(xe, yg, z), v(c.x, yg, z), v(c.x, c.y + C / 2 + .1, z)], v(c.x, c.y, z), narrow() ? .14 : .07);
       }
       // the changed run: outline every byte that differs from Alice's at the same moment
       if (P && BEATS[beat].cmp && ref) {

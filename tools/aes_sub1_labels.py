@@ -3,7 +3,7 @@
 S(..) = .. label can be checked against the step's title and the other cubes (r422). The beat is
 scanned in time for the labels; the n-th label is cube n (column-major: row n % 4, column n / 4).
 Shoots cubes 0 (top left), 4 (top, 2nd column), 8 (top, 3rd column), 3 (bottom left) and 13 (row 1, last column) at
-1440x860 and 390x844 to out/aes-sub1-cube<n>[-phone]-<lang>.png. Serve the repo first.
+1440x860, 390x844 and 360x780 to out/aes-sub1-cube<n>[-phone|-360]-<lang>.png. Serve the repo first.
     tools/aes_sub1_labels.py [fr|en] [base]"""
 import sys
 from playwright.sync_api import sync_playwright
@@ -19,7 +19,7 @@ scan = """() => { const r = demo.room, seen = [];
 with sync_playwright() as p:
     b = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
     errors = []
-    for (w, h), tag in [((1440, 860), ""), ((390, 844), "-phone")]:
+    for (w, h), tag in [((1440, 860), ""), ((390, 844), "-phone"), ((360, 780), "-360")]:
         pg = b.new_page(viewport={"width": w, "height": h}); pg.on("pageerror", lambda e: errors.append(str(e)))
         pg.goto(f"{base}aes-interieur/?instant=1&lang={lang}#story=6", wait_until="load")
         pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
