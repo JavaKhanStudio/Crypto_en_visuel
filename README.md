@@ -104,7 +104,9 @@ caméra entre par sa fenêtre, et un mur de 256 octets se monte sur les vrais oc
 où pend le cadenas ouvert de Bob, qui se ferme, et c en sort ; la caméra ressort à « Pourquoi OAEP »
 (`cle-vallee/js/inside.js`, vérifié par `tests/cle_inside.py`). Puis le
 chiffrement hybride (190 octets au plus par bloc, RSA lent), des clés neuves à chaque ordre, et le
-paquet complet ; la fin renvoie aux épisodes 2 (le cadenas) et 3 (Diffie-Hellman). 13 étapes en 4
+paquet complet ; la fin renvoie aux épisodes 2 (le cadenas) et 3 (Diffie-Hellman), et ouvre quatre portes
+avec leur clip au survol : bac à sable, quiz, tous les épisodes, puis l'épisode 1.5 en or à droite (`lib/doors.js`,
+`tests/last_doors.py cle-vallee 13 paquet-complet`). 13 étapes en 4
 chapitres, un bac à sable (votre ordre ; les clés en clair ou fermées ; Eve lit ou change l'ordre),
 un quiz de 7 questions. RSA et OAEP sont calculés dans la page sur BigInt (`lib/rsa.js`, partagé avec 1.5 et 1.6,
 la paire de Bob tirée une fois avec openssl, des graines fixes pour l'histoire) et vérifiés par
