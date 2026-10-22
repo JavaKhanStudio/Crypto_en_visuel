@@ -5,7 +5,7 @@ Serve the two trees (the old one from a worktree), then:
 
     tools/room_parts_diff.py out/r485 http://localhost:8831/ http://localhost:8832/
 
-For every room step of 1.2-1.6, at 1440x860 and 390x844, both trees are shot with the same seeded
+For every room step of 1.2-1.6 and 11 (r488), at 1440x860 and 390x844, both trees are shot with the same seeded
 Math.random and a frozen clock, the room's clock held at each second of --at (demo.inside.hold), so
 the same code draws the same pixels. Prints the share of pixels that differ (any channel > 24) and
 writes <out>/<ep>-<step>-<w>-<s>.png: before | after | the differing pixels in red.
@@ -19,7 +19,12 @@ from browser import launch
 # every room: 1.2 aes, 1.3 hmac, 1.4 rsa (two beats) and oaep, 1.5 alice, bob open and why,
 # 1.6 sign, verify, gcm, gcmEve
 STEPS = {'eve-lit-tout': [5, 7], 'octet-change': [6, 7], 'cle-vallee': [4, 5, 7],
-         'paquet-complet': [3, 7, 10], 'encore-des-tours': [5, 6, 11, 12]}
+         'paquet-complet': [3, 7, 10], 'encore-des-tours': [5, 6, 11, 12],
+         # r488: 11's keep (its own Room, demo.room): the state, round 1's SubBytes, the last round
+         'aes-interieur': [3, 6, 11]}
+# how each page says it is in its room, and holds the room's clock at s seconds
+READY = {'aes-interieur': "!!(window.demo && demo.ready && demo.room && demo.room.m)"}
+HOLD = {'aes-interieur': "demo.room.speed = 0; demo.room.time = {s}"}
 SEED = """(() => { let s = 485; Math.random = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ s >>> 15, 1 | s);
   t = (t + Math.imul(t ^ t >>> 7, 61 | t)) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })();"""
 
@@ -40,11 +45,11 @@ def shots(b, base, ep, step, w, h, at):
     pg.goto(f"{base}{ep}/?instant=1&lang={a.lang}#story={step}", wait_until="load")
     for _ in range(120):
         pg.clock.run_for(500)
-        if pg.evaluate("!!(window.demo && demo.ready && demo.inside && demo.inside.active)"): break
+        if pg.evaluate(READY.get(ep, "!!(window.demo && demo.ready && demo.inside && demo.inside.active)")): break
     else: errors.append("never inside the room")
     pg.add_style_tag(content=".bubble { transition: none !important; }")
     for s in at:
-        pg.evaluate(f"demo.inside.hold = {s}")
+        pg.evaluate(HOLD.get(ep, "demo.inside.hold = {s}").format(s=s))
         pg.clock.run_for(2500)
         out.append(Image.open(io.BytesIO(pg.screenshot())).convert("RGB"))
     pg.close()

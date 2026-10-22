@@ -15,6 +15,7 @@
 import * as THREE from 'three';
 import { t } from './i18n.js';
 import * as A from './values.js';
+import { buildRoom } from '../../lib/room-parts.js';   // the stone room of 1.2, lit by two torches
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
@@ -77,34 +78,6 @@ function relabel(s, text, color = s.userData.color) {
   Object.assign(s.userData, { text, color });
 }
 const show = (o, k) => { o.visible = k > .001; if (o.isSprite) o.material.opacity = k; };
-
-// the stone room of 1.2, lit by two torches; tall enough for a phone's upright frame
-function buildRoom(scene, portrait) {
-  scene.background = new THREE.Color(0x120c08);
-  scene.fog = new THREE.Fog(0x120c08, 40, 90);
-  scene.add(new THREE.HemisphereLight(0xffe0b0, 0x2a1a10, .9));
-  const stone = new THREE.MeshStandardMaterial({ color: 0x8a7c68, roughness: .95, flatShading: true });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 40, 30, 20), new THREE.MeshStandardMaterial({ color: 0x4a3e32, roughness: 1, flatShading: true }));
-  { const p = floor.geometry.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, (Math.sin(i * 12.9898) * 43758.5453 % 1) * .08); floor.geometry.computeVertexNormals(); }
-  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-  const rows = portrait ? 20 : 10;
-  const wall = new THREE.InstancedMesh(new THREE.BoxGeometry(1.95, 1.45, 1), stone, rows * 28), m4 = new THREE.Matrix4();
-  for (let y = 0, i = 0; y < rows; y++) for (let x = -14; x < 14; x++, i++)
-    wall.setMatrixAt(i, m4.makeTranslation(x * 2 + (y % 2), y * 1.5 + .75, -9 - Math.abs(Math.sin(x * 7 + y)) * .15));
-  wall.receiveShadow = true; scene.add(wall);
-  const tx = portrait ? 9 : 22, ty = portrait ? 16 : 6.5;
-  for (const x of [-tx, tx]) {
-    const light = new THREE.PointLight(0xffa040, 60, 34, 1.6); light.position.set(x, ty, -7.6); scene.add(light);
-    const flame = new THREE.Mesh(new THREE.SphereGeometry(.32, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffc070 }));
-    flame.position.copy(light.position); scene.add(flame);
-    const holder = new THREE.Mesh(new THREE.CylinderGeometry(.1, .16, 1, 6), new THREE.MeshStandardMaterial({ color: 0x2a1c12 }));
-    holder.position.set(x, ty - .7, -8); scene.add(holder);
-    scene.userData.flames = [...(scene.userData.flames || []), { light, flame }];
-  }
-  const over = new THREE.PointLight(0xffb060, 80, 50, 1.4); over.position.set(0, portrait ? 22 : 13, 8); scene.add(over);
-  const key = new THREE.DirectionalLight(0xfff0dd, 1.2); key.position.set(6, 24, 14); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -18, right: 18, top: 28, bottom: -6 }); scene.add(key);
-}
 
 // ---------- the beats ----------
 // the story's steps in the room, in order; ops: which steps of the cipher the beat plays, and how
