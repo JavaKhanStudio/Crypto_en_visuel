@@ -1,11 +1,11 @@
 // r178: the step panel never wraps a unit, an '= 5 × 6' or a French : ; ? ! » alone onto a line.
-// md.js tie() puts the non-breaking spaces in when rendering; this holds every step text, fr and en,
+// lib/md.js tie() puts the non-breaking spaces in when rendering; this holds every step text, fr and en,
 // to it: after tie(), no ordinary space is left where a line must not break.
 //     node tests/kasiski_nbsp.mjs
 globalThis.location = { search: '' };
 globalThis.localStorage = { getItem: () => null, setItem() {} };
 const { DICTS } = await import('../kasiski/js/i18n.js');
-const { tie } = await import('../kasiski/js/md.js');
+const { tie } = await import('../lib/md.js');
 const BAD = [
   [/\d\}? (?:\{[grb]\|)?(?:k?m|cm|lettres?|letters?)\b/, 'a number apart from its unit'],
   [/ [=×+] |[=×+] \d/, 'a split « a = b × c »'],

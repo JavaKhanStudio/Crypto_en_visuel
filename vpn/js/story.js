@@ -3,7 +3,7 @@
 // land somewhere consistent; flies the camera, pins its bubbles, and offers buttons.
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
-import { render as md } from './md.js';
+import { render as md } from '../../lib/md.js';
 import { linkify, href } from '../../xref.js';
 
 const ALL = ['e', 'i', 'v', 'b'];

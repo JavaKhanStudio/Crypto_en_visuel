@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import { render } from './md.js';
+import { render } from '../../lib/md.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import * as A from './aes.js';
 

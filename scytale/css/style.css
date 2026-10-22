@@ -62,7 +62,7 @@ button.icon { padding: .4em .6em; }
 .chapters button { font-size: 12px; padding: .25em .7em; border-radius: 999px; }
 .narration h2 { font: 600 22px/1.2 var(--serif); margin: 4px 0 6px; }
 .narration .step-text { color: #e6dfcf; min-height: 3em; }
-/* r174/r238: the step text's paragraphs, list and coloured letters (js/md.js); tone-1 to tone-4 are
+/* r174/r238: the step text's paragraphs, list and coloured letters (lib/md.js); tone-1 to tone-4 are
    the card's line colours (card.js ROW_COLORS), so a letter in the text matches it in the card */
 .step-text p { margin: 0; }
 .step-text p + p, .step-text ul + p { margin-top: 6px; }

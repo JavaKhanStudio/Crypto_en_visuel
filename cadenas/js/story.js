@@ -3,7 +3,7 @@
 // flies the camera, pins its bubbles, and offers buttons. auto: the step's action
 // plays by itself once the camera has landed (its button replays it).
 import { t, raw, lang, onLang } from './i18n.js';
-import { render } from './md.js';
+import { render } from '../../lib/md.js';
 
 export const STEPS = [
   { id: 's1', ch: 0, shot: 'intro', orbit: .03, state: {}, say: ['a', 'e'] },

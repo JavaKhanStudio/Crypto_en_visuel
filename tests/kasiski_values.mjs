@@ -7,7 +7,7 @@ globalThis.location = { search: '' };
 globalThis.localStorage = { getItem: () => null, setItem() {} };
 const K = await import('../kasiski/js/kasiski.js');
 const { DICTS } = await import('../kasiski/js/i18n.js');
-const { plain } = await import('../kasiski/js/md.js');   // the step text read without its markup (r174)
+const { plain } = await import('../lib/md.js');   // the step text read without its markup (r174)
 const { QUIZ } = await import('../kasiski/js/quiz-data.js');
 
 let bad = 0;

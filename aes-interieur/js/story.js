@@ -3,7 +3,7 @@
 // takes its numbers from the real bytes ({x}, {k}, … filled by vars()), so it says what the cubes show.
 import { t, raw, lang, onLang, fill } from './i18n.js';
 import { linkify } from '../../xref.js';
-import { render } from './md.js';
+import { render } from '../../lib/md.js';
 import * as A from './aes.js';
 
 // which run the room plays: Alice's, or the same block with its first letter changed (the last chapter)
