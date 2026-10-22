@@ -5,6 +5,7 @@
 // auto: the step's action plays by itself once the camera has landed (its button replays it).
 import { t, raw, lang, onLang } from './i18n.js';
 import { render } from '../../lib/md.js';
+import { renderDoors } from '../../lib/doors.js';
 
 // The pots, by id: [table, slot (0 1 2 front, 3 4 5 back), recipe, options]. a = Alice, e = Eve, b = Bob.
 const PUB = { aJ: ['a', 0, 'J'], eJ: ['e', 0, 'J'], bJ: ['b', 0, 'J'] };
@@ -172,23 +173,7 @@ export class Story {
     // a step's animation takes Suivant's place at the right; Suivant waits beside it, grey, until
     // the animation has played (it works all along). The last step's buttons are not animations.
     this.el.actions.innerHTML = ''; this.el.play?.remove(); this.el.play = null;
-    this.el.actions.classList.toggle('doors', !!step.doors);
-    for (const d of step.doors || []) {
-      const [name, what] = s.doors[d.k], a = document.createElement('a');
-      a.className = 'door' + (d.k === 'next' ? ' next' : '');
-      a.innerHTML = `<span class="pic"><img src="${d.img}" alt=""></span><b>${name}</b><span>${what}</span>`;
-      // r105 (Simon): on hover, a 4 s clip of where the door leads loops; it stops where it is when the
-      // pointer leaves and goes on from there. A phone has no hover: it keeps the picture.
-      if (d.clip && matchMedia('(hover: hover)').matches) {
-        const v = document.createElement('video');
-        Object.assign(v, { src: d.clip, muted: true, loop: true, playsInline: true, preload: 'none' });
-        v.addEventListener('playing', () => v.classList.add('on'), { once: true });
-        a.firstChild.appendChild(v);
-        a.onmouseenter = () => v.play().catch(() => {}); a.onmouseleave = () => v.pause();
-      }
-      if (d.href) a.href = d.href + '?lang=' + lang; else { a.href = '#'; a.onclick = e => { e.preventDefault(); d.go({ mode: m => this.ctx.setMode(m) }); }; }
-      this.el.actions.appendChild(a);
-    }
+    renderDoors(this.el.actions, step.doors, s.doors, { lang, setMode: m => this.ctx.setMode(m), phone: 'row' });
     const anim = step.go && this.i < STEPS.length - 1;
     for (const key of ['go', 'go2']) {
       if (!step[key]) continue;

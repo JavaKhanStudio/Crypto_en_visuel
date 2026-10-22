@@ -5,7 +5,7 @@ the others link out in the page's language. On desktop each door's 4 s clip play
 where it is when the pointer leaves and goes on from there; a phone (no hover) has no clip.
 Phone and desktop. Serve the repo root on 8793 first.
 Another episode's last step (r121): tests/last_doors.py <slug> <last step> <next slug> [--no-clips],
-e.g. tests/last_doors.py enigma 13 enigma-reglage --no-clips"""
+e.g. tests/last_doors.py scytale 12 enigma (--no-clips for an episode whose doors have none)"""
 import os, sys
 from playwright.sync_api import sync_playwright
 

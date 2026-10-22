@@ -5,6 +5,7 @@ import { t, raw, lang, onLang, fill } from './i18n.js';
 import { linkify } from '../../xref.js';
 import { render } from '../../lib/md.js';
 import * as A from './aes.js';
+import { renderDoors } from '../../lib/doors.js';
 
 // which run the room plays: Alice's, or the same block with its first letter changed (the last chapter)
 export const dataOf = run => run === 'changed' ? (c => ({ st: c, ref: c.ref }))(A.changed(lang)) : { st: A.story(lang) };
@@ -94,14 +95,7 @@ export class Story {
       b.onclick = () => { this.ctx.room.play(); };
       this.el.prev.after(b);
     }
-    this.el.actions.classList.toggle('doors', !!step.doors);
-    for (const d of step.doors || []) {
-      const [name, what] = s.doors[d.k], a = document.createElement('a');
-      a.className = 'door' + (d.k === 'next' ? ' next' : '');
-      a.innerHTML = `<span class="pic"><img src="${lang === 'en' && d.en || d.img}" alt=""></span><b>${name}</b><span>${what}</span>`;
-      if (d.href) a.href = d.href + '?lang=' + lang + (d.hash || ''); else { a.href = '#'; a.onclick = e => { e.preventDefault(); d.go({ mode: m => this.ctx.setMode(m) }); }; }
-      this.el.actions.appendChild(a);
-    }
+    renderDoors(this.el.actions, step.doors, s.doors, { lang, setMode: m => this.ctx.setMode(m), phone: 'row' });
     if (langOnly) for (const s2 of step.say || []) this.say(s2);
   }
 }

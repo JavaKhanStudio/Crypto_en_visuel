@@ -77,18 +77,6 @@ button.icon { padding: .4em .6em; }
 .tone-b { color: #9fd0ff; font-weight: 700; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .actions:empty { display: none; }
-/* r105/r135: the last step's doors out, a picture each; the next episode last, at the right, in gold */
-.actions.doors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.door { display: grid; gap: 2px; align-content: start; padding: 6px; border-radius: 12px; font-size: 12px; line-height: 1.3;
-  background: rgba(255,255,255,.04); border: 1px solid var(--edge); color: #e6dfcf; text-decoration: none; }
-.door .pic { position: relative; display: block; margin-bottom: 4px; }
-.door img, .door video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; }
-.door video { position: absolute; inset: 0; opacity: 0; } .door video.on { opacity: 1; }
-.door b { font-size: 13.5px; color: var(--ink); } .door:hover { border-color: rgba(255,255,255,.35); }
-.door.next { background: rgba(255,194,77,.12); border: 2px solid var(--b); } .door.next b { color: var(--b); }
-/* r132/r135: on a phone the doors stay one row, a picture and a name each, so the panel keeps off the scene */
-@media (max-width: 720px) { .actions.doors { gap: 5px; } .door { padding: 4px; border-radius: 9px; } .door b { font-size: 11px; line-height: 1.2; }
-  .door > span:not(.pic) { display: none; } .door .pic { margin-bottom: 2px; } .door img, .door video { border-radius: 6px; } }
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
 #step-count { color: var(--muted); font-size: 13px; white-space: nowrap; }   /* r312: one line, even at 360px */
 /* r62: a step's animation takes Suivant's place at the right; Suivant waits beside it, grey, until it has played */

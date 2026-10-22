@@ -8,6 +8,7 @@ import { linkify } from '../../xref.js';
 import { render } from '../../lib/md.js';
 import { CASTLE_A, CASTLE_B, CITY } from './world.js';
 import * as A from './aes.js';
+import { renderDoors } from '../../lib/doors.js';
 
 const anchors = {
   a: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y + 27, 0),
@@ -50,7 +51,10 @@ export class Story {
     this.ctx = ctx; this.i = 0; this.token = 0;
     this.el = { title: document.getElementById('step-title'), text: document.getElementById('step-text'),
       actions: document.getElementById('step-actions'), count: document.getElementById('step-count'),
-      chapters: document.getElementById('chapters'), prev: document.getElementById('prev'), next: document.getElementById('next') };
+      chapters: document.getElementById('chapters'), prev: document.getElementById('prev'), next: document.getElementById('next'),
+      panel: document.getElementById('story'), more: document.getElementById('step-more') };
+    this.el.more.onclick = () => { this.el.panel.classList.toggle('open'); this.fold(); };
+    addEventListener('resize', () => this.fold());
     this.el.prev.onclick = () => this.go(this.i - 1);
     this.el.next.onclick = () => this.go(this.i + 1);
     onLang(() => { const step = STEPS[this.i]; if (step.inside) this.ctx.inside.rebuild(sendOf(step.key || 1)); this.render(true); this.card(); });
@@ -97,6 +101,8 @@ export class Story {
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
     this.el.title.textContent = s.t; render(this.el.text, s.p); linkify(this.el.text, lang, step.refs);   // « épisode 1.4 » links to its step (r119)
+    if (!langOnly) this.el.panel.classList.remove('open');
+    this.el.panel.classList.toggle('roomy', !!step.inside); this.fold();
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';
@@ -117,26 +123,18 @@ export class Story {
       b.onclick = () => this.run(step[key]);
       if (anim && key === 'go') { b.id = 'play'; this.el.next.after(b); this.el.play = b; } else this.el.actions.appendChild(b);
     }
-    this.el.actions.classList.toggle('doors', !!step.doors);
-    for (const d of step.doors || []) {
-      const [name, what] = s.doors[d.k], a = document.createElement('a');
-      a.className = 'door' + (d.k === 'next' ? ' next' : '');
-      a.innerHTML = `<span class="pic"><img src="${d.img}" alt=""></span><b>${name}</b><span>${what}</span>`;
-      // r105 (Simon): on hover, a 4 s clip of where the door leads loops; it stops where it is when the
-      // pointer leaves and goes on from there. A phone has no hover: it keeps the picture.
-      if (d.clip && matchMedia('(hover: hover)').matches) {
-        const v = document.createElement('video');
-        Object.assign(v, { src: d.clip, muted: true, loop: true, playsInline: true, preload: 'none' });
-        v.addEventListener('playing', () => v.classList.add('on'), { once: true });
-        a.firstChild.appendChild(v);
-        a.onmouseenter = () => v.play().catch(() => {}); a.onmouseleave = () => v.pause();
-      }
-      if (d.href) a.href = d.href + '?lang=' + lang; else { a.href = '#'; a.onclick = e => { e.preventDefault(); d.go({ mode: m => this.ctx.setMode(m) }); }; }
-      this.el.actions.appendChild(a);
-    }
+    renderDoors(this.el.actions, step.doors, s.doors, { lang, setMode: m => this.ctx.setMode(m) });
     this.el.next.classList.toggle('primary', !anim || this.seen);
     if (!this.seen) this.el.next.classList.remove('shine');
     if (langOnly) for (const s2 of step.say || []) this.say(s2, undefined, step.inside ? () => this.ctx.inside.anchor() : undefined);
+  }
+
+  // r368, Simon's pick A: in a room on a phone the text shows its first 3 lines (style.css #story.roomy),
+  // so the room keeps the screen; « Lire la suite ▾ » shows only when that cuts the text, and opens it
+  fold() {
+    const { panel, text, more } = this.el;
+    if (!panel.classList.contains('open')) panel.classList.toggle('long', text.scrollHeight > text.clientHeight + 2);
+    more.textContent = t(panel.classList.contains('open') ? 'nav.less' : 'nav.more');
   }
 
   // the step's animation has played: Suivant takes the gold back and shines once to call the eye

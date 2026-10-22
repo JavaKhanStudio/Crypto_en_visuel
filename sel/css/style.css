@@ -61,20 +61,22 @@ button.icon { padding: .4em .6em; }
 .chapters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
 .chapters button { font-size: 12px; padding: .25em .7em; border-radius: 999px; }
 .narration h2 { font: 600 22px/1.2 var(--serif); margin: 4px 0 6px; }
-.narration p { margin: 0; color: #e6dfcf; min-height: 3em; }
+.narration .step-text { color: #e6dfcf; min-height: 3em; }
+/* r243: the step text's paragraphs, list and coloured words (lib/md.js), in the scene's inks:
+   gold is a fingerprint (the hash cards' hex), blue a salt (the base's salt column), red the ✖ of
+   Eve's look-up that finds nothing */
+.step-text p { margin: 0; }
+.step-text p + p, .step-text ul + p { margin-top: 6px; }
+.step-text p + ul { margin-top: 3px; }
+.step-text ul { margin: 0; padding-left: 1.25em; }
+.step-text li { margin: 2px 0; }
+.step-text li::marker { color: var(--muted); }
+.step-text strong { color: #fff; }
+.tone-g { color: #ffd84d; font-weight: 700; overflow-wrap: anywhere; }
+.tone-b { color: #7fb6ff; font-weight: 700; }
+.tone-r { color: #ff8a9a; font-weight: 700; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .actions:empty { display: none; }
-/* r105/r136: the last step's doors out, a picture each; the next episode last, at the right, in gold */
-.actions.doors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.door { display: grid; gap: 2px; align-content: start; padding: 6px; border-radius: 12px; font-size: 12px; line-height: 1.3;
-  background: rgba(255,255,255,.04); border: 1px solid var(--edge); color: #e6dfcf; text-decoration: none; }
-.door .pic { position: relative; display: block; margin-bottom: 4px; }
-.door img, .door video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; }
-.door video { position: absolute; inset: 0; opacity: 0; } .door video.on { opacity: 1; }
-.door b { font-size: 13.5px; color: var(--ink); } .door:hover { border-color: rgba(255,255,255,.35); }
-.door.next { background: rgba(255,194,77,.12); border: 2px solid var(--b); } .door.next b { color: var(--b); }
-@media (max-width: 720px) { .actions.doors { gap: 5px; } .door { padding: 4px; border-radius: 9px; } .door b { font-size: 11px; line-height: 1.2; }
-  .door > span:not(.pic) { display: none; } .door .pic { margin-bottom: 2px; } .door img, .door video { border-radius: 6px; } }
 .nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
 #step-count { color: var(--muted); font-size: 13px; }
 /* r62: a step's animation takes Suivant's place at the right; Suivant waits beside it, grey, until it has played */

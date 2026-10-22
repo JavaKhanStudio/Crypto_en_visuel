@@ -7,6 +7,8 @@
 import { t, raw, lang, onLang } from './i18n.js';
 import { USERS, BCRYPT, PASSWORD } from './data.js';
 import { baseRow, ROWS } from './stage.js';
+import { render } from '../../lib/md.js';
+import { renderDoors } from '../../lib/doors.js';
 
 const [A, B] = USERS, pw = PASSWORD;
 const tbl = (kind, rows) => ({ kind, rows });
@@ -123,7 +125,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p;
+    this.el.title.textContent = s.t; render(this.el.text, s.p);
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';
@@ -136,23 +138,7 @@ export class Story {
     // a step's animation takes Suivant's place at the right; Suivant waits beside it, grey, until
     // the animation has played (it works all along). The last step's buttons are not animations.
     this.el.actions.innerHTML = ''; this.el.play?.remove(); this.el.play = null;
-    this.el.actions.classList.toggle('doors', !!step.doors);
-    for (const d of step.doors || []) {
-      const [name, what] = s.doors[d.k], a = document.createElement('a');
-      a.className = 'door' + (d.k === 'next' ? ' next' : '');
-      a.innerHTML = `<span class="pic"><img src="${d.img}" alt=""></span><b>${name}</b><span>${what}</span>`;
-      // r105 (Simon): on hover, a 4 s clip of where the door leads loops; it stops where it is when the
-      // pointer leaves and goes on from there. A phone has no hover: it keeps the picture.
-      if (d.clip && matchMedia('(hover: hover)').matches) {
-        const v = document.createElement('video');
-        Object.assign(v, { src: d.clip, muted: true, loop: true, playsInline: true, preload: 'none' });
-        v.addEventListener('playing', () => v.classList.add('on'), { once: true });
-        a.firstChild.appendChild(v);
-        a.onmouseenter = () => v.play().catch(() => {}); a.onmouseleave = () => v.pause();
-      }
-      if (d.href) a.href = d.href + '?lang=' + lang; else { a.href = '#'; a.onclick = e => { e.preventDefault(); d.go({ mode: m => this.ctx.setMode(m) }); }; }
-      this.el.actions.appendChild(a);
-    }
+    renderDoors(this.el.actions, step.doors, s.doors, { lang, setMode: m => this.ctx.setMode(m), phone: 'row' });
     const anim = step.go && this.i < STEPS.length - 1;
     for (const key of ['go', 'go2']) {
       if (!step[key]) continue;
