@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Episode 1.4's step 7 (« Alice ferme le cadenas ») happens inside Alice's keep (r103, r160, copied
+"""Episode 1.4 has two rooms (r363): steps 4 and 5 happen inside Bob's keep, entered by his window
+(the RSA room: RSA by hand, 5 x 11 = 55 and 7 -> 13 -> 7, then the 2048-bit n), out at step 6.
+Checks, desktop and phone: step 4 zooms in once by Bob's window, step 5 is the next beat of the same
+room (no flight), the frame and the bubble sit in the band at every held second of both beats, the
+tiles carry the card's numbers (55, 13, 7) and n's bytes, step 6 comes out, Back into step 5 zooms
+in again, and a jump from step 5 to step 7 lands in Alice's room by her window.
+
+Episode 1.4's step 7 (« Alice ferme le cadenas ») happens inside Alice's keep (r103, r160, copied
 from tests/octet_inside.py): ONE zoom in, a room where OAEP builds EM around the two keys and Bob's
 padlock locks it into c, and out at step 8 'seed'. Checks, desktop and phone: step 6 is in the valley,
 step 7 zooms in once, the frame and the speaker's bubble sit in the free band (between the top bar
@@ -24,7 +31,8 @@ def check(name, ok, info=""):
     bad += not ok
 
 
-STATE = """() => { const i = demo.inside; return { active: i.active, beat: i.room && i.room.beat,
+STATE = """() => { const i = demo.inside; return { active: i.active, beat: i.room && i.room.beat, room: i.room && i.room.name,
+  fx: i.focus && i.focus.x,
   ins: i.log.filter(x => x[0] === 'in').length, outs: i.log.filter(x => x[0] === 'out').length,
   order: i.room && i.room.send.s.order }; }"""
 # where the frame and the bubble land on screen, against the band the room must keep to
@@ -38,11 +46,57 @@ PLACE = """() => { const i = demo.inside, cam = i.camera, b = i.want.b, box = i.
 
 with sync_playwright() as p:
     br = p.chromium.launch(args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+    def held(pg, tag, step, times):
+        for at in times:
+            pg.evaluate(f"demo.inside.hold = {at}"); pg.wait_for_timeout(900)
+            p_ = pg.evaluate(PLACE)
+            check(f"{tag} step {step} {at} s: the frame stays clear of the top bar and the story panel",
+                  p_["top"] >= p_["barBottom"] - 2 and p_["bottom"] <= p_["storyTop"] + 2 and p_["left"] >= -2 and p_["right"] <= p_["W"] + 2, p_)
+            b = p_["bubble"]
+            check(f"{tag} step {step} {at} s: the speaker's bubble is between the top bar and the story panel",
+                  bool(b) and b["top"] >= p_["barBottom"] - 2 and b["bottom"] <= p_["storyTop"] + 2, p_)
+        pg.evaluate("demo.inside.hold = undefined")
+
     for size in [(1440, 860), (390, 844)]:
         tag = f"{size[0]}px"
         pg = br.new_page(viewport={"width": size[0], "height": size[1]}, is_mobile=size[0] < 900, has_touch=size[0] < 900)
         errors = []
         pg.on("pageerror", lambda e: errors.append(str(e)))
+        # ---- Bob's keep: steps 4 and 5 (r363)
+        pg.goto(BASE + "?instant=1&lang=fr&bob=1#story=3"); pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
+        pg.add_style_tag(content=".bubble { transition: opacity .35s !important; }")
+        pg.wait_for_timeout(500)
+        check(f"{tag} step 3 is in the valley", not pg.evaluate(STATE)["active"])
+        pg.evaluate("demo.story.go(3)")
+        pg.wait_for_function("demo.inside.active && demo.inside.room.beat === 'padlock'", timeout=20000)
+        pg.wait_for_function("(() => { const b = document.querySelector('.bubble.show'); return b && b.style.transform && b.style.visibility === 'visible'; })()", timeout=20000)
+        s = pg.evaluate(STATE)
+        check(f"{tag} step 4 is the RSA room, one zoom in by Bob's window", s["ins"] == 1 and s["room"] == "rsa" and s["fx"] > 0, s)
+        held(pg, tag, 4, [1, 2.2, 4, 6, 6.6, 8, 10, 11.3, 13.8])
+        toy = pg.evaluate("""() => { const B = demo.inside.room.machine.tiles.big; return Object.fromEntries(Object.entries(B).map(([k, m]) => [k, m.userData.n])); }""")
+        check(f"{tag} step 4: 5 x 11 = 55, e = 3, d = 27, 7 locks to 13 and opens to 7",
+              toy == {"p": "5", "q": "11", "n": "55", "e": "3", "d": "27", "m": "7", "c": "13", "back": "7"}, toy)
+        pg.evaluate("demo.story.go(4)")
+        pg.wait_for_function("demo.inside.room && demo.inside.room.beat === 'rsa2048'", timeout=20000)
+        s = pg.evaluate(STATE)
+        check(f"{tag} step 5 is the next beat of the same room, no second zoom", s["ins"] == 1 and s["room"] == "rsa", s)
+        held(pg, tag, 5, [1, 2.8, 5, 8, 9.4, 12])
+        same = pg.evaluate("""() => { const hx = b => b.toString(16).padStart(2, '0'), N = demo.inside.room.machine.tiles.N;
+          const card = [...document.querySelectorAll('#card .hex.key')].map(e => e.textContent.trim());
+          const row = r => N.slice(r * 16, r * 16 + 16).map(m => hx(m.userData.b)).join(' ');
+          return { ok: N.length === 256 && card.length >= 4 && [0, 1, 2, 3].every(r => row(r) === card[r]), card, w: row(0) }; }""")
+        check(f"{tag} step 5: the n wall is the card's n, 256 bytes", same["ok"], same)
+        pg.evaluate("demo.story.go(5)"); pg.wait_for_function("!demo.inside.active", timeout=20000)
+        s = pg.evaluate(STATE)
+        check(f"{tag} step 6 'deliver' comes out of Bob's keep", s["outs"] == 1 and s["ins"] == 1, s)
+        pg.evaluate("demo.story.go(4)"); pg.wait_for_function("demo.inside.active", timeout=20000)
+        s = pg.evaluate(STATE)
+        check(f"{tag} Back into step 5 zooms in again", s["ins"] == 2 and s["beat"] == "rsa2048", s)
+        pg.evaluate("demo.story.go(6)"); pg.wait_for_function("demo.inside.active && demo.inside.room.name === 'oaep'", timeout=20000)
+        s = pg.evaluate(STATE)
+        check(f"{tag} a jump from step 5 to step 7 lands in Alice's room, by her window", s["beat"] == "close" and s["fx"] < 0, s)
+
+        # ---- Alice's keep: step 7
         pg.goto(BASE + "?instant=1&lang=fr#story=6"); pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
         pg.add_style_tag(content=".bubble { transition: opacity .35s !important; }")   # where a bubble goes, not its glide (as bubble_room.py)
         pg.wait_for_timeout(500)

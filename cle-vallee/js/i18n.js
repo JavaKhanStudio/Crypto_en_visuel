@@ -62,6 +62,11 @@ const fr = {
   'in.mask1': '⊕ SHA-256 de la graine, étiré à {n} octets', 'in.mask2': '⊕ SHA-256 du bloc masqué',
   'in.mseed': 'graine masquée', 'in.mdb': 'bloc masqué · {n} octets', 'in.em': 'EM · 256 octets, lus comme un seul nombre',
   'in.pad': 'cadenas de Bob : n, e', 'in.lock': 'c = EM^65537 mod n', 'in.c': 'c, les clés fermées · 256 octets',
+  // inside Bob's keep: RSA by hand, then RSA-2048 (inside.js rsaRoom, r363)
+  'in.phi': '({p} − 1) × ({q} − 1) = {phi}', 'in.dcalc': '{e} × {d} = {ed} = {k} × {phi} + 1',
+  'in.pub': 'clé publique ({n}, {e}) : le cadenas', 'in.priv': 'clé privée ({n}, {d}) : la clé de Bob',
+  'in.p1024': '{x} · 1 024 bits · Bob seul le connaît', 'in.n2048': 'n = p × q · 2 048 bits = 256 octets',
+  'in.rsa250': '829 bits : RSA-250,\nle plus grand nombre de ce genre\njamais factorisé en public (2020)',
 
   // story
   ch: ['Les clés en clair', 'Le cadenas de Bob', 'Hybride', 'Le paquet'],
@@ -168,6 +173,10 @@ const en = {
   'in.mask1': '⊕ SHA-256 of the seed, stretched to {n} bytes', 'in.mask2': '⊕ SHA-256 of the masked block',
   'in.mseed': 'masked seed', 'in.mdb': 'masked block · {n} bytes', 'in.em': 'EM · 256 bytes, read as one number',
   'in.pad': "Bob's padlock: n, e", 'in.lock': 'c = EM^65537 mod n', 'in.c': 'c, the locked keys · 256 bytes',
+  'in.phi': '({p} − 1) × ({q} − 1) = {phi}', 'in.dcalc': '{e} × {d} = {ed} = {k} × {phi} + 1',
+  'in.pub': 'public key ({n}, {e}): the padlock', 'in.priv': "private key ({n}, {d}): Bob's key",
+  'in.p1024': '{x} · 1,024 bits · only Bob knows it', 'in.n2048': 'n = p × q · 2,048 bits = 256 bytes',
+  'in.rsa250': '829 bits: RSA-250,\nthe largest number of this kind\never factored in public (2020)',
 
   ch: ['Keys in the clear', "Bob's padlock", 'Hybrid', 'The packet'],
   steps: {

@@ -90,7 +90,11 @@ le bac à sable.
 Les deux clés, AES et HMAC, doivent arriver chez Bob, et Alice et Bob ne se sont jamais vus.
 Envoyées en clair, Eve les recopie à sa porte, déchiffre l'ordre, écrit 9H et refait un sceau
 valide : tout ce qui précède tombe. Bob envoie alors son cadenas ouvert, sa clé publique RSA-2048
-(RSA à la main d'abord : 5 × 11 = 55, e = 3, d = 27, 7 → 13 → 7) ; Eve le recopie en route, il
+(RSA à la main d'abord : 5 × 11 = 55, e = 3, d = 27, 7 → 13 → 7). Ces deux étapes se passent dans le
+donjon de Bob : la caméra entre par sa fenêtre ; 5 et 11 donnent n = 55, le cadenas et la clé se
+chargent dans deux boîtes, 7 entre, 13 sort, 13 entre, 7 ressort ; puis 5 et 11 deviennent deux murs
+de 128 octets cachés, leur produit n se pose, les 256 octets de la carte, avec e = 65537 et un
+crochet sur les 829 bits de RSA-250 ; la caméra ressort à « Le cadenas traverse la vallée ». Eve recopie le cadenas en route, il
 ferme et n'ouvre pas. Alice ferme ses 64 octets de clés en RSA-OAEP (SHA-256, graine de 32 octets :
 mêmes clés, deux graines, deux blocs sans rapport), Bob les rouvre avec sa clé privée. « Alice ferme le cadenas » se passe dans le donjon d'Alice : la
 caméra entre par sa fenêtre, et un mur de 256 octets se monte sur les vrais octets (les deux clés,

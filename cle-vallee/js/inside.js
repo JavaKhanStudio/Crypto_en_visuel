@@ -1,23 +1,25 @@
-// Inside a castle (r103, r160): step 7 of episode 1.4 (« Alice ferme le cadenas ») zooms the camera
-// through a lit window of Alice's keep, and a second scene, a room, shows OAEP and RSA at work on the
-// story's real bytes (rsa.js): the two keys, the 256-byte block OAEP builds around them, the seed and
-// its two masks, then the block locked with Bob's padlock into c. Chapter 2 has one step inside, so
-// the room has one beat; the camera comes out at the next step, 'seed'.
+// Inside a castle (r103, r160, r363): two rooms in episode 1.4. Steps 4 and 5 (« Le cadenas de Bob »,
+// « Le vrai cadenas ») zoom through a lit window of Bob's keep into the RSA room: RSA by hand on 5
+// and 11, then the 2048-bit n (two beats; out at 'deliver'). Step 7 (« Alice ferme le cadenas ») zooms
+// through a window of Alice's keep into the OAEP room, which shows OAEP and RSA at work on the story's
+// real bytes (rsa.js): the two keys, the 256-byte block OAEP builds around them, the seed and its two
+// masks, then the block locked with Bob's padlock into c (one beat; out at 'seed').
 // Copied from octet-change/js/inside.js (r159), itself from eve-lit-tout/js/inside.js (r158, the
 // reference room); the zoom itself is lib/zoom.js.
 //
 // The API, as in the reference: the room part (ROOMS) is this episode's own:
 //   const inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant });   // main.js
-//   ROOMS[name] = (scene, send, portrait) => ({   // send: here story.js packets(), { s, twice, ... }
+//   ROOMS[name] = { door, build: (scene, send, portrait) => ({   // send: here story.js packets(), { s, twice, ... }
 //     beats: { <step id>: { end } },     // the room's steps; end = seconds its animation lasts
 //     pose(beat, time),                   // sets EVERY part for that beat at that time, so any beat
 //                                         //   can follow any other (back as well as forward)
 //     frame(beat, time) → [Vector3, ...], // the points the camera must hold in the free band now
 //                                         //   (a phone can follow the action: P1 in, then out)
-//     anchor(beat) → Vector3 })           // optional: where the speaker's bubble points; by default
+//     anchor(beat) → Vector3 }) }        // optional: where the speaker's bubble points; by default
 //                                         //   the top of the frame, where the band keeps room for it
 //   portrait: the screen is upright (a phone): lay the machine out top to bottom.
-//   await inside.enter(name, beat, send, live)   flies in from where the camera is; false if cancelled
+//   door: the window it is entered by (DOORS, keepWindow below)
+//   await inside.enter(name, beat, send, live, door)   flies in from where the camera is; false if cancelled
 //   inside.beat(id)          the next step in the same room: no flight, its animation from 0
 //   await inside.leave(shot) out through the window, then the valley camera flies to shot
 //   inside.rebuild(send)     same room and beat, new words or bytes (language) or a turned phone
@@ -27,10 +29,10 @@
 // machine large in the strip it has, not a far view of the whole room.
 import * as THREE from 'three';
 import { t } from './i18n.js';
-import { CASTLE_A } from './world.js';
+import { CASTLE_A, CASTLE_B } from './world.js';
 import { SHOTS } from './camera.js';
 import { ZOOM, windowPath, roomArrival, setVeil } from '../../lib/zoom.js';
-import { padlock } from './props.js';
+import { padlock, key } from './props.js';
 import * as R from './rsa.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
@@ -39,14 +41,26 @@ const clamp01 = k => Math.max(0, Math.min(1, k));
 const span = (time, a, b) => ease(clamp01((time - a) / (b - a)));
 const hx = x => x.toString(16).padStart(2, '0');
 
-// the upper lit window of Alice's keep on the valley side (+z), y 9 above the plateau: the way in.
+// The ways in: a lit window of a keep (r363, Simon: « the castle will change, make sure the window
+// can be another »). keepWindow(castle, { y, side }) is any window of a keep: castle its foot on the
+// plateau, y how high (the keep has a row at 5 and one at 9), side the way it looks out (the keep's
+// four faces, half a side KEEP from its axis), aside how far towards the valley's
+// middle (x) a mode switch leaves the camera. Each room names its door in ROOMS; a step can take
+// another with door: (story.js), a name of DOORS or a keepWindow(...) of its own.
 // focus: the point behind the glass the zoom closes on (lib/zoom.js); normal: out through the window,
 // the line the camera ends on; near: where a mode switch leaves the camera, in front of the keep.
-const WINDOW = () => v(CASTLE_A.x, CASTLE_A.y + 9, 3.52);
-export const DOORS = {
-  a: () => ({ focus: v(CASTLE_A.x, CASTLE_A.y + 9, 0), normal: v(0, 0, 1),
-              near: { pos: v(CASTLE_A.x + 3, CASTLE_A.y + 12.5, 16), target: WINDOW() } }),
-};
+const KEEP = 3.52;
+export function keepWindow(castle, { y = 9, side = v(0, 0, 1), aside = -Math.sign(castle.x) * 3 } = {}) {
+  return () => {
+    const focus = v(castle.x, castle.y + y, castle.z), normal = side.clone().normalize();
+    const glass = focus.clone().addScaledVector(normal, KEEP);
+    return { focus, normal, near: { pos: glass.clone().addScaledVector(normal, 12.48).add(v(aside, 3.5)), target: glass } };
+  };
+}
+// the upper windows on the valley side (+z) of Alice's keep and of Bob's (his castle is turned half
+// a turn to face the road, and the keep has a window on each face, so it still has one there)
+export const DOORS = { a: keepWindow(CASTLE_A), b: keepWindow(CASTLE_B) };
+const doorOf = d => typeof d === 'function' ? d() : DOORS[d]();
 
 // ---------- what a room is made of ----------
 // a square tile with a byte on it, two hex digits. 1.4's room has 768 tiles: one material per byte
@@ -82,14 +96,15 @@ const INK = { key: { fg: '#e3b8ff', bg: '#2a1838', size: 62 }, mac: { fg: '#8fd1
 
 // a word floating in the room, always facing the camera; plate: on a dark ground (over the tiles);
 // align: 0 its left end at its position, .5 its middle, 1 its right end
+// h: the height of a line; a '\n' in text starts another (r363)
 function label(text, color, h = .8, { plate = false, align = .5 } = {}) {
-  const c = document.createElement('canvas'), g = c.getContext('2d'), font = '600 56px system-ui, sans-serif';
-  g.font = font; c.width = Math.ceil(g.measureText(text).width) + 40; c.height = 84;
+  const c = document.createElement('canvas'), g = c.getContext('2d'), font = '600 56px system-ui, sans-serif', lines = text.split('\n');
+  g.font = font; c.width = Math.ceil(Math.max(...lines.map(l => g.measureText(l).width))) + 40; c.height = 84 * lines.length;
   if (plate) { g.fillStyle = 'rgba(14,10,7,.86)'; g.beginPath(); g.roundRect(2, 4, c.width - 4, c.height - 8, 18); g.fill(); }
-  g.font = font; g.fillStyle = color; g.textBaseline = 'middle'; g.fillText(text, 20, 44);
+  g.font = font; g.fillStyle = color; g.textBaseline = 'middle'; lines.forEach((l, i) => g.fillText(l, 20, 44 + 84 * i));
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: !plate }));
-  s.scale.set(h * c.width / c.height, h, 1); s.center.set(align, .5); s.userData = { h, plate, text }; s.visible = false;
+  s.scale.set(h * c.width / 84, h * lines.length, 1); s.center.set(align, .5); s.userData = { h, plate, text }; s.visible = false;
   if (plate) s.renderOrder = 30;
   return s;
 }
@@ -281,7 +296,184 @@ function oaepRoom(scene, pk, portrait) {
     : time < T.zeros ? [...rows(10, 15), v(lx - 10.5, rowY(12))] : time < T.lock ? wallF : time < T.c ? [...wallF, ...boxF] : [v(WC.x + half - 4.4, WC.y), ...boxF, ...cF];
   return { beats: { close: { end: T.end } }, pose, frame: (b, time) => frame(time), tiles: { W, C } };
 }
-const ROOMS = { oaep: oaepRoom };
+// ---------- the RSA room of episode 1.4, in Bob's keep: two beats, 'padlock' and 'rsa2048' (r363) ----------
+// Beat 'padlock', RSA by hand on the card's numbers (rsa.js TOY): the primes 5 and 11 multiply into
+// n = 55; with e = 3 that is the open padlock, Bob's public key, which goes onto the first box. From
+// (5 − 1) × (11 − 1) = 40 comes d = 27 (3 × 27 = 81 = 2 × 40 + 1), Bob's key, onto the second box.
+// Then 7 goes into the padlock's box, 7³ = 343 = 6 × 55 + 13, and 13 comes out; 13 goes into the
+// key's box, 13²⁷ mod 55, and 7 comes back. Beat 'rsa2048': the 5 and the 11 grow into two primes of
+// 1024 bits, 128 tiles each, face down (the page shows Bob's p and q nowhere, rsa.js: only he knows
+// them); their product n is laid row by row, the card's 256 bytes, and with e = 65537 (01 00 01) it
+// is the padlock. A bracket over n's first 829 bits: the largest number of this kind ever factored
+// in public (RSA-250, 2020). Landscape: the key-making at the top, the boxes from left to right below
+// (beat 1); p over q, then n, then e (beat 2). Portrait (a phone): top to bottom, the camera following.
+const BIG = new THREE.BoxGeometry(2.4, 2.4, .4); BIG.userData.shared = true;
+const SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹', sup = x => String(x).replace(/\d/g, c => SUP[c]);
+function number(x, ink) {   // a big tile with a number on it; userData.n: what tests/cle_inside.py reads
+  const text = String(x), m = new THREE.Mesh(BIG, [side, side, side, side, face(text, { ...ink, size: text.length > 2 ? 52 : 70 }), side]);
+  m.visible = false; m.userData.n = text; return m;
+}
+function rsaRoom(scene, send, portrait) {
+  const K = R.TOY, c = R.lock(K, K.m), back = R.unlock(K, c), me = K.m ** K.e, B = R.BOB;
+  buildRoom(scene, portrait, portrait ? 36 : 15);
+  const ink = { p: INK.iv, n: INK.key, e: INK.pad, d: INK.mac, m: INK.x, c: INK.c, ok: INK.mac };
+  // ---- beat 1: where each thing sits
+  const at = portrait
+    ? { p: v(-5.4, 37), q: v(0, 37), n: v(5.4, 37), e: v(-4, 31), d: v(4, 31), phi: v(4, 33.4), dL: v(4, 28.6),
+        m: v(0, 24.6), box1: v(0, 19.6), c: v(0, 14.4), box2: v(0, 9.2), back: v(0, 4) }
+    : { p: v(-14, 13), q: v(-9, 13), n: v(-4, 13), e: v(1, 13), d: v(6, 13), phi: v(-9, 10.1), dL: v(6, 10.1),
+        m: v(-16, 3.4), box1: v(-7.5, 3.6), c: v(1, 3.4), box2: v(9.5, 3.6), back: v(17.5, 3.4) };
+  const T1 = { p: .3, q: .8, n: 1.7, e: 2.5, phi: 3.3, d: 4.3, load: 5.3, m: 6.8, into: 7.4, shut: 8.6, c: 8.9, cin: 10.4, turn: 11.6, back: 12.1, end: 13.8 };
+  const big = { p: number(K.p, ink.p), q: number(K.q, ink.p), n: number(K.n, ink.n), e: number(K.e, ink.e), d: number(K.d, ink.d),
+    m: number(K.m, ink.m), c: number(c, ink.c), back: number(back, ink.ok) };
+  // copies of n, e and d fly onto the boxes: the keys are loaded into the machines
+  const load = { n1: number(K.n, ink.n), e1: number(K.e, ink.e), n2: number(K.n, ink.n), d2: number(K.d, ink.d) };
+  [...Object.values(big), ...Object.values(load)].forEach(m => scene.add(m));
+  const letters = Object.fromEntries(['p', 'q', 'n', 'e', 'd'].map(k => { const l = label(k, '#f4e6c8', 1); scene.add(l); return [k, l]; }));
+  const sign = (text, a, b) => { const l = label(text, '#f4e6c8', 1.3); l.position.lerpVectors(a, b, .5); scene.add(l); return l; };
+  const times = sign('×', at.p, at.q), equals = sign('=', at.q, at.n);
+  const lw = portrait ? 1.3 : 1.05;
+  const phi = label(t('in.phi', { p: K.p, q: K.q, phi: K.phi }), '#9fd3f0', lw, { plate: true }); phi.position.copy(at.phi); scene.add(phi);
+  const dL = label(t('in.dcalc', { e: K.e, d: K.d, ed: K.e * K.d, k: K.e * K.d / K.phi, phi: K.phi }), '#8fd18a', lw, { plate: true }); dL.position.copy(at.dL); scene.add(dL);
+  // the boxes: the first wears Bob's open padlock (lock with the public key), the second his key
+  const metal = new THREE.MeshStandardMaterial({ color: 0x4a4250, roughness: .45, metalness: .5 });
+  const machine = (pos, gold) => {
+    const g = new THREE.Group(); g.position.copy(pos); scene.add(g);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(4.4, 4, 3.2), metal); box.castShadow = box.receiveShadow = true; g.add(box);
+    const edge = new THREE.LineBasicMaterial({ color: gold }); g.add(new THREE.LineSegments(new THREE.EdgesGeometry(box.geometry), edge));
+    return { g, edge, gold };
+  };
+  const box1 = machine(at.box1, 0xffc24d), box2 = machine(at.box2, 0x8fd18a);
+  const lock = padlock(); lock.scale.setScalar(2.1); lock.position.set(0, .9, 1.8); box1.g.add(lock);
+  const bobKey = key(0x8fd18a, .4); bobKey.scale.setScalar(2.6); bobKey.position.set(0, .3, 1.9); box2.g.add(bobKey);
+  const pub = label(t('in.pub', { n: K.n, e: K.e }), '#ffd27a', lw, { plate: true }), priv = label(t('in.priv', { n: K.n, d: K.d }), '#8fd18a', lw, { plate: true });
+  const capY = portrait ? 2.0 + .6 : 2.0 + .9;
+  pub.position.copy(at.box1).add(v(0, capY, 1.7)); priv.position.copy(at.box2).add(v(0, capY, 1.7)); scene.add(pub, priv);
+  const calc1 = label(`${K.m}${sup(K.e)} = ${me} = ${me / K.n} × ${K.n} + ${c}`, '#ffd84d', lw, { plate: true });
+  const calc2 = label(`${c}${sup(K.d)} mod ${K.n} = ${back}`, '#8fd18a', lw, { plate: true });
+  calc1.position.copy(at.box1).add(v(0, -2.0 - .7, 1.7)); calc2.position.copy(at.box2).add(v(0, -2.0 - .7, 1.7)); scene.add(calc1, calc2);
+  // a box's mouths: in from the left and out to the right; on a phone in at the top, out at the bottom
+  const mouth = (b, out) => b.clone().add(portrait ? v(0, out ? -2 : 2) : v(out ? 2.2 : -2.2, 0));
+
+  // ---- beat 2: p over q, n, e, the padlock
+  const Pt = 1.1, HW = 7.5 * Pt + .5;
+  const C2 = portrait ? { p: v(0, 46.2), q: v(0, 36), times: v(0, 30.4), n: v(0, 19.6), e: v(-3, 7.4), lock: v(3, 6.6) }
+    : { p: v(-15, 14.6), q: v(-15, 4.6), times: v(-4.6, 9.6), n: v(7, 9.6), e: v(21, 6.4), lock: v(21, 2.6) };
+  const wall = (cx, cy, cols, i) => v(cx + (i % cols - (cols - 1) / 2) * Pt, cy + ((Math.ceil(B.k / 2 / cols) - 1) / 2 - Math.floor(i / cols)) * Pt);
+  const half = B.k / 2, hid = { fg: '#7a6a8a', bg: '#1c1424', size: 62 };
+  const Pw = [...Array(half).keys()].map(() => { const m = tile(0, hid); m.material[4] = face('?', { ...hid, size: 70 }); return m; });
+  const Qw = [...Array(half).keys()].map(() => { const m = tile(0, hid); m.material[4] = face('?', { ...hid, size: 70 }); return m; });
+  const nBytes = R.bytesOf(B.n, B.k), N = [...nBytes].map(b => tile(b, INK.key));
+  const eBytes = R.bytesOf(B.e, 3), E = [...eBytes].map(b => tile(b, INK.pad));
+  [...Pw, ...Qw, ...N, ...E].forEach(m => scene.add(m));
+  const pAt = i => wall(C2.p.x, C2.p.y, 16, i), qAt = i => wall(C2.q.x, C2.q.y, 16, i);
+  const nAt = i => v(C2.n.x + (i % 16 - 7.5) * Pt, C2.n.y + (7.5 - Math.floor(i / 16)) * Pt);
+  const eAt = i => v(C2.e.x + (i - 1) * Pt, C2.e.y);
+  const grow = { p: number(K.p, ink.p), q: number(K.q, ink.p) }; scene.add(grow.p, grow.q);
+  const w2 = portrait ? 1.1 : 1.15;
+  const pL = label(t('in.p1024', { x: 'p' }), '#c8b0e0', w2, { plate: true }), qL = label(t('in.p1024', { x: 'q' }), '#c8b0e0', w2, { plate: true });
+  pL.position.copy(C2.p).setZ(.9); qL.position.copy(C2.q).setZ(.9);
+  const times2 = label('×', '#f4e6c8', 2.4); times2.position.copy(C2.times);
+  const nL = label(t('in.n2048'), '#e3b8ff', w2, { plate: true }); nL.position.set(C2.n.x, C2.n.y + HW + .9, .9);
+  const eL = label(`e = ${B.e}`, '#ffd27a', w2); eL.position.set(C2.e.x, C2.e.y + 1.4, 0);
+  const lock2 = padlock(); lock2.scale.setScalar(2.4); lock2.position.copy(C2.lock).add(v(0, 1.2)); scene.add(lock2);
+  const pad2 = label(t('in.pad'), '#ffc24d', w2, { plate: true }); pad2.position.copy(C2.lock).add(v(0, -1.2, .9));
+  // RSA-250: a bracket down n's right side over its first 829 bits; on a phone over the rows themselves
+  const R250 = 829 / 8 / 16, bx = C2.n.x + HW + .35;
+  const bracket = new THREE.Mesh(new THREE.BoxGeometry(.22, 1, .2), new THREE.MeshBasicMaterial({ color: 0xff8f9a, transparent: true }));
+  const r250 = label(t('in.rsa250'), '#ff8f9a', portrait ? .85 : 1.05, { plate: true, align: portrait ? .5 : 0 });
+  scene.add(pL, qL, times2, nL, eL, pad2, bracket, r250);
+  const topN = C2.n.y + 8 * Pt;
+
+  const all = [...Object.values(big), ...Object.values(load), ...Object.values(letters), times, equals, phi, dL, box1.g, box2.g, pub, priv, calc1, calc2,
+    ...Pw, ...Qw, ...N, ...E, grow.p, grow.q, pL, qL, times2, nL, eL, lock2, pad2, bracket, r250];
+  const put = (m, pos, q, s = 1) => { m.position.copy(pos); m.scale.setScalar(s * q); m.visible = q > .02; m.rotation.set(0, 0, 0); };
+  const fly = (m, a, b, q, s0 = 1, s1 = 1) => { m.position.lerpVectors(a, b, q); m.position.z += Math.sin(Math.PI * q) * 1.5; m.scale.setScalar(s0 + (s1 - s0) * q); m.visible = true; m.rotation.set(0, 0, 0); };
+  let time_ = 0;
+  const seen = (l, a, b = 99) => show(l, span(time_, a, a + .5) * (1 - span(time_, b, b + .5)));
+
+  function padlockBeat(time) {
+    const T = T1;
+    for (const k of ['p', 'q', 'n', 'e', 'd']) {
+      put(big[k], at[k], span(time, T[k], T[k] + .5));
+      letters[k].position.copy(at[k]).add(v(0, 2.0)); seen(letters[k], T[k] + .2);
+    }
+    seen(times, T.q); seen(equals, T.n - .3); seen(phi, T.phi); seen(dL, T.d);
+    // n and e onto the first box, n and d onto the second
+    for (const [m, from, to, a] of [[load.n1, at.n, at.box1, T.load], [load.e1, at.e, at.box1, T.load + .2],
+                                    [load.n2, at.n, at.box2, T.load + .5], [load.d2, at.d, at.box2, T.load + .7]]) {
+      const q = span(time, a, a + 1.1);
+      if (time > a && q < .999) fly(m, from, to.clone().add(v(0, 0, 1)), q, 1, .3); else m.visible = false;
+    }
+    box1.g.visible = box2.g.visible = true;
+    const loaded1 = span(time, T.load + 1.1, T.load + 1.5), loaded2 = span(time, T.load + 1.6, T.load + 2);
+    lock.visible = loaded1 > .02; lock.scale.setScalar(2.1 * Math.max(.02, loaded1)); bobKey.visible = loaded2 > .02; bobKey.scale.setScalar(2.6 * Math.max(.02, loaded2));
+    seen(pub, T.load + 1.1); seen(priv, T.load + 1.6);
+    // 7 into the padlock's box, the padlock shuts, 13 out; 13 into the key's box, the key turns, 7 out
+    put(big.m, at.m, span(time, T.m, T.m + .5));
+    if (time > T.into) { const q = span(time, T.into, T.into + 1); if (q < .999) fly(big.m, at.m, mouth(at.box1, false), q, 1, .3); else big.m.visible = false; }
+    lock.userData.setOpen(1 - span(time, T.shut - .5, T.shut));
+    const busy1 = time > T.shut - .4 && time < T.c + .6, busy2 = time > T.turn - .4 && time < T.back + .6;
+    box1.g.position.x = at.box1.x + (busy1 ? Math.sin(time * 60) * .03 : 0); box1.edge.color.setHex(busy1 ? 0xffe9a8 : box1.gold);
+    box2.g.position.x = at.box2.x + (busy2 ? Math.sin(time * 60) * .03 : 0); box2.edge.color.setHex(busy2 ? 0xd8ffd0 : box2.gold);
+    seen(calc1, T.shut - .3);
+    big.c.visible = false;
+    if (time > T.c) { const q = span(time, T.c, T.c + 1); fly(big.c, mouth(at.box1, true), at.c, q, .3, 1); }
+    if (time > T.cin) { const q = span(time, T.cin, T.cin + 1); if (q < .999) fly(big.c, at.c, mouth(at.box2, false), q, 1, .3); else big.c.visible = false; }
+    bobKey.rotation.x = span(time, T.turn - .6, T.turn) * Math.PI / 2;
+    seen(calc2, T.turn - .3);
+    big.back.visible = false;
+    if (time > T.back) { const q = span(time, T.back, T.back + 1); fly(big.back, mouth(at.box2, true), at.back, q, .3, 1); }
+  }
+  function wallBeat(time) {
+    // the 5 and the 11 swell where p's and q's walls will be, and the walls take their place, from the middle out
+    for (const [g, c0] of [[grow.p, C2.p], [grow.q, C2.q]]) { const q = span(time, .2, 1.4); put(g, c0, 1 - span(time, 1.2, 1.8), 1 + 1.5 * q); g.position.z = 1; }
+    const ring = (list, place) => list.map((m, i) => [m, place(i), place(i).distanceTo(place === pAt ? C2.p : C2.q)]).sort((a, b) => a[2] - b[2])
+      .forEach(([m, pos], n) => put(m, pos, span(time, 1 + n * .009, 1.4 + n * .009)));
+    ring(Pw, pAt); ring(Qw, qAt);
+    seen(pL, 2.6); seen(qL, 2.6); seen(times2, 3.4);
+    N.forEach((m, i) => put(m, nAt(i), span(time, 3.8 + i * .012, 4.2 + i * .012)));
+    seen(nL, 4);
+    E.forEach((m, i) => put(m, eAt(i), span(time, 7.6 + i * .15, 8 + i * .15)));
+    seen(eL, 7.8);
+    lock2.visible = time > 8.6; lock2.scale.setScalar(2.4 * Math.max(.02, span(time, 8.6, 9.1))); lock2.userData.setOpen(1); seen(pad2, 9);
+    const b = span(time, 10, 11.2), h = R250 * Pt * b;
+    bracket.visible = b > .01; bracket.scale.y = Math.max(.01, h); bracket.material.opacity = 1;
+    bracket.position.set(bx, topN - h / 2, .4);
+    r250.position.copy(portrait ? v(C2.n.x, topN - R250 * Pt / 2, 1) : v(bx + .6, topN - R250 * Pt / 2));
+    seen(r250, 10.6);
+  }
+  function pose(beat, time) {
+    time_ = time;
+    all.forEach(o => { o.visible = false; });
+    if (beat === 'padlock') padlockBeat(time); else wallBeat(time);
+  }
+
+  // what the camera holds. Landscape: all of beat 1; beat 2 p and q, then with n, then with e and the
+  // padlock. A phone follows: beat 1 the key-making, then the first box with 7 and 13, then the
+  // second box; beat 2 p over q, n as it is laid, its foot with e and the padlock, its top with the bracket
+  const wide1 = [v(at.m.x - 1.4, 0.6), v(at.back.x + 1.4, at.p.y + 2.6), v(at.box1.x, at.box1.y - 3.2)];
+  const p1 = time => {
+    const rows = (a, b) => [v(-7, a), v(7, b)], b1 = at.box1.y, b2 = at.box2.y;
+    if (time < T1.e) return rows(at.p.y - 1.4, at.p.y + 2.6);                 // p × q = n
+    if (time < T1.load) return rows(at.dL.y - .8, at.e.y + 2.6);              // e, and d from (p − 1)(q − 1)
+    if (time < T1.load + 1.3) return rows(b1 - 2.4, b1 + 3.6);                // the padlock onto the first box
+    if (time < T1.m - .2) return rows(b2 - 2.4, b2 + 3.6);                    // the key onto the second
+    if (time < T1.c + .8) return rows(b1 - 3.2, at.m.y + 1.4);                // 7 in, the padlock shuts
+    if (time < T1.cin + 1) return rows(b2 - 2.4, at.c.y + 1.4);               // 13 out, on to the key
+    return rows(at.back.y - 1.4, b2 + 2.4);                                   // 7 back
+  };
+  const pq = [v(C2.p.x - HW, C2.q.y - 4.4 - .5), v(C2.p.x + HW, C2.p.y + 4.4 + .5)];
+  const nF = [v(C2.n.x - HW, C2.n.y - HW), v(C2.n.x + HW, C2.n.y + HW + 1.6)];
+  // the end: n with e, the padlock and the bracket's words at its right, p and q's edge at its left
+  const w2f = time => time < 3.4 ? pq : time < 7.4 ? [...pq, ...nF] : [v(C2.times.x - 2, C2.n.y), ...nF, v(bx + 13, topN), v(C2.lock.x, C2.lock.y - 2)];
+  const p2 = time => time < 3.4 ? pq : time < 7.4 ? nF
+    : time < 9.8 ? [v(-7, C2.lock.y - 2.2), v(7, C2.n.y - HW + 4 * Pt)] : [v(C2.n.x - HW, topN - R250 * Pt - .6), v(C2.n.x + HW, C2.n.y + HW + 1.6)];
+  const frame = (beat, time) => beat === 'padlock' ? (portrait ? p1(time) : wide1) : (portrait ? p2(time) : w2f(time));
+  return { beats: { padlock: { end: T1.end }, rsa2048: { end: 12.2 } }, pose, frame, tiles: { big, N } };
+}
+// each room and the window it is entered by (a step's door: picks another, DOORS above)
+const ROOMS = { oaep: { build: oaepRoom, door: 'a' }, rsa: { build: rsaRoom, door: 'b' } };
 
 // ---------- the switch between the valley and a room ----------
 const SMOOTH = .04, BUBBLE = 84;   // the room camera closes 96% of the way to its framing every second
@@ -299,9 +491,9 @@ export class Inside {
     this.camera.aspect = aspect; this.camera.fov = fov; this.camera.updateProjectionMatrix();
     if (this.room && this.room.portrait !== this.portrait) this.rebuild();
   }
-  build(name, send) {
-    const scene = new THREE.Scene(), machine = ROOMS[name](scene, send, this.portrait);
-    return { name, send, scene, machine, portrait: this.portrait };
+  build(name, send, door = ROOMS[name].door) {
+    const scene = new THREE.Scene(), machine = ROOMS[name].build(scene, send, this.portrait);
+    return { name, send, scene, machine, portrait: this.portrait, door };
   }
   swap(room) {
     const old = this.room; this.room = room;
@@ -314,19 +506,22 @@ export class Inside {
   // r103 (Simon 21 Oct: « keep zooming while the veil appears »): one move from wherever the camera
   // is to the glass, faster and faster in proportion, the veil on the same clock; the room camera
   // then goes on closing in at the rate the valley camera had (lib/zoom.js)
-  async enter(name, beat, send, live = () => true) {
-    const tok = ++this.token, door = DOORS.a(); this.focus = door.focus;   // focus: what tools/zoom_trace.py measures to
+  // door: the window to go in by, a name of DOORS or a keepWindow(...); by default the room's own (ROOMS).
+  // From another room (a jump across steps), a cut out to that room's window first, under the veil.
+  async enter(name, beat, send, live = () => true, door = ROOMS[name].door) {
+    if (this.room) { setVeil(this.veil, 1); const out = doorOf(this.room.door); this.swap(null); this.rig.jump(out.near); }
+    const tok = ++this.token, way = doorOf(door); this.focus = way.focus;   // focus: what tools/zoom_trace.py measures to
     // the room is built and its shaders compiled during the flight, so the swap does not stall
-    const room = this.build(name, send); room.machine.pose(beat, 0);
+    const room = this.build(name, send, door); room.machine.pose(beat, 0);
     const ready = this.renderer.compileAsync(room.scene, this.camera).catch(() => {});
     // and its textures (the tiles' letters) go to the GPU during the flight too: uploaded at the swap,
     // they froze the first room frame for a quarter second under the veil (tools/zoom_trace.py)
     const maps = new Set(); room.scene.traverse(o => [o.material].flat().forEach(m => m?.map && maps.add(m.map)));
     [...maps].forEach((m, i) => setTimeout(() => { if (tok === this.token) this.renderer.initTexture(m); }, 100 + i * 8));
     const cam = this.outer.camera, from = { pos: cam.position.clone(), target: this.rig.controls.target.clone() };
-    const path = windowPath({ from, focus: door.focus, normal: door.normal });
+    const path = windowPath({ from, focus: way.focus, normal: way.normal });
     this.zooming = { tok, live };
-    await this.rig.fly({ pos: door.focus, target: door.focus }, this.instant ? .001 : ZOOM.T,
+    await this.rig.fly({ pos: way.focus, target: way.focus }, this.instant ? .001 : ZOOM.T,
       { path: k => { setVeil(this.veil, ZOOM.veil(k)); return path(k); } });
     await ready;
     this.zooming = null;
@@ -343,7 +538,7 @@ export class Inside {
   // veil rises, then the valley camera pulls out of the window at that rate and slows onto shot
   async leave(shot) {
     if (!this.room) return;
-    const tok = ++this.token, door = DOORS.a(); this.focus = door.focus;   // focus: what tools/zoom_trace.py measures to
+    const tok = ++this.token, door = doorOf(this.room.door); this.focus = door.focus;   // focus: what tools/zoom_trace.py measures to
     this.arrival = null;
     if (!shot) { this.swap(null); setVeil(this.veil, 0); this.rig.jump(door.near); return; }   // a mode switch: a cut
     const to = typeof shot === 'string' ? SHOTS[shot] : shot;
@@ -356,7 +551,7 @@ export class Inside {
   }
   rebuild(send = this.room?.send) {
     if (!this.room) return;
-    const room = this.build(this.room.name, send), beat = this.room.beat;
+    const room = this.build(this.room.name, send, this.room.door), beat = this.room.beat;
     room.beat = beat; this.swap(room); this.room.machine.pose(beat, this.time); this.fit(true);
   }
   play() { if (this.room) this.time = 0; }

@@ -35,8 +35,11 @@ export const STEPS = [
   { id: 'intro', ch: 0, shot: 'castleA', view: 'keys', say: ['a'] },
   { id: 'clear', ch: 0, shot: 'both', view: 'clear', go: async x => { await x.ride('clear'); } },
   { id: 'fall', refs: { '1.3': 8 }, ch: 0, shot: 'city', orbit: .04, view: 'fall', say: ['e'] },
-  { id: 'padlock', ch: 1, shot: 'castleB', view: 'toy', say: ['b'] },
-  { id: 'rsa2048', ch: 1, shot: 'castleB', view: 'pubkey', say: ['b'] },
+  // r363: Bob makes his padlock inside his keep, a room of two beats (inside.js rsaRoom): RSA by hand
+  // on 5 and 11, then the 2048-bit n; the camera comes out at 'deliver'. A step can name another
+  // window with door: (inside.js DOORS, keepWindow)
+  { id: 'padlock', ch: 1, shot: 'castleB', view: 'toy', say: ['b'], inside: 'rsa' },
+  { id: 'rsa2048', ch: 1, shot: 'castleB', view: 'pubkey', say: ['b'], inside: 'rsa' },
   { id: 'deliver', ch: 1, shot: 'both', view: 'pubkey', go: async x => { await x.ride('padlock'); } },
   // r103/r160: Alice locks the padlock inside her keep, in a room where OAEP and RSA run on the
   // real bytes (inside.js); the only step of the chapter in her keep, so the camera comes out at 'seed'
@@ -86,7 +89,7 @@ export class Story {
   async enter(step, tok) {
     const c = this.ctx, live = () => tok === this.token;
     if (c.inside.active && c.inside.room.name === step.inside) c.inside.beat(step.id);
-    else if (!await c.inside.enter(step.inside, step.id, packets(), live)) return;
+    else if (!await c.inside.enter(step.inside, step.id, packets(), live, step.door)) return;
     setTimeout(() => { if (live()) for (const s of step.say || []) this.say(s, undefined, () => c.inside.anchor()); }, c.instant ? 0 : 900);
   }
 
