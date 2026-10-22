@@ -1,0 +1,150 @@
+<!doctype html>
+<!-- r425 lab: which window of the Middle-earth castles each keep room of 1.2-1.6 zooms through. The valley of
+     lib/saga/world.js with { castles: 'middle-earth' }, three candidate doors per castle (doors.js), each a button
+     that plays lib/zoom.js windowPath into it and back out (no room: the veil at the glass).
+     Query: ?door=a:tower (start on it)  ?k=0..1 (hold the zoom there, for tools/doors_shots.py)  ?marks=0 (no tags) -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saga: the castles' doors (lab)</title>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0f2c; color: #e6e9f2; font: 14px system-ui, sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #ui { position: fixed; left: 12px; top: 12px; display: flex; flex-direction: column; gap: 6px; max-width: calc(100vw - 24px); z-index: 2; }
+  #ui div { display: flex; flex-wrap: wrap; gap: 4px; background: #141a33cc; padding: 5px; border-radius: 8px; align-items: center; }
+  #ui span { color: #9aa3c5; padding: 0 4px; }
+  button { background: #252d52; color: #e6e9f2; border: 1px solid #39437a; border-radius: 6px; padding: 4px 9px; font: inherit; cursor: pointer; }
+  button.on { background: #e8b84a; color: #1b1405; border-color: #e8b84a; }
+  #who { position: fixed; left: 12px; bottom: 12px; right: 12px; background: #141a33cc; padding: 6px 10px; border-radius: 8px; color: #c8cde0; z-index: 2; }
+  #veil { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 1;
+    background: radial-gradient(circle at 50% 50%, #ffc070 0%, #d08a3a 28%, #6a3a12 70%, #1a0e06 100%); }
+  #inside { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 1; color: #2a1405; font: 600 22px system-ui; opacity: 0; }
+  .tag { position: fixed; z-index: 1; transform: translate(-50%, -130%); background: #e8b84a; color: #1b1405; font: 700 12px system-ui;
+    padding: 2px 6px; border-radius: 6px; pointer-events: none; white-space: nowrap; }
+  .tag::after { content: ''; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: #e8b84a; }
+  @media (max-width: 600px) { #ui { font-size: 12px; } button { padding: 3px 6px; } }
+</style></head><body>
+<canvas id="scene"></canvas>
+<div id="veil"></div><div id="inside"></div>
+<div id="ui"></div>
+<div id="who"></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { buildWorld } from '../../lib/saga/world.js';
+import { SHOTS } from '../../lib/saga/camera.js';
+import { ZOOM, windowPath, setVeil } from '../../lib/zoom.js';
+import { CANDIDATES, doorOf, openings } from './doors.js';
+
+const q = new URLSearchParams(location.search);
+// the renderer as an episode sets it, so the windows are judged in the episode's own light
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(45, 1, .1, 1500);
+const world = buildWorld(scene, { castles: 'middle-earth' });
+const castles = { a: world.castleA, b: world.castleB };
+for (const team of ['a', 'b']) castles[team].add(openings(team));   // the lit openings a candidate needs that the castle lacks
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .75, .55, .82));
+composer.addPass(new OutputPass());
+const controls = new OrbitControls(camera, canvas);
+Object.assign(controls, { enableDamping: true, dampingFactor: .07, maxPolarAngle: Math.PI * .47, minDistance: 1, maxDistance: 320 });
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false); composer.setSize(w, h);
+  camera.aspect = w / h; camera.fov = w < h ? 65 : 45; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+const veil = document.getElementById('veil'), inside = document.getElementById('inside'), who = document.getElementById('who');
+const START = { a: SHOTS.castleA, b: SHOTS.castleB };   // where an episode's camera usually is when a room is entered
+const st = { door: q.get('door'), busy: false };
+
+// the buttons: one row per castle, one button per candidate
+const ui = document.getElementById('ui');
+for (const team of ['a', 'b']) {
+  const row = document.createElement('div');
+  row.innerHTML = `<span>${team === 'a' ? 'Alice' : 'Bob'}</span>` + CANDIDATES[team].map(c => `<button data-id="${team}:${c.id}">${c.n}. ${c.name}</button>`).join('');
+  ui.append(row);
+}
+const view = document.createElement('div');
+view.innerHTML = '<span>look</span><button data-look="a">Alice\'s castle</button><button data-look="b">Bob\'s castle</button>';
+ui.append(view);
+
+const cand = id => { const [team, name] = id.split(':'); return { team, ...CANDIDATES[team].find(c => c.id === name) }; };
+function mark() {
+  for (const b of ui.querySelectorAll('button[data-id]')) b.classList.toggle('on', b.dataset.id === st.door);
+  const c = st.door && cand(st.door);
+  who.textContent = c ? `${c.team === 'a' ? 'Alice' : 'Bob'} ${c.n}: ${c.name}. ${c.about}` : 'Pick a door: the camera flies in from the castle shot an episode uses, the veil rises at the glass, then it flies back out.';
+}
+function look(team) { camera.position.copy(START[team].pos); controls.target.copy(START[team].target); camera.lookAt(START[team].target); }
+
+// the zoom as lib/room.js plays it (k linear in time over ZOOM.T), then the same move backwards
+function pathOf(id) {
+  const { team } = cand(id), d = doorOf(castles[team], id.split(':')[1]);
+  return windowPath({ from: { pos: START[team].pos.clone(), target: START[team].target.clone() }, focus: d.focus, normal: d.normal });
+}
+function pose(path, k) {
+  const p = path(k); camera.position.copy(p.pos); controls.target.copy(p.target); camera.lookAt(p.target);
+  setVeil(veil, ZOOM.veil(k));
+}
+const frames = (T, fn) => new Promise(res => {
+  const t0 = performance.now();
+  const step = () => { const k = Math.min(1, (performance.now() - t0) / 1000 / T); fn(k); k < 1 ? requestAnimationFrame(step) : res(); };
+  requestAnimationFrame(step);
+});
+async function play(id) {
+  if (st.busy) return; st.busy = true; st.door = id; mark();
+  const path = pathOf(id); look(cand(id).team); controls.enabled = false;
+  await new Promise(r => setTimeout(r, 500));
+  await frames(ZOOM.T, k => pose(path, k));
+  inside.textContent = 'inside: ' + cand(id).name; inside.style.opacity = 1;
+  await new Promise(r => setTimeout(r, 700));
+  inside.style.opacity = 0;
+  await frames(ZOOM.T, k => pose(path, 1 - k));
+  setVeil(veil, 0); controls.enabled = true; st.busy = false;
+}
+ui.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || st.busy) return;
+  if (b.dataset.id) play(b.dataset.id); else { st.door = null; mark(); look(b.dataset.look); }
+});
+
+// numbered tags over each candidate, so a still of the castle reads which is which
+const tags = [];
+if (q.get('marks') !== '0') for (const team of ['a', 'b']) for (const c of CANDIDATES[team]) {
+  const el = document.createElement('div'); el.className = 'tag'; el.textContent = (team === 'a' ? 'A' : 'B') + c.n; document.body.append(el);
+  tags.push({ el, id: `${team}:${c.id}` });
+}
+const P = new THREE.Vector3();
+function placeTags() {
+  const show = !st.busy && veil.style.opacity < .05;
+  for (const t of tags) {
+    const [team, name] = t.id.split(':'); P.copy(doorOf(castles[team], name).glass).project(camera);
+    const on = show && P.z < 1 && Math.abs(P.x) < 1 && Math.abs(P.y) < 1;
+    t.el.style.display = on ? '' : 'none';
+    if (on) { t.el.style.left = (P.x + 1) / 2 * innerWidth + 'px'; t.el.style.top = (1 - P.y) / 2 * innerHeight + 'px'; }
+  }
+}
+
+look(st.door ? cand(st.door).team : 'a'); mark();
+const hold = q.get('k');
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), .05);
+  world.update(dt, clock.elapsedTime);
+  if (!st.busy && hold === null) controls.update();
+  placeTags(); composer.render();
+});
+// for tools/doors_shots.py: pose(id, k) holds the zoom at k (0 the castle shot, 1 the glass)
+window.demo = { world, castles, play, pose: (id, k) => { st.busy = k > 0; st.door = id; mark(); pose(pathOf(id), k); }, look, ready: false };
+if (st.door && hold !== null) window.demo.pose(st.door, +hold);
+requestAnimationFrame(() => requestAnimationFrame(() => { window.demo.ready = true; }));
+</script>
+</body></html>
