@@ -70,7 +70,10 @@ with sync_playwright() as p:
     counts = pg.evaluate("[...document.querySelectorAll('#card .spread span')].map(s => s.textContent)")
     report("spread card: 1 before, then 1 4 16 after rounds 0-2", [] if counts[:4] == [{"fr": "avant", "en": "before"}[lang] + "1", "01", "14", "216"] else counts[:4])
     # a beat mid-way: round 1's SubBytes at half time shows the S-box lookup over the cube going through
-    pg.evaluate("demo.story.go(5)"); pg.evaluate("demo.room.instant = false; demo.room.speed = 0; demo.room.time = 3.6"); pg.wait_for_timeout(300)
+    pg.evaluate("demo.story.go(5)"); pg.evaluate("demo.room.instant = false; demo.room.speed = 0; demo.room.time = 3.6")
+    # the beat is held, but its label only shows once a frame has drawn it: wait for it, never a fixed time (r413)
+    try: pg.wait_for_function(f"{read}.words.some(w => w.startsWith('S('))", timeout=15000)
+    except Exception: pass
     words = pg.evaluate(read)["words"]
     report("sub1 mid-way: an S(..) = .. label", [] if any(w.startswith("S(") for w in words) else words)
     pg.close()
