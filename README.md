@@ -83,7 +83,8 @@ touche à rien, change un octet de l'IV ou du chiffré, ou envoie son cavalier ;
 ou non), un quiz de 7 questions. Tout est calculé dans la page (`lib/saga-aes.js`,
 `lib/hmac.js`) et vérifié par `node tests/octet_values.mjs` contre FIPS-197, RFC 4231,
 openssl, le module `hmac` de Python et WebCrypto ; `tests/octet_story.py` joue chaque chevauchée et
-le bac à sable.
+le bac à sable. La dernière étape ouvre quatre portes avec leur clip au survol : bac à sable, quiz, tous les
+épisodes, puis l'épisode 1.4 en or à droite (`lib/doors.js`, `tests/last_doors.py octet-change 13 cle-vallee`).
 
 ## Épisode 1.4 — La clé qui traverse la vallée
 

@@ -79,9 +79,10 @@ const fr = {
     compare: { t: 'Comparer en temps constant', p: "Reste la comparaison elle-même. Un Bob pressé comparerait les deux sceaux octet par octet et s'arrêterait au premier qui diffère : il refuserait un peu plus vite un sceau faux dès le 1er octet qu'un sceau faux au 10e. En chronométrant ses refus, Eve trouverait le bon sceau d'un paquet changé, octet par octet. Alors Bob compare toujours les 32 octets jusqu'au bout, et ne répond qu'après : en Python, hmac.compare_digest. L'épisode 8, le garde trop pressé, montre cette attaque en détail.",
       b: 'Les 32 octets, tous, à chaque fois. Ma réponse prend toujours le même temps.' },
     packet: { t: "Le paquet, jusqu'ici", p: "Ce qui voyage maintenant : l'IV (16 octets), le chiffré, et le sceau HMAC de l'IV et du chiffré (32 octets). Une brique manque : les deux clés, AES et HMAC, doivent arriver chez Bob sans qu'Eve les lise, c'est l'épisode 1.4. Et le sceau ne prouve que deux choses : le paquet vient de quelqu'un qui a la clé HMAC, et il n'a pas changé. Un vrai paquet d'Alice, gardé par Eve et renvoyé le lendemain, passerait encore : c'est l'un des tours de l'épisode 1.6.",
-      e: 'Plus moyen de changer un octet. Mais un vrai paquet, je peux le garder, et le renvoyer plus tard.', link: ['Épisode 1.4 : la clé qui traverse la vallée ▶'] },
+      e: 'Plus moyen de changer un octet. Mais un vrai paquet, je peux le garder, et le renvoyer plus tard.' },
     end: { t: 'À vous', p: "Dans le bac à sable, écrivez votre ordre, choisissez ce que fait Eve (rien, un octet de l'IV, un octet du chiffré, ou son propre cavalier) et si Bob vérifie le sceau : la carte montre ce que Bob déchiffre, ou pourquoi il refuse. L'épisode 8, le garde trop pressé, montre l'attaque au chronomètre sur une comparaison pressée ; l'épisode 6, le pingouin, montre de près un bit retourné dans un chiffré CBC.",
-      go: 'Essayer dans le bac à sable', go2: 'Faire le quiz', link: ['Épisode 8 : le garde ▶', 'Épisode 6 : le pingouin ▶'] },
+      doors: { sandbox: ['Bac à sable', 'Votre ordre, l’octet qu’Eve change, et le sceau que Bob vérifie ou non'], quiz: ['Quiz', 'Sept questions pour vérifier'],
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 1.4 · La clé qui traverse la vallée ▶', 'Comment la clé arrive chez Bob : par le cadenas RSA de Bob'] } },
   },
 
   // sandbox
@@ -175,9 +176,10 @@ const en = {
     compare: { t: 'Comparing in constant time', p: 'One thing is left: the comparison itself. A Bob in a hurry would compare the two seals byte by byte and stop at the first one that differs: he would refuse a seal wrong at byte 1 a little faster than one wrong at byte 10. By timing his refusals, Eve would find the right seal of a changed packet, byte by byte. So Bob always compares all 32 bytes to the end, and answers only then: in Python, hmac.compare_digest. Episode 8, the guard in a hurry, shows this attack in detail.',
       b: 'All 32 bytes, every time. My answer always takes the same time.' },
     packet: { t: 'The packet, so far', p: 'What travels now: the IV (16 bytes), the ciphertext, and the HMAC seal of the IV and the ciphertext (32 bytes). One brick is missing: both keys, AES and HMAC, must reach Bob without Eve reading them, that is episode 1.4. And the seal proves only two things: the packet comes from someone holding the HMAC key, and it has not changed. A real packet from Alice, kept by Eve and sent again the next day, would still pass: that is one of the tricks of episode 1.6.',
-      e: 'No more changing a byte. But a real packet, I can keep, and send again later.', link: ['Episode 1.4: the key that crosses the valley ▶'] },
+      e: 'No more changing a byte. But a real packet, I can keep, and send again later.' },
     end: { t: 'Your turn', p: 'In the sandbox, write your order, choose what Eve does (nothing, a byte of the IV, a byte of the ciphertext, or her own rider) and whether Bob checks the seal: the card shows what Bob decrypts, or why he refuses. Episode 8, the guard in a hurry, shows the stopwatch attack on a hasty comparison; episode 6, the penguin, shows a flipped bit in a CBC ciphertext up close.',
-      go: 'Try the sandbox', go2: 'Take the quiz', link: ['Episode 8: the guard ▶', 'Episode 6: the penguin ▶'] },
+      doors: { sandbox: ['Sandbox', 'Your order, the byte Eve changes, and the seal Bob checks or not'], quiz: ['Quiz', 'Seven questions to check'],
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 1.4 · The Key That Crosses the Valley ▶', 'How the key reaches Bob: through Bob’s RSA padlock'] } },
   },
 
   'sb.title': 'Sandbox',
