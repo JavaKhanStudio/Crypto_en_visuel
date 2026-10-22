@@ -378,10 +378,11 @@ function rsaRoom(scene, send, portrait) {
   const eL = label(`e = ${B.e}`, '#ffd27a', w2); eL.position.set(C2.e.x, C2.e.y + 1.4, 0);
   const lock2 = padlock(); lock2.scale.setScalar(2.4); lock2.position.copy(C2.lock).add(v(0, 1.2)); scene.add(lock2);
   const pad2 = label(t('in.pad'), '#ffc24d', w2, { plate: true }); pad2.position.copy(C2.lock).add(v(0, -1.2, .9));
-  // RSA-250: a bracket down n's right side over its first 829 bits; on a phone over the rows themselves
-  const R250 = 829 / 8 / 16, bx = C2.n.x + HW + .35;
+  // RSA-250: a bracket down n's right side over its first 829 bits, its words at its right; a phone has
+  // no room there, so they go above n, where the × of p × q was (r446: over the rows they hid the bytes)
+  const R250 = 829 / 8 / 16, bx = C2.n.x + HW + .35, r250y = C2.n.y + HW + 3.3;
   const bracket = new THREE.Mesh(new THREE.BoxGeometry(.22, 1, .2), new THREE.MeshBasicMaterial({ color: 0xff8f9a, transparent: true }));
-  const r250 = label(t('in.rsa250'), '#ff8f9a', portrait ? .85 : 1.05, { plate: true, align: portrait ? .5 : 0 });
+  const r250 = label(t('in.rsa250'), '#ff8f9a', portrait ? 1.1 : 1.05, { plate: true, align: portrait ? .5 : 0 });
   scene.add(pL, qL, times2, nL, eL, pad2, bracket, r250);
   const topN = C2.n.y + 8 * Pt;
 
@@ -428,10 +429,12 @@ function rsaRoom(scene, send, portrait) {
   function wallBeat(time) {
     // the 5 and the 11 swell where p's and q's walls will be, and the walls take their place, from the middle out
     for (const [g, c0] of [[grow.p, C2.p], [grow.q, C2.q]]) { const q = span(time, .2, 1.4); put(g, c0, 1 - span(time, 1.2, 1.8), 1 + 1.5 * q); g.position.z = 1; }
+    // on a phone p's and q's walls go as the bracket's words take their foot (r446)
+    const gone = portrait ? 1 - span(time, 9.8, 10.4) : 1;
     const ring = (list, place) => list.map((m, i) => [m, place(i), place(i).distanceTo(place === pAt ? C2.p : C2.q)]).sort((a, b) => a[2] - b[2])
-      .forEach(([m, pos], n) => put(m, pos, span(time, 1 + n * .009, 1.4 + n * .009)));
+      .forEach(([m, pos], n) => put(m, pos, span(time, 1 + n * .009, 1.4 + n * .009) * gone));
     ring(Pw, pAt); ring(Qw, qAt);
-    seen(pL, 2.6); seen(qL, 2.6); seen(times2, 3.4);
+    seen(pL, 2.6, portrait ? 9.8 : 99); seen(qL, 2.6, portrait ? 9.8 : 99); seen(times2, 3.4, portrait ? 10.1 : 99);
     N.forEach((m, i) => put(m, nAt(i), span(time, 3.8 + i * .012, 4.2 + i * .012)));
     seen(nL, 4);
     E.forEach((m, i) => put(m, eAt(i), span(time, 7.6 + i * .15, 8 + i * .15)));
@@ -440,7 +443,7 @@ function rsaRoom(scene, send, portrait) {
     const b = span(time, 10, 11.2), h = R250 * Pt * b;
     bracket.visible = b > .01; bracket.scale.y = Math.max(.01, h); bracket.material.opacity = 1;
     bracket.position.set(bx, topN - h / 2, .4);
-    r250.position.copy(portrait ? v(C2.n.x, topN - R250 * Pt / 2, 1) : v(bx + .6, topN - R250 * Pt / 2));
+    r250.position.copy(portrait ? v(C2.n.x, r250y, 1) : v(bx + .6, topN - R250 * Pt / 2));
     seen(r250, 10.6);
   }
   function pose(beat, time) {
@@ -451,7 +454,8 @@ function rsaRoom(scene, send, portrait) {
 
   // what the camera holds. Landscape: all of beat 1; beat 2 p and q, then with n, then with e and the
   // padlock. A phone follows: beat 1 the key-making, then the first box with 7 and 13, then the
-  // second box; beat 2 p over q, n as it is laid, its foot with e and the padlock, its top with the bracket
+  // second box; beat 2 p over q, n as it is laid, its foot with e and the padlock, then all of n, e and the
+  // padlock at its foot, the bracket's words above (r446: the whole wall, so the 829 bits read as the share of n they are)
   const wide1 = [v(at.m.x - 1.4, 0.6), v(at.back.x + 1.4, at.p.y + 2.6), v(at.box1.x, at.box1.y - 3.2)];
   const p1 = time => {
     const rows = (a, b) => [v(-7, a), v(7, b)], b1 = at.box1.y, b2 = at.box2.y;
@@ -468,7 +472,7 @@ function rsaRoom(scene, send, portrait) {
   // the end: n with e, the padlock and the bracket's words at its right, p and q's edge at its left
   const w2f = time => time < 3.4 ? pq : time < 7.4 ? [...pq, ...nF] : [v(C2.times.x - 2, C2.n.y), ...nF, v(bx + 13, topN), v(C2.lock.x, C2.lock.y - 2)];
   const p2 = time => time < 3.4 ? pq : time < 7.4 ? nF
-    : time < 9.8 ? [v(-7, C2.lock.y - 2.2), v(7, C2.n.y - HW + 4 * Pt)] : [v(C2.n.x - HW, topN - R250 * Pt - .6), v(C2.n.x + HW, C2.n.y + HW + 1.6)];
+    : time < 9.8 ? [v(-7, C2.lock.y - 2.2), v(7, C2.n.y - HW + 4 * Pt)] : [v(C2.n.x - HW, C2.lock.y - 2), v(C2.n.x + HW, r250y + 1.9)];
   const frame = (beat, time) => beat === 'padlock' ? (portrait ? p1(time) : wide1) : (portrait ? p2(time) : w2f(time));
   return { beats: { padlock: { end: T1.end }, rsa2048: { end: 12.2 } }, pose, frame, tiles: { big, N } };
 }
@@ -606,6 +610,11 @@ export class Inside {
     const c = this.view.center, d = this.view.d;
     this.camera.position.set(c.x + Math.sin(this.time * .25) * .02 * d, c.y + d * .14, c.z + d);
     this.camera.lookAt(c);
+    // a tall frame in a short band (a phone with its text open) backs the camera off past the fog: it moves
+    // with the camera then, so the room stays seen (r446); closer than 70 nothing changes
+    const fog = this.room.scene.fog;
+    if (fog) { fog.near = Math.max(60, d - 10); fog.far = Math.max(130, d + 70); }
+    if (this.camera.far < d + 100) { this.camera.far = d + 100; this.camera.updateProjectionMatrix(); }
     // the look-at point lands in the middle of the free band, not of the screen
     const b = w.b; this.camera.setViewOffset(b.W, b.H, b.W / 2 - (b.left + b.w / 2), b.H / 2 - (b.top + b.h / 2), b.W, b.H);
     for (const f of this.room.scene.userData.flames || []) f.light.intensity = 55 + Math.sin(this.time * 13 + f.light.position.x) * 6 + Math.sin(this.time * 7.3) * 4;
