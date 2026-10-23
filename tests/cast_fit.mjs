@@ -1,7 +1,8 @@
 // r330: every figure of lib/cast.js, in every setting, goes together and prints (lib/fit.js at 60 mm, the
 // figures' board-game size of r196 (the guard's in garde/js/print-assets.js):
 // no two parts in the same space, every ring, head and hat comes down onto the pin unhindered, no part
-// in loose pieces, nothing under 1 mm; round 4: the hat and both arms snap on, each arm swings its whole
+// in loose pieces, nothing under 1 mm; round 6: every joint one straight peg in one hole with the play of
+// lib/fit.js's JOINT table (no snap, no hub), each arm swings its whole
 // range without meeting anything; round 5: with no slot in the robe, 0 to 60 degrees forward, the robe
 // included; the left arm straight too), and a known clip and a known swing are found.
 //     node tests/cast_fit.mjs [kind ...] [--setting roman] [--mm 60] [--quiet]
@@ -16,7 +17,10 @@ const settings = only >= 0 ? [args[only + 1]] : Object.keys(DISGUISES);
 let bad = 0;
 for (const d of settings) for (const kind of kinds.length ? kinds : Object.keys(DISGUISES[d])) {
   const t = Date.now(), r = check(person(kind, { disguise: d }), { h: mm });
-  if (r.snaps.length < 3) { r.ok = false; console.log('       snaps: only ' + r.snaps.map(x => x.part).join(', ') + ' (the hat and both arms snap on)'); }
+  // round 6: one peg in one hole per joint, the neck, the hat and both arms at least, the arms turning
+  const want = ['neck', 'hat', 'arm right', 'arm left'], names = r.joints.map(j => j.name);
+  if (!want.every(w => names.includes(w)) || r.joints.filter(j => j.kind === 'turn' && j.male.startsWith('arm')).length !== 2) {
+    r.ok = false; console.log('       joints: only ' + names.join(', ') + ' (wants the neck, the hat and both arms turning)'); }
   r.ok || bad++;
   console.log(r.ok ? 'ok  ' : 'FAIL', `${CAST[kind].name}, ${d}`, `(${r.parts.map(p => p.name).join(', ')}; ${Date.now() - t} ms)`);
   if (!r.ok || !quiet) for (const l of describe(r)) if (l !== 'ok') console.log('       ' + l);

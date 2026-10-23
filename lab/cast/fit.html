@@ -16,6 +16,7 @@
   .names { display: grid; max-width: 1400px; font-size: 12px; color: #9aa3b5; gap: 6px; }
   .names div b { display: block; text-align: center; color: #d8dce6; } .names div b.ok { color: #7fd18f; } .names div b.bad { color: #ff7a7a; }
   .k { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; vertical-align: -1px; }
+  .joints { font-size: 11px; color: #7f8899; margin-top: 4px; }
 </style></head><body>
 <h1>The cast: does it go together, and does it print? (lib/fit.js)</h1>
 <p>Each figure is checked at the size it prints, from what the export would print, in voxels of 0.2 mm, and drawn ghosted with what is wrong:
@@ -24,7 +25,7 @@
 <span class="k" style="background:#e040ff"></span>a bit that prints loose from its part
 <span class="k" style="background:#ffe040"></span>a wall under 1 mm
 <span class="k" style="background:#40d0ff"></span>not a fault: where a part is hollowed for one that turns against it (none since round 5: the arms stand clear of the robe).
-Sockets are cut by what goes in them (the neck pin, a hat's peg, an arm's shoulder pin, the head under a hat), with 0.2 mm of play; the hat's peg and each arm's pin end in a bulb 0.5 mm wider than the socket's lip, so they snap in. An arm, with what it holds, is turned through its whole range (hanging to 60° forward) and must meet nothing, the robe included (red if it does).</p>
+Every joint is one straight peg in one straight hole (round 6): the hole is cut by the peg that goes in it (the neck, a hat's peg, an arm's peg, the head under a hat), and its play (0.1 mm a side to stay put, 0.2 mm to turn), the peg's width (2.5 mm at least) and an arm's gap to the robe (0.3 mm at least) are checked from the numbers, listed under each figure. An arm, with what it holds, is turned through its whole range (hanging to 60° forward) and must meet nothing, the robe included (red if it does).</p>
 <div id="rows"></div>
 <script type="module">
 import * as THREE from 'three';
@@ -66,7 +67,7 @@ for (const d of settings) {
     if (apart) explode(f, 1);
     f.position.x = (i - (n - 1) / 2) * W; f.rotation.y = turn0; scene.add(f); figs.push(f);
     const div = document.createElement('div');
-    div.innerHTML = `<b class="${res.ok ? 'ok' : 'bad'}">${CAST[kind].name}: ${res.ok ? 'fits, prints' : lines.length + ' to fix'}</b>${res.ok ? '' : lines.map(l => `<div>${l}</div>`).join('')}`;
+    div.innerHTML = `<b class="${res.ok ? 'ok' : 'bad'}">${CAST[kind].name}: ${res.ok ? 'fits, prints' : lines.length + ' to fix'}</b>${res.ok ? '' : lines.map(l => `<div>${l}</div>`).join('')}<div class="joints">${res.joints.filter(j => j.d).map(j => `${j.name}: ${j.d} mm peg, ${j.clear} mm play${j.gap ? `, ${j.gap} mm clear` : ''}`).join('<br>')}</div>`;
     names.append(div);
   });
   const fov = 22, h = n * W / aspect, cam = new THREE.PerspectiveCamera(fov, aspect, .1, 200);
