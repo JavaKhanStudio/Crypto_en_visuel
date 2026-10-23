@@ -70,6 +70,10 @@ with sync_playwright() as p:
             left = r["left"]
             report(f"{r['id']}: repaired, 0 open, 0 flat, 0 thin, 0 floating", not (left["open"] or left["flat"] or left["thin"] or left["floats"]), f"{r['fixes']} fixes, left {left}")
     ids = [r["id"] for r in rows if not r["no"] and not r["err"]]
+    # r460: an episode without the saga's castle, guard or rider is shot and zipped on its own first assets
+    kinds = pg.evaluate("() => Object.fromEntries(printLab.rows.map(r => [r.a.id, r.a.kind]))")
+    land = "castle-a" if "castle-a" in ids else next((i for i in ids if kinds[i] == "landmark"), ids[0])
+    pair = ["guard", "tree"] if {"guard", "tree"} <= set(ids) else ids[:2]
     fl = pg.evaluate("""ids => printLab.files(ids).map(f => ({ name: f.name,
         b64: typeof f.data === 'string' ? btoa(unescape(encodeURIComponent(f.data))) : btoa(Array.from(f.data, c => String.fromCharCode(c)).join('')) }))""", ids)
     files = {f["name"]: base64.b64decode(f["b64"]) for f in fl}
@@ -95,17 +99,18 @@ with sync_playwright() as p:
         report(f"{i}: closed pieces face outwards", all(v > 0 for v in vols), f"{len(vols)} closed, min volume {min(vols, default=0):.1f} mm3")
         report(f"{i}: PRINT.txt", f"{i}/PRINT.txt" in files and (not r["fixes"] or "Fixed for printing" in files[f"{i}/PRINT.txt"].decode()))
     zb = base64.b64decode(pg.evaluate("""async ids => { const { zip } = await import('../../lib/print.js');
-        const b = new Uint8Array(await zip(printLab.files(ids)).arrayBuffer()); let s = ''; for (const c of b) s += String.fromCharCode(c); return btoa(s); }""", ["guard", "tree"]))
+        const b = new Uint8Array(await zip(printLab.files(ids)).arrayBuffer()); let s = ''; for (const c of b) s += String.fromCharCode(c); return btoa(s); }""", pair))
     zf = zipfile.ZipFile(io.BytesIO(zb))
-    report("the .zip opens, every CRC right", zf.testzip() is None and zf.read("guard/guard.stl") == files["guard/guard.stl"], f"{len(zf.namelist())} files")
-    pg.locator("tr.asset[data-id=castle-a]").click(); pg.wait_for_timeout(800)
+    report("the .zip opens, every CRC right", zf.testzip() is None and zf.read(f"{pair[0]}/{pair[0]}.stl") == files[f"{pair[0]}/{pair[0]}.stl"], f"{len(zf.namelist())} files")
+    pg.locator(f"tr.asset[data-id={land}]").click(); pg.wait_for_timeout(800)
     pg.screenshot(path=f"out/print_lab-{ep}.png")
-    figure = next((r["id"] for r in rows if not r["no"] and not r["err"] and "rider" in r["id"]), None)
+    figure = next((i for i in ids if "rider" in i), None) or next((i for i in ids if kinds[i] == "figure"), None)
     if figure:
         pg.locator(f"tr.asset[data-id={figure}]").click(); pg.wait_for_timeout(800)
         pg.screenshot(path=f"out/print_lab-{ep}-{figure}.png")
     # r451: the list shape's fields, on the fixture list
-    real_cape = any(n.startswith("rider-a/pieces/") and "-plane-" in n for n in files)
+    # the real rider-a's cape proves strip removes a piece that exists; an episode without it has nothing to compare
+    real_cape = any(n.startswith("rider-a/pieces/") and "-plane-" in n for n in files) or "rider-a" not in ids
     pg.goto(f"{base}lab/print/?ep={ep}&assets=tests/print/shape-assets.js")
     pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
     sh = pg.evaluate("""async () => { const r = printLab.rows.find(r => r.a.id === 'shape-rider'), c = printLab.rows.find(r => r.a.id === 'shape-checked');
@@ -137,18 +142,18 @@ with sync_playwright() as p:
         print("(review checks skipped: they write, so they run only on the test's own server)")
     else:
         lab = f"{base}lab/print/?ep={ep}"
-        pg.goto(lab + "#castle-a"); pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
-        report("#<asset> opens that asset", pg.locator("tr.asset.on").get_attribute("data-id") == "castle-a")
+        pg.goto(lab + f"#{land}"); pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
+        report("#<asset> opens that asset", pg.locator("tr.asset.on").get_attribute("data-id") == land)
         pg.fill("#rv-text", "the flag can go, and the base need not be this big"); pg.click("#rv-add")
         pg.wait_for_selector("#review li .open")
-        pg.locator("tr.asset[data-id=rider-a]").click(); pg.fill("#rv-text", "no cape"); pg.click("#rv-add"); pg.wait_for_selector("#review li .open")
-        pg.locator("#rv-check").check(); pg.wait_for_selector("tr.asset[data-id=rider-a] .checked")
-        report("checked: the tick clears the badge", pg.locator("tr.asset[data-id=rider-a] .unchecked").count() == 0
-            and pg.locator("tr.asset[data-id=castle-a] .unchecked").count() == 1, pg.inner_text("tr.asset[data-id=rider-a] .checked"))
+        pg.locator(f"tr.asset[data-id={figure}]").click(); pg.fill("#rv-text", "no cape"); pg.click("#rv-add"); pg.wait_for_selector("#review li .open")
+        pg.locator("#rv-check").check(); pg.wait_for_selector(f"tr.asset[data-id={figure}] .checked")
+        report("checked: the tick clears the badge", pg.locator(f"tr.asset[data-id={figure}] .unchecked").count() == 0
+            and pg.locator(f"tr.asset[data-id={land}] .unchecked").count() == 1, pg.inner_text(f"tr.asset[data-id={figure}] .checked"))
         ctx = br.new_context(); fresh = ctx.new_page()   # a fresh browser: no cache, no storage
-        fresh.goto(lab + "#castle-a"); fresh.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
+        fresh.goto(lab + f"#{land}"); fresh.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
         report("a comment survives a fresh browser", "the flag can go" in fresh.inner_text("#review")
-            and fresh.locator("tr.asset[data-id=rider-a] .checked").count() == 1, fresh.inner_text("tr.asset[data-id=castle-a] .mark").strip())
+            and fresh.locator(f"tr.asset[data-id={figure}] .checked").count() == 1, fresh.inner_text(f"tr.asset[data-id={land}] .mark").strip())
         report("Send says how many comments are open", fresh.inner_text("#send") == "Send the 2 open comments to an agent", fresh.inner_text("#send"))
         fresh.click("#send"); fresh.wait_for_selector("#sent .ok, #sent .bad")
         sent = [json.loads(l) for l in open(dry)] if _os.path.exists(dry) else []
@@ -156,15 +161,15 @@ with sync_playwright() as p:
         det = argv[argv.index("--detail") + 1] if "--detail" in argv else ""
         report("Send: ONE ticket on the episode's tag, every open comment, file:line, the lab link", len(sent) == 1 and argv[:2] == ["atelier", "add"]
             and argv[argv.index("--tags") + 1] == ep and "the flag can go" in det and "no cape" in det
-            and re.search(rf"{ep}/js/print-assets.js:\d+", det) and f"lab/print/?ep={ep}#castle-a" in det, fresh.inner_text("#sent"))
+            and re.search(rf"{ep}/js/print-assets.js:\d+", det) and f"lab/print/?ep={ep}#{land}" in det, fresh.inner_text("#sent"))
         fresh.reload(); fresh.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
         rv = json.load(open(_os.path.join(tmp, f"{ep}.json")))
         report("sent comments are marked with the ticket, none left to send", all(c["sent"] == sent[0]["ref"] for e in rv["assets"].values() for c in e["comments"])
             and fresh.locator("#send").is_disabled() and "sent in" in fresh.inner_text("#review"), fresh.inner_text("#send"))
-        fresh.locator("tr.asset[data-id=rider-a]").click(); fresh.locator("#rv-check").uncheck(); fresh.wait_for_selector("tr.asset[data-id=rider-a] .unchecked")
+        fresh.locator(f"tr.asset[data-id={figure}]").click(); fresh.locator("#rv-check").uncheck(); fresh.wait_for_selector(f"tr.asset[data-id={figure}] .unchecked")
         report("unticking brings the badge back", True)
         pg.reload(); pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
-        pg.locator("tr.asset[data-id=castle-a]").click(); pg.wait_for_timeout(600); pg.screenshot(path=f"out/print_lab-{ep}-review.png")
+        pg.locator(f"tr.asset[data-id={land}]").click(); pg.wait_for_timeout(600); pg.screenshot(path=f"out/print_lab-{ep}-review.png")
         ctx.close()
     report("no page errors", not errs, "; ".join(errs)[:200])
     br.close()
