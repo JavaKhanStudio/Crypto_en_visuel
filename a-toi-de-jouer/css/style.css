@@ -21,7 +21,10 @@
 #story { max-height: calc(100% - 110px); overflow: auto; }
 
 @media (max-width: 900px) {
-  #story { max-height: 62%; padding: 10px 12px; }
+  /* a step with choices keeps the scene in sight while one plays (62%); the intro and the last step
+     (its recap and doors, r587) rise to the shell's limit, 8px under the top controls (r484) */
+  #story { max-height: calc(100% - var(--clear, var(--top, 0px)) - 24px); padding: 10px 12px; }
+  #story:has(.choices) { max-height: 62%; }
   .narration h2 { font-size: 18px; }
   .narration .step-text { font-size: 13.5px; min-height: 0; }
   /* while a choice plays, the scene takes the room: the step's text steps aside until the verdict */
