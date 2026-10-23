@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Episode 1.6's chapters 2 and 4 happen inside the keeps (r103, r162, after tests/cle_inside.py):
-step 5 'sign' zooms into Alice's keep (SHA-256, PSS, RSA with her private key), step 6 'verify' CUTS
+step 5 'sign' zooms into Alice's keep (SHA-256, PSS, RSA with her private key), step 6 'verify' CUTS (slides, r566, unless ?instant=1)
 through to Bob's (his check with her public key), step 7 comes out of Bob's window; step 11 'gcm'
 zooms into Alice's keep again (AES-GCM), step 12 'gcmEve' cuts to Bob's (InvalidTag), step 13 comes
 out. Checks, desktop and phone: one zoom per chapter and one cut; the frame and the speaker's bubble
@@ -30,7 +30,7 @@ def check(name, ok, info=""):
 
 
 STATE = """() => { const i = demo.inside, n = k => i.log.filter(x => x[0] === k).length;
-  return { active: i.active, beat: i.room && i.room.beat, door: i.room && i.room.door, ins: n('in'), cuts: n('cut'), outs: n('out'),
+  return { active: i.active, beat: i.room && i.room.beat, door: i.room && i.room.door, ins: n('in'), cuts: n('cut') + n('slide'), outs: n('out'),
     order: i.room && i.room.send.g.order }; }"""
 # where the frame and the bubble land on screen, against the band the room must keep to
 PLACE = """() => { const i = demo.inside, cam = i.camera, b = i.want.b, box = i.want.box;

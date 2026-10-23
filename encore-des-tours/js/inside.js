@@ -6,9 +6,9 @@
 // not match, InvalidTag, not a byte of the order comes out). Every tile is the story's real byte
 // (sign.js, gcm.js, packet.js), the ones the corner card shows.
 // ONE zoom per chapter: the camera zooms through the window of the first keep; at the second step it
-// CUTS through to the other keep (Inside.cut: the room camera keeps pushing as the veil rises, the
-// other keep's room arrives as after a zoom) and comes out of that one's window at the next step.
-// Each room hangs its owner's banners (Alice blue, Bob gold) so the cut reads.
+// SLIDES across to the other keep (r566, ROOM slide: true: Inside.cut hands over to the slide, as 1.5)
+// and comes out of that one's window at the next step.
+// Each room hangs its owner's banners (Alice blue, Bob gold) so the slide reads.
 // Copied from cle-vallee/js/inside.js (r160), itself from the reference room of eve-lit-tout (r158);
 // the zoom itself is lib/zoom.js.
 //
@@ -560,5 +560,5 @@ const ROOMS = { sign: { door: 'a', build: signRoom }, verify: { door: 'b', build
   gcm: { door: 'a', build: gcmRoom }, gcmEve: { door: 'b', build: gcmEveRoom } };
 // the engine's options (lib/room.js): a farther far plane, dimmer torches, and the stone room with the
 // owner's banners built around every machine
-export const ROOM = { rooms: ROOMS, far: 400, flame: 28,
+export const ROOM = { rooms: ROOMS, far: 400, flame: 28, slide: true,
   shell: (scene, portrait, machine, owner) => buildRoom(scene, portrait, { size: machine.size, owner }) };
