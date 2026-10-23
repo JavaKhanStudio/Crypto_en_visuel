@@ -57,7 +57,7 @@ const fr = {
   steps: {
     intro: { t: "Faire passer l'ordre", p: "Alice doit faire parvenir à Bob l'ordre « ATTAQUE A 6H DEMAIN ». La route passe sous les murs d'Eve, et la saga a montré ce qu'Eve y fait :\n- elle lit l'ordre (épisode 1.2) ;\n- elle change un octet du paquet (épisode 1.3) ;\n- elle fabrique un faux paquet, ou renvoie un vieux paquet (épisode 1.6).\n\nÀ chaque étape, c'est vous qui choisissez comment Alice se protège, parmi trois choix. Le messager part avec votre choix, et vous voyez ce qu'Eve en fait :\n- un mauvais choix, Eve gagne, et vous choisissez de nouveau ;\n- un bon choix, l'histoire continue.",
       e: 'Tout ce qui va chez Bob passe sous mes murs. Voyons ce qu’Alice a appris.' },
-    text: { t: "1. Cacher l'ordre", p: "Eve arrête chaque messager sous ses murs et regarde ce qu'il porte. Hier, Alice a envoyé le même ordre, de la même façon, et Eve a vu l'armée attaquer à 6h : elle a gardé dans son carnet ce que portait le messager d'hier.\n\nAlice et Bob partagent une clé secrète de 32 octets, qu'Eve n'a pas.",
+    text: { t: "Cacher l'ordre", p: "Eve arrête chaque messager sous ses murs et regarde ce qu'il porte. Hier, Alice a envoyé le même ordre, de la même façon, et Eve a vu l'armée attaquer à 6h : elle a gardé dans son carnet ce que portait le messager d'hier.\n\nAlice et Bob partagent une clé secrète de 32 octets, qu'Eve n'a pas.",
       q: "Comment Alice envoie-t-elle l'ordre ?",
       choices: {
         clear: ['En clair', "L'ordre tel quel, sur le parchemin",
@@ -67,7 +67,7 @@ const fr = {
         cbc: ['AES-CBC, IV neuf', "Les blocs chaînés, partant d'un IV tiré au hasard à chaque envoi",
           "Avec un {2|IV} neuf, le même ordre donne un chiffré qui n'a rien de commun avec celui d'hier : Eve ne lit rien et ne reconnaît rien. Bob, qui a la clé, déchiffre l'ordre (épisode 1.2)."],
       } },
-    seal: { t: "2. Sceller l'ordre", p: "L'ordre voyage maintenant chiffré en AES-CBC avec un {2|IV} neuf : Eve ne le lit plus. Mais elle connaît la forme des ordres d'Alice : l'heure est le 11e octet.\n\nEt chaque octet de l'{2|IV} tombe, au déchiffrement, sur l'octet de même rang du premier bloc. En changeant le 11e octet de l'{2|IV}, Eve change donc l'heure que Bob lira : « 6 » devient « {r|9} » (épisode 1.3).",
+    seal: { t: "Sceller l'ordre", p: "L'ordre voyage maintenant chiffré en AES-CBC avec un {2|IV} neuf : Eve ne le lit plus. Mais elle connaît la forme des ordres d'Alice : l'heure est le 11e octet.\n\nEt chaque octet de l'{2|IV} tombe, au déchiffrement, sur l'octet de même rang du premier bloc. En changeant le 11e octet de l'{2|IV}, Eve change donc l'heure que Bob lira : « 6 » devient « {r|9} » (épisode 1.3).",
       q: "Que met Alice dans le paquet, pour que Bob voie si un octet a changé ?",
       choices: {
         none: ['Rien de plus', 'Le chiffré suffit : Eve ne sait pas le lire',
@@ -77,7 +77,7 @@ const fr = {
         sum: ['Une empreinte SHA-256', "Le SHA-256 de l'IV et du chiffré, sans clé",
           "Eve change l'octet, puis refait l'empreinte : SHA-256 n'a pas de clé, tout le monde peut la calculer. Bob trouve une empreinte juste et lit « ATTAQUE A {r|9H} DEMAIN ». Une empreinte sans clé voit un octet abîmé par accident, jamais un octet changé par Eve."],
       } },
-    keys: { t: '3. Faire passer les clés', p: "Jusqu'ici, Alice et Bob avaient les mêmes deux clés : une {1|clé AES}, pour chiffrer, et une {4|clé HMAC}, pour sceller. Mais ils ne se sont jamais vus, et rien n'a été convenu d'avance : les clés doivent traverser la vallée, elles aussi, sous les murs d'Eve.\n\nBob a un cadenas, une paire de clés RSA :\n- le cadenas ouvert, sa **clé publique**, il le donne à qui en veut ; Eve l'a aussi ;\n- pour l'ouvrir, il faut sa **clé privée**, que Bob est seul à avoir (épisode 1.4).",
+    keys: { t: 'Faire passer les clés', p: "Jusqu'ici, Alice et Bob avaient les mêmes deux clés : une {1|clé AES}, pour chiffrer, et une {4|clé HMAC}, pour sceller. Mais ils ne se sont jamais vus, et rien n'a été convenu d'avance : les clés doivent traverser la vallée, elles aussi, sous les murs d'Eve.\n\nBob a un cadenas, une paire de clés RSA :\n- le cadenas ouvert, sa **clé publique**, il le donne à qui en veut ; Eve l'a aussi ;\n- pour l'ouvrir, il faut sa **clé privée**, que Bob est seul à avoir (épisode 1.4).",
       q: "Comment les clés d'Alice arrivent-elles chez Bob ?",
       choices: {
         clear: ['En clair', 'Le cavalier porte les deux clés telles quelles, avec le paquet',
@@ -87,7 +87,7 @@ const fr = {
         same: ['Les mêmes pour toujours', 'Deux clés fermées une seule fois au cadenas de Bob, puis gardées pour tous les ordres',
           "Aujourd'hui, Eve ne lit rien. Mais elle garde la copie de chaque paquet, et tous tiennent aux deux mêmes clés. Le jour où ces clés fuient (un parchemin perdu, un garde acheté), Eve ouvre d'un coup tous les ordres d'Alice, ceux d'hier comme ceux de demain. Avec des clés neuves à chaque ordre, une clé qui fuit n'ouvre que son ordre (épisode 1.4)."],
       } },
-    bob: { t: '4. Les gestes de Bob', p: "Le paquet est complet : {1|les clés} fermées au cadenas de Bob, {2|l'IV}, {3|le chiffré} et {4|le sceau}. Eve ne le lit pas, et ne sait pas refaire le sceau.\n\nMais elle peut changer des octets, envoyer le paquet à Bob, et écouter ce qu'il répond, autant de fois qu'elle veut. Bob a ouvert les clés ; il lui reste deux gestes : vérifier le {4|sceau}, et déchiffrer.",
+    bob: { t: 'Les gestes de Bob', p: "Le paquet est complet : {1|les clés} fermées au cadenas de Bob, {2|l'IV}, {3|le chiffré} et {4|le sceau}. Eve ne le lit pas, et ne sait pas refaire le sceau.\n\nMais elle peut changer des octets, envoyer le paquet à Bob, et écouter ce qu'il répond, autant de fois qu'elle veut. Bob a ouvert les clés ; il lui reste deux gestes : vérifier le {4|sceau}, et déchiffrer.",
       q: 'Que fait Bob, et dans quel ordre ?',
       choices: {
         dec: ['Déchiffrer, puis vérifier', "D'abord déchiffrer l'ordre, ensuite vérifier le sceau",
@@ -95,9 +95,9 @@ const fr = {
         check: ['Vérifier, puis déchiffrer', "D'abord vérifier le sceau ; déchiffrer seulement s'il est bon",
           "Le {4|sceau} ne correspond plus : Bob rejette le paquet sans rien déchiffrer. Quoi qu'Eve change, et où qu'elle le change, Bob répond la même chose : le sceau est faux. Eve n'apprend rien (épisode 1.5)."],
         skip: ['Déchiffrer, sans vérifier', 'Le sceau est dans le paquet, mais Bob ne le vérifie pas',
-          "Un sceau que personne ne vérifie ne protège rien : Eve change le 11e octet de l'{2|IV}, comme à l'étape 2, et Bob déchiffre « ATTAQUE A {r|9H} DEMAIN »."],
+          "Un sceau que personne ne vérifie ne protège rien : Eve change le 11e octet de l'{2|IV}, comme à l'étape 3, et Bob déchiffre « ATTAQUE A {r|9H} DEMAIN »."],
       } },
-    forger: { t: '5. Le faux cavalier', p: "Le cadenas de Bob est public : Eve l'a, comme tout le monde. Alors, dans sa ville, elle fait les gestes d'Alice avec ses propres tirages :\n- une {1|clé AES} et une {4|clé HMAC} à elle, et un {2|IV} ;\n- l'ordre « ATTAQUE A {r|MINUIT} », chiffré, puis scellé ;\n- ses deux clés, fermées au cadenas de Bob.\n\nUn cavalier sort de sa ville aux couleurs d'Alice, et prend la route de Bob (épisode 1.6).",
+    forger: { t: 'Le faux cavalier', p: "Le cadenas de Bob est public : Eve l'a, comme tout le monde. Alors, dans sa ville, elle fait les gestes d'Alice avec ses propres tirages :\n- une {1|clé AES} et une {4|clé HMAC} à elle, et un {2|IV} ;\n- l'ordre « ATTAQUE A {r|MINUIT} », chiffré, puis scellé ;\n- ses deux clés, fermées au cadenas de Bob.\n\nUn cavalier sort de sa ville aux couleurs d'Alice, et prend la route de Bob (épisode 1.6).",
       q: "Comment Bob sait-il que le paquet vient d'Alice ?",
       choices: {
         hmac: ['Le sceau HMAC suffit', "Un sceau bon, et Bob croit que le paquet vient d'Alice",
@@ -107,7 +107,7 @@ const fr = {
         two: ['Une deuxième clé HMAC', 'Deux sceaux, avec deux clés HMAC fermées au cadenas de Bob',
           "Eve tire deux clés HMAC, fait les deux sceaux, et ferme ses clés au cadenas de Bob, comme Alice. Bob trouve deux sceaux bons et lit « ATTAQUE A {r|MINUIT} ». Une clé de plus dans le paquet, c'est une clé de plus qu'Eve tire elle-même : le cadenas de Bob garantit que lui seul ouvrira, pas qui a fermé."],
       } },
-    replay: { t: '6. La copie', p: "Alice signe maintenant ses paquets : Eve ne sait plus en fabriquer.\n\nMais elle peut arrêter le cavalier d'Alice, ne rien changer, puisque tout se verrait, et garder une copie du paquet, octet pour octet. Le lendemain, elle la renvoie à Bob (épisode 1.6).",
+    replay: { t: 'La copie', p: "Alice signe maintenant ses paquets : Eve ne sait plus en fabriquer.\n\nMais elle peut arrêter le cavalier d'Alice, ne rien changer, puisque tout se verrait, et garder une copie du paquet, octet pour octet. Le lendemain, elle la renvoie à Bob (épisode 1.6).",
       q: 'Que met Alice dans le paquet, pour que Bob refuse la copie ?',
       choices: {
         nothing: ['Rien de plus', "La signature suffit : la copie est d'Alice",
@@ -174,7 +174,7 @@ const en = {
   steps: {
     intro: { t: 'Get the order through', p: "Alice must get the order “ATTACK AT 6AM TOMORROW” to Bob. The road runs under Eve's walls, and the saga showed what Eve does there:\n- she reads the order (episode 1.2);\n- she changes one byte of the packet (episode 1.3);\n- she builds a fake packet, or sends an old one again (episode 1.6).\n\nAt every step, you choose how Alice protects herself, out of three choices. The messenger leaves with your choice, and you see what Eve makes of it:\n- a wrong choice, Eve wins, and you choose again;\n- a right one, the story goes on.",
       e: 'Everything going to Bob passes under my walls. Let us see what Alice has learned.' },
-    text: { t: '1. Hide the order', p: "Eve stops every messenger under her walls and looks at what he carries. Yesterday Alice sent the same order, the same way, and Eve saw the army attack at 6am: she kept in her notebook what yesterday's messenger carried.\n\nAlice and Bob share a 32-byte secret key, which Eve does not have.",
+    text: { t: 'Hide the order', p: "Eve stops every messenger under her walls and looks at what he carries. Yesterday Alice sent the same order, the same way, and Eve saw the army attack at 6am: she kept in her notebook what yesterday's messenger carried.\n\nAlice and Bob share a 32-byte secret key, which Eve does not have.",
       q: 'How does Alice send the order?',
       choices: {
         clear: ['In the clear', 'The order as it is, on the scroll',
@@ -184,7 +184,7 @@ const en = {
         cbc: ['AES-CBC, fresh IV', 'The blocks chained, starting from an IV drawn at random for every send',
           "With a fresh {2|IV}, the same order gives a ciphertext with nothing in common with yesterday's: Eve reads nothing and recognises nothing. Bob, who has the key, decrypts the order (episode 1.2)."],
       } },
-    seal: { t: '2. Seal the order', p: "The order now travels encrypted with AES-CBC and a fresh {2|IV}: Eve cannot read it any more. But she knows the shape of Alice's orders: the hour is byte 11.\n\nAnd when Bob decrypts, each byte of the {2|IV} lands on the byte in the same place of the first block. So by changing byte 11 of the {2|IV}, Eve changes the hour Bob will read: “6” becomes “{r|9}” (episode 1.3).",
+    seal: { t: 'Seal the order', p: "The order now travels encrypted with AES-CBC and a fresh {2|IV}: Eve cannot read it any more. But she knows the shape of Alice's orders: the hour is byte 11.\n\nAnd when Bob decrypts, each byte of the {2|IV} lands on the byte in the same place of the first block. So by changing byte 11 of the {2|IV}, Eve changes the hour Bob will read: “6” becomes “{r|9}” (episode 1.3).",
       q: 'What does Alice put in the packet, so Bob sees whether a byte has changed?',
       choices: {
         none: ['Nothing more', 'The ciphertext is enough: Eve cannot read it',
@@ -194,7 +194,7 @@ const en = {
         sum: ['A SHA-256 fingerprint', 'The SHA-256 of the IV and the ciphertext, with no key',
           'Eve changes the byte, then redoes the fingerprint: SHA-256 has no key, anyone can compute it. Bob finds a matching fingerprint and reads “ATTACK AT {r|9AM} TOMORROW”. A fingerprint without a key sees a byte damaged by accident, never a byte changed by Eve.'],
       } },
-    keys: { t: '3. Get the keys across', p: "Until now, Alice and Bob had the same two keys: an {1|AES key}, to encrypt, and an {4|HMAC key}, to seal. But they have never met, and nothing was agreed beforehand: the keys must cross the valley too, under Eve's walls.\n\nBob has a padlock, an RSA key pair:\n- the open padlock, his **public key**, he gives to whoever wants one; Eve has one too;\n- to open it takes his **private key**, which only Bob has (episode 1.4).",
+    keys: { t: 'Get the keys across', p: "Until now, Alice and Bob had the same two keys: an {1|AES key}, to encrypt, and an {4|HMAC key}, to seal. But they have never met, and nothing was agreed beforehand: the keys must cross the valley too, under Eve's walls.\n\nBob has a padlock, an RSA key pair:\n- the open padlock, his **public key**, he gives to whoever wants one; Eve has one too;\n- to open it takes his **private key**, which only Bob has (episode 1.4).",
       q: "How do Alice's keys reach Bob?",
       choices: {
         clear: ['In the clear', 'The messenger carries the two keys as they are, with the packet',
@@ -204,7 +204,7 @@ const en = {
         same: ['The same ones forever', "Two keys locked with Bob's padlock once, then kept for every order",
           "Today Eve reads nothing. But she keeps a copy of every packet, and they all hang on the same two keys. The day those keys leak (a lost scroll, a bribed guard), Eve opens every one of Alice's orders at once, yesterday's and tomorrow's. With fresh keys for every order, a key that leaks opens its own order only (episode 1.4)."],
       } },
-    bob: { t: "4. Bob's moves", p: "The packet is complete: {1|the keys} locked with Bob's padlock, {2|the IV}, {3|the ciphertext} and {4|the seal}. Eve cannot read it, and cannot redo the seal.\n\nBut she can change bytes, send the packet to Bob, and listen to what he answers, as many times as she likes. Bob has opened the keys; two moves are left: check the {4|seal}, and decrypt.",
+    bob: { t: "Bob's moves", p: "The packet is complete: {1|the keys} locked with Bob's padlock, {2|the IV}, {3|the ciphertext} and {4|the seal}. Eve cannot read it, and cannot redo the seal.\n\nBut she can change bytes, send the packet to Bob, and listen to what he answers, as many times as she likes. Bob has opened the keys; two moves are left: check the {4|seal}, and decrypt.",
       q: 'What does Bob do, and in which order?',
       choices: {
         dec: ['Decrypt, then check', 'First decrypt the order, then check the seal',
@@ -212,9 +212,9 @@ const en = {
         check: ['Check, then decrypt', 'First check the seal; decrypt only if it is good',
           "The {4|seal} no longer matches: Bob rejects the packet without decrypting anything. Whatever Eve changes, wherever she changes it, Bob gives the same answer: the seal is wrong. Eve learns nothing (episode 1.5)."],
         skip: ['Decrypt, no check', 'The seal is in the packet, but Bob does not check it',
-          "A seal nobody checks protects nothing: Eve changes byte 11 of the {2|IV}, as in step 2, and Bob decrypts “ATTACK AT {r|9AM} TOMORROW”."],
+          "A seal nobody checks protects nothing: Eve changes byte 11 of the {2|IV}, as in step 3, and Bob decrypts “ATTACK AT {r|9AM} TOMORROW”."],
       } },
-    forger: { t: '5. The fake rider', p: "Bob's padlock is public: Eve has it, like everyone. So in her city she makes Alice's moves with draws of her own:\n- an {1|AES key} and an {4|HMAC key} of hers, and an {2|IV};\n- the order “ATTACK AT {r|MIDNIGHT}”, encrypted, then sealed;\n- her two keys, locked with Bob's padlock.\n\nA rider leaves her city in Alice's colours, and takes the road to Bob (episode 1.6).",
+    forger: { t: 'The fake rider', p: "Bob's padlock is public: Eve has it, like everyone. So in her city she makes Alice's moves with draws of her own:\n- an {1|AES key} and an {4|HMAC key} of hers, and an {2|IV};\n- the order “ATTACK AT {r|MIDNIGHT}”, encrypted, then sealed;\n- her two keys, locked with Bob's padlock.\n\nA rider leaves her city in Alice's colours, and takes the road to Bob (episode 1.6).",
       q: 'How does Bob know the packet comes from Alice?',
       choices: {
         hmac: ['The HMAC seal is enough', 'A good seal, and Bob believes the packet is from Alice',
@@ -224,7 +224,7 @@ const en = {
         two: ['A second HMAC key', "Two seals, with two HMAC keys locked with Bob's padlock",
           "Eve draws two HMAC keys, makes both seals, and locks her keys with Bob's padlock, like Alice. Bob finds two good seals and reads “ATTACK AT {r|MIDNIGHT}”. One more key in the packet is one more key Eve draws herself: Bob's padlock guarantees that only he will open, not who locked."],
       } },
-    replay: { t: '6. The copy', p: "Alice now signs her packets: Eve can no longer make one.\n\nBut she can stop Alice's rider, change nothing, since it would all show, and keep a copy of the packet, byte for byte. The next day, she sends it to Bob again (episode 1.6).",
+    replay: { t: 'The copy', p: "Alice now signs her packets: Eve can no longer make one.\n\nBut she can stop Alice's rider, change nothing, since it would all show, and keep a copy of the packet, byte for byte. The next day, she sends it to Bob again (episode 1.6).",
       q: 'What does Alice put in the packet, so Bob refuses the copy?',
       choices: {
         nothing: ['Nothing more', "The signature is enough: the copy is Alice's",
