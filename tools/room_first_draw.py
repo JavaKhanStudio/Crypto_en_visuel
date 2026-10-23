@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """r591: what 1.6's Bob room (verify) costs to draw a first time, built off screen while Alice's room
-plays: build, compileAsync, texture uploads, its meshes by material, then the first draw of the empty
-scene (every mesh hidden), one mesh, the rest, and a second draw. Found: no new shader and 28 buffers,
-yet the empty scene's first draw alone costs ~150 ms, so slicing the warm draw cannot spread it.
+plays: build, compileAsync, texture uploads, its meshes by material, then Inside.warmUp (every object
+shown for that draw, r596) and a second one. Found (r591): the empty scene's first draw alone costs
+~150 ms, so slicing the warm draw cannot spread it.
 Serve the repo root on 8793 first.
     tools/room_first_draw.py
 """
@@ -21,11 +21,8 @@ with sync_playwright() as p:
           t = T(); await r.compileAsync(room.scene, ins.camera); o.push('compileAsync wall ' + Math.round(T() - t));
           let n = 0; t = T(); room.scene.traverse(x => [x.material].flat().forEach(m => { if (m?.map) { n++; r.initTexture(m.map); } })); o.push(n + ' maps ' + Math.round(T() - t));
           let meshes = 0; room.scene.traverse(x => x.isMesh && meshes++); o.push(meshes + ' meshes'); let lights = 0, casts = 0; room.scene.traverse(x => { if (x.isLight) { lights++; if (x.castShadow) casts++; } }); o.push(lights + ' lights, ' + casts + ' cast');
-          const ms = []; room.scene.traverse(x => x.isMesh && x.visible && ms.push(x)); ms.forEach(x => { x.visible = false; });
-          const kinds = {}; ms.forEach(x => { const k = x.material.type + (x.isInstancedMesh ? '/inst' : '') + (x.material.map ? '/map' : ''); kinds[k] = (kinds[k] || 0) + 1; }); o.push(JSON.stringify(kinds));
-          t = T(); ins.warmUp(room); r.getContext().finish(); o.push('nothing ' + Math.round(T() - t));
-          ms[0].visible = true; t = T(); ins.warmUp(room); r.getContext().finish(); o.push('one (' + ms[0].material.type + ') ' + Math.round(T() - t));
-          for (let k = 1; k < ms.length; k += 250) { ms.slice(k, k + 250).forEach(x => { x.visible = true; }); t = T(); ins.warmUp(room); r.getContext().finish(); o.push('+250 ' + Math.round(T() - t)); }
+          const g0 = r.info.memory.geometries, p0 = r.info.programs.length;
+          t = T(); ins.warmUp(room, true); r.getContext().finish(); o.push('warmUp (everything shown) ' + Math.round(T() - t) + ' ms, +' + (r.info.programs.length - p0) + ' programs, +' + (r.info.memory.geometries - g0) + ' geometries');
           t = T(); ins.warmUp(room); r.getContext().finish(); o.push('again ' + Math.round(T() - t));
           return o.join(', '); }"""))
         pg.close()
