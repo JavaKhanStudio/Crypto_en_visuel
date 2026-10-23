@@ -11,7 +11,7 @@ du cours pointent dessus. Un épisode pas encore construit a déjà son dossier,
 carte « Bientôt » sur l'accueil ; sa vraie page remplace ce renvoi quand il est publié (et passe
 `live: true` dans `home.js`). Le numéro d'épisode est fixé aussi. Les 7 suivants ont été choisis
 dans cryptographie r66.
-L'épisode 1 est devenu une saga, *La saga des deux généraux* (1.1 à 1.6, r89) : l'accueil la
+L'épisode 1 est devenu une saga, *La saga des deux généraux* (1.1 à 1.7, r89 ; 1.7 le récapitulatif, r420) : l'accueil la
 montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 
 | N° | Épisode | Adresse | État |
@@ -22,6 +22,7 @@ montre en un seul bloc sous « Épisode 1 » (`saga: 1` dans `home.js`).
 | 1.4 | La clé qui traverse la vallée (RSA-OAEP, chiffrement hybride) | https://javakhanstudio.github.io/Crypto_en_visuel/cle-vallee/ | publié |
 | 1.5 | Le paquet complet (l'ordre des opérations, un fichier par rôle) | https://javakhanstudio.github.io/Crypto_en_visuel/paquet-complet/ | publié |
 | 1.6 | Eve a encore des tours (signature, rejeu, AES-GCM) | https://javakhanstudio.github.io/Crypto_en_visuel/encore-des-tours/ | publié |
+| 1.7 | À toi de jouer (le récapitulatif : trois choix à chaque étape) | https://javakhanstudio.github.io/Crypto_en_visuel/a-toi-de-jouer/ | publié |
 | 2 | Le cadenas de Bob (clé publique) | https://javakhanstudio.github.io/Crypto_en_visuel/cadenas/ | publié |
 | 3 | Les couleurs de Diffie-Hellman (+ Eve au milieu) | https://javakhanstudio.github.io/Crypto_en_visuel/diffie-hellman/ | publié |
 | 4 | La scytale | https://javakhanstudio.github.io/Crypto_en_visuel/scytale/ | publié |
@@ -166,6 +167,18 @@ numéro), un quiz de 7 questions. `encore-des-tours/js/sign.js` (RSA-PSS sur le 
 `js/gcm.js` (GCM sur l'AES de 1.2) calculent tout dans la page ; `node tests/tours_values.mjs` les
 vérifie contre openssl (`dgst` PSS, `pkeyutl` OAEP, `enc`), le `hmac` de Python, le crypto de node et
 WebCrypto ; `tests/tours_story.py` joue chaque chevauchée et le bac à sable.
+
+## Épisode 1.7 — À toi de jouer
+
+Le récapitulatif de la saga (r420), dans `a-toi-de-jouer/` : faire passer l'ordre d'Alice sous les
+yeux d'Eve, et à chaque étape l'élève choisit entre trois façons de faire. Le choix se joue dans la
+vallée, avec sa conséquence (Eve lit, change, fabrique ou rejoue l'ordre) ; après un mauvais, les
+trois reviennent, les choix joués en rouge ; après le bon, on continue ou on essaie les autres. Six
+étapes de choix, chacune la brique d'un épisode : le texte (1.2), le sceau (1.3), les clés (1.4),
+l'ordre des vérifications de Bob (1.5), le faux cavalier et la copie (1.6). Les octets sont calculés dans la page (`lib/saga-aes.js`, `lib/rsa.js`,
+`lib/hmac.js`) ; le moteur de choix est `lib/choices.js`. La fin ouvre les portes : la saga depuis
+le début, tous les épisodes, puis l'épisode 2 en or. 8 étapes ; `tests/jouer_story.py` joue chaque
+choix de chaque étape, en français, en anglais et sur téléphone.
 
 ## Épisode 2 — Le cadenas de Bob
 

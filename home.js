@@ -12,7 +12,7 @@ forwardOldLink();
 addEventListener('hashchange', forwardOldLink);
 
 // n = episode number, fixed for good; live = published. Order and picks: cryptographie r66.
-// saga: 1 = the Two Generals saga (r89, Simon's layout A): numbered 1.1 to 1.6, shown as one group.
+// saga: 1 = the Two Generals saga (r89, Simon's layout A): numbered 1.1 to 1.7 (1.7 the recap, r420), shown as one group.
 // saga: 5 = Enigma (r117, r118): 5.1 one key press, 5.2 the real setting, 5.3 the break. A saga's title is sagas[n] below.
 const EPISODES = [
   { n: '1.1', slug: 'deux-generaux', icon: '🏰', live: true, saga: 1 },
@@ -21,6 +21,7 @@ const EPISODES = [
   { n: '1.4', slug: 'cle-vallee', icon: '🔑', live: true, saga: 1 },
   { n: '1.5', slug: 'paquet-complet', icon: '📦', live: true, saga: 1 },
   { n: '1.6', slug: 'encore-des-tours', icon: '🎭', live: true, saga: 1 },
+  { n: '1.7', slug: 'a-toi-de-jouer', icon: '🎲', live: true, saga: 1 },
   { n: 2, slug: 'cadenas', icon: '🔒', live: true },
   { n: 3, slug: 'diffie-hellman', icon: '🎨', live: true },
   { n: 4, slug: 'scytale', icon: '📜', live: true },
@@ -44,6 +45,7 @@ const TAGS = {
   'cle-vallee': ['pubkey', 'rsa', 'kex'],
   'paquet-complet': ['sym', 'aes', 'hmac', 'rsa'],
   'encore-des-tours': ['sig', 'gcm', 'replay', 'integ'],
+  'a-toi-de-jouer': ['aes', 'hmac', 'rsa', 'sig', 'replay'],
   cadenas: ['pubkey'],
   'diffie-hellman': ['kex', 'dh', 'mitm'],
   scytale: ['hist', 'transpo'],
@@ -78,7 +80,7 @@ const fr = {
     timing: 'Attaque temporelle', vigenere: 'Vigenère', vpn: 'VPN',
   },
   sagas: {
-    1: ['La saga des deux généraux', 'Six épisodes, une brique chacun : le message qu’Eve ne pourra ni lire, ni changer, ni usurper.'],
+    1: ['La saga des deux généraux', 'Six épisodes, une brique chacun : le message qu’Eve ne pourra ni lire, ni changer, ni usurper. Puis à toi de jouer.'],
     5: ['Enigma', 'La machine pas à pas : une touche d’abord, puis tout le réglage du jour, puis la casse.'],
   },
   ep: {
@@ -88,6 +90,7 @@ const fr = {
     'cle-vallee': ['La clé qui traverse la vallée', 'Alice et Bob ne se sont jamais vus : comment la clé arrive-t-elle chez Bob ? Par le cadenas RSA de Bob.'],
     'paquet-complet': ['Le paquet complet', 'Toutes les briques ensemble : clés, IV, chiffré, sceau. Bob vérifie le sceau avant de déchiffrer.'],
     'encore-des-tours': ['Eve a encore des tours', 'Eve fabrique un paquet entier, ou rejoue un vrai. La signature et AES-GCM lui répondent.'],
+    'a-toi-de-jouer': ['À toi de jouer', 'Faire passer l’ordre d’Alice sous les yeux d’Eve : à chaque étape, trois choix, et c’est toi qui choisis.'],
     cadenas: ['Le cadenas de Bob', 'Tout le monde peut fermer le cadenas, seul Bob peut l’ouvrir : la clé publique.'],
     'diffie-hellman': ['Les couleurs de Diffie-Hellman', 'Deux peintures mélangées en public, un secret commun qu’Eve ne peut pas démêler. Puis Eve se glisse au milieu.'],
     scytale: ['La scytale', 'Un ruban enroulé sur un bâton : le diamètre du bâton est la clé.'],
@@ -122,7 +125,7 @@ const en = {
     timing: 'Timing attack', vigenere: 'Vigenère', vpn: 'VPN',
   },
   sagas: {
-    1: ['The Two Generals Saga', 'Six episodes, one brick each: the message Eve can neither read, change nor forge.'],
+    1: ['The Two Generals Saga', 'Six episodes, one brick each: the message Eve can neither read, change nor forge. Then it is your move.'],
     5: ['Enigma', 'The machine step by step: one key press first, then the whole setting of the day, then the break.'],
   },
   ep: {
@@ -132,6 +135,7 @@ const en = {
     'cle-vallee': ['The Key That Crosses the Valley', 'Alice and Bob have never met: how does the key reach Bob? Through Bob’s RSA padlock.'],
     'paquet-complet': ['The Whole Packet', 'All the bricks together: keys, IV, ciphertext, seal. Bob checks the seal before he decrypts.'],
     'encore-des-tours': ['Eve Has More Tricks', 'Eve forges a whole packet, or replays a real one. Signatures and AES-GCM answer her.'],
+    'a-toi-de-jouer': ['Your Move', 'Get Alice’s order past Eve: three choices at every step, and you choose.'],
     cadenas: ['Bob’s Padlock', 'Anyone can snap the padlock shut, only Bob can open it: public-key cryptography.'],
     'diffie-hellman': ['Diffie-Hellman’s Colours', 'Two paints mixed in public, a shared secret Eve cannot unmix. Then Eve steps into the middle.'],
     scytale: ['The Scytale', 'A strip wound around a stick: the stick’s diameter is the key.'],

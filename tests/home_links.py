@@ -28,12 +28,12 @@ with sync_playwright() as p:
         if want:
             check(f"root {old} -> deux-generaux/{want}", pg.url == base + "deux-generaux/" + want)
         else:
-            check("bare root shows the home", pg.url == base and pg.locator(".card").count() == 18 and pg.locator(".saga .card").count() == 9)
+            check("bare root shows the home", pg.url == base and pg.locator(".card").count() == 19 and pg.locator(".saga .card").count() == 10)
     pg.evaluate("location.hash = 'story=5'")   # typed on the home, no reload
     pg.wait_for_function("window.demo && window.demo.story", timeout=60000)
     check("hash typed on the home -> step 5 of deux-generaux/", pg.url == base + "deux-generaux/#story=5" and pg.evaluate("demo.story.i") == 4)
     pg.goto(base, wait_until="load")
-    for live in ["deux-generaux", "eve-lit-tout", "octet-change", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "kasiski", "vpn", "aes-interieur"]:
+    for live in ["deux-generaux", "eve-lit-tout", "octet-change", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "kasiski", "vpn", "aes-interieur", "a-toi-de-jouer"]:
         check(f"{live} card links {live}/", pg.locator(f"a.card#{live}").get_attribute("href").startswith(f"{live}/"))
     for s in SOON:
         check(f"{s} card is a « soon » card, not a link", pg.locator(f"div.card.soon#{s}").count() == 1)
@@ -42,7 +42,7 @@ with sync_playwright() as p:
         pg.wait_for_function("window.demo && window.demo.ready", timeout=30000)
         check(f"{s}/ -> its card on the home", pg.url == base + "#" + s and pg.locator(f"#{s}.flash").count() == 1)
     # concept tags (r191): ?tag= filters the cards, every chip has a label in both languages
-    for q, want in [("?tag=hmac", {"octet-change", "paquet-complet", "garde"}), ("?lang=en&tag=hist", {"scytale", "enigma", "enigma-reglage", "enigma-casse", "kasiski"})]:
+    for q, want in [("?tag=hmac", {"octet-change", "paquet-complet", "garde", "a-toi-de-jouer"}), ("?lang=en&tag=hist", {"scytale", "enigma", "enigma-reglage", "enigma-casse", "kasiski"})]:
         pg.goto(base + q, wait_until="load")
         pg.wait_for_function("window.demo && window.demo.ready", timeout=30000)
         shown = set(pg.eval_on_selector_all("#episodes .card:not([hidden])", "cs => cs.map(c => c.id)"))
@@ -54,7 +54,7 @@ with sync_playwright() as p:
         check(f"every concept tag has a {lg} label", not raw)
         raw and print(raw)
         pg.click("#tags button[data-tag='hmac']")
-        check(f"clicking a tag filters ({lg})", pg.locator("#episodes .card:not([hidden])").count() == 3 and "tag=hmac" in pg.url)
+        check(f"clicking a tag filters ({lg})", pg.locator("#episodes .card:not([hidden])").count() == 4 and "tag=hmac" in pg.url)
         pg.click("#tags button[data-tag='']")
         check(f"« all » shows every card again ({lg})", pg.locator("#episodes .card[hidden]").count() == 0 and "tag=" not in pg.url)
     check("no page errors", not errors)
