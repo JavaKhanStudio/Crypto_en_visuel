@@ -92,6 +92,11 @@ MEASURE = """async (N) => {
   const redraw = () => { lights.forEach(l => l.shadow.needsUpdate = true); draw(); };
   out.shadowRedraw_ms = -saves(() => 0, () => 0, redraw);
   out.shadowCached = lights.length > 0 && lights.every(l => l.shadow.autoUpdate === false);
+  // r544: each point or spot light alone, hidden (every lit material recompiles without it): what it costs every lit pixel
+  out.lights = [];
+  scene.traverseVisible(o => { if ((o.isPointLight || o.isSpotLight) && o.intensity > 0) out.lights.push(o); });
+  out.lights = out.lights.map(l => ({ light: l.type + (l.name ? ' ' + l.name : '') + ' in ' + (labels.get(l.parent) || name(l.parent)),
+    saves_ms: saves(() => l.visible = true, () => l.visible = false) }));
   out.parts = [];
   for (const o of [...scene.children]) {
     if (!o.visible) continue;
@@ -148,6 +153,8 @@ print(f"  map redrawn every frame would add {r['shadowRedraw_ms']:5.2f} ms; "
       + ("the page redraws it only when a caster or the light moved (r543), so the rest is shading the receivers" if r['shadowCached'] else "the page already does"))
 print(f"idle       {r['idle']['fps']} fps, {r['idle']['cpu_pct']}% of a core on the main thread ({r['idle']['script_pct']}% script), heap {r['idle']['heap_mb']} MB")
 print(f"world.update {r.get('worldUpdate_ms')} ms a frame (CPU)   gpu memory: {r['memory']}")
+for x in r.get("lights", []):
+    print(f"light      {x['light'][:40]:40s} costs {x['saves_ms']:5.2f} ms   (hidden: the lit materials without it)")
 print("part hidden            saves ms  calls   meshes   instances      tris")
 for x in r["parts"]:
     print(f"  {x['part'][:20]:20s} {x['saves_ms']:8.2f} {x['saves_calls']:6d} {x['meshes']:8d} {x['instances']:11d} {x['tris']:9d}")
