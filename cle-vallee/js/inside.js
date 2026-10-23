@@ -274,6 +274,18 @@ function rsaRoom(scene, send, portrait) {
   const r250 = label(t('in.rsa250'), '#ff8f9a', portrait ? 1.1 : 1.05, { plate: true, align: portrait ? .5 : 0 });
   scene.add(pL, qL, times2, nL, eL, pad2, bracket, r250);
   const topN = C2.n.y + 8 * Pt;
+  // r473: on a phone at rest the whole wall leaves its words about 6 px tall; from 9.8 s they grow
+  // GROW times (cap about 11 px) and stack round the wall: n's line and the RSA-250 plate above it,
+  // e's label left of its three tiles, the padlock's plate under the padlock. Wall top/bottom edges:
+  const GROW = 2.5, edgeT = C2.n.y + 7.5 * Pt + Pt / 2, edgeB = C2.n.y - 7.5 * Pt - Pt / 2;
+  const base = new Map([nL, eL, pad2, r250].map(l => [l, l.scale.clone()]));
+  const grown = (l, f) => l.scale.copy(base.get(l)).multiplyScalar(f);
+  const restAt = f => {   // where the words sit for a growth f (1 = as laid, GROW = at rest)
+    const hn = nL.userData.h * f, hr = r250.userData.h * 3 * f, he = eL.userData.h * f, hp = pad2.userData.h * f;
+    const nY = edgeT + .3 + hn / 2, rY = nY + hn / 2 + .4 + hr / 2;
+    return { n: v(C2.n.x, nY, .9), r: v(C2.n.x, rY, 1), e: v(C2.e.x - 1.5 * Pt - .3, C2.e.y, 0), p: v(C2.lock.x + 1.5, C2.lock.y - .3 - hp / 2, .9),
+      top: rY + hr / 2 + .4, bottom: C2.lock.y - .3 - hp - .4 };
+  };
 
   const all = [...Object.values(big), ...Object.values(load), ...Object.values(letters), times, equals, phi, dL, box1.g, box2.g, pub, priv, calc1, calc2,
     ...Pw, ...Qw, ...N, ...E, grow.p, grow.q, pL, qL, times2, nL, eL, lock2, pad2, bracket, r250];
@@ -336,6 +348,14 @@ function rsaRoom(scene, send, portrait) {
     bracket.position.set(bx, topN - h / 2, .4);
     r250.position.copy(portrait ? v(C2.n.x, r250y, 1) : v(bx + .6, topN - R250 * Pt / 2));
     seen(r250, 10.6);
+    if (portrait) {
+      const f = 1 + (GROW - 1) * span(time, 9.8, 10.4), at2 = restAt(f), q = span(time, 9.8, 10.4);
+      [nL, eL, pad2, r250].forEach(l => grown(l, f));
+      nL.position.lerpVectors(v(C2.n.x, C2.n.y + HW + .9, .9), at2.n, q);
+      eL.position.lerpVectors(v(C2.e.x, C2.e.y + 1.4, 0), at2.e, q); eL.center.set(.5 + .5 * q, .5);
+      pad2.position.lerpVectors(C2.lock.clone().add(v(0, -1.2, .9)), at2.p, q);
+      r250.position.copy(at2.r);
+    }
   }
   function pose(beat, time) {
     time_ = time;
@@ -364,12 +384,19 @@ function rsaRoom(scene, send, portrait) {
   // the end: n with e, the padlock and the bracket's words at its right, p and q's edge at its left
   const w2f = time => time < 3.4 ? pq : time < 7.4 ? [...pq, ...nF] : [v(C2.times.x - 2, C2.n.y), ...nF, v(bx + 13, topN), v(C2.lock.x, C2.lock.y - 2)];
   const p2 = time => time < 3.4 ? pq : time < 7.4 ? nF
-    : time < 9.8 ? [v(-7, C2.lock.y - 2.2), v(7, C2.n.y - HW + 4 * Pt)] : [v(C2.n.x - HW, C2.lock.y - 2), v(C2.n.x + HW, r250y + 1.9)];
+    : time < 9.8 ? [v(-7, C2.lock.y - 2.2), v(7, C2.n.y - HW + 4 * Pt)] : restFrame();
+  // r473: the rest frame holds the grown words: as wide as the widest of them, from the padlock's plate to the RSA-250 plate
+  const restFrame = () => {
+    const r = restAt(GROW), w = Math.max(HW, ...[nL, r250].map(l => base.get(l).x * GROW / 2), C2.e.x * -1 + 1.5 * Pt + .3 + base.get(eL).x * GROW + .4,
+      C2.lock.x + 1.5 + base.get(pad2).x * GROW / 2 + .4);
+    return [v(C2.n.x - w, r.bottom), v(C2.n.x + w, r.top)];
+  };
   const frame = (beat, time) => beat === 'padlock' ? (portrait ? p1(time) : wide1) : (portrait ? p2(time) : w2f(time));
   return { beats: { padlock: { end: T1.end }, rsa2048: { end: 12.2 } }, pose, frame, tiles: { big, N } };
 }
 // each room and the window it is entered by: 'a' or 'b', that castle's valley window, or 'a:<window>'
 // (lib/saga/world.js keepDoors); a step's door: picks another
 const ROOMS = { oaep: { build: oaepRoom, door: 'a' }, rsa: { build: rsaRoom, door: 'b' } };
-// the engine's options (lib/room.js): deep, the fog and far plane follow the camera off the big walls (r446)
-export const ROOM = { rooms: ROOMS, deep: true };
+// the engine's options (lib/room.js): deep, the fog and far plane follow the camera off the big walls (r446);
+// said, the top of the band grows to the bubble shown, so Bob's three lines stay off the grown RSA-250 plate (r473)
+export const ROOM = { rooms: ROOMS, deep: true, said: true };
