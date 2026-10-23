@@ -25,9 +25,10 @@ ap.add_argument("--size", default="1440x860")
 ap.add_argument("--dpr", type=float, default=1)
 ap.add_argument("--frames", type=int, default=30)
 ap.add_argument("--settle", type=int, default=6000)
+ap.add_argument("--scale", type=float, default=1, help="r542: compare lib/bloom.js at full size against it at SCALE of the canvas (0.5: its bright pass at quarter res), a picture that changes")
 a = ap.parse_args()
 
-PROBE = """async (N) => {
+PROBE = """async ([N, S]) => {
   const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
   const { OutputPass } = await import('three/addons/postprocessing/OutputPass.js');
   const { addBloom } = await import(new URL('../lib/bloom.js', location.href).href);
@@ -36,10 +37,12 @@ PROBE = """async (N) => {
   const ub = was.find(p => p.nMips);
   const [s, r, t] = [ub.strength, ub.radius, ub.threshold];
   // the old chain, fresh, and the new one, both after the episode's own RenderPass
-  C.passes = [first]; C.addPass(new UnrealBloomPass(new demo.THREE.Vector2(1, 1), s, r, t)); C.addPass(new OutputPass());
-  const oldP = C.passes.slice(1);
-  C.passes = [first]; addBloom(C, s, r, t); const newP = C.passes.slice(1);
   const W = R.domElement.width, H = R.domElement.height;
+  C.passes = [first];
+  if (S < 1) addBloom(C, s, r, t); else { C.addPass(new UnrealBloomPass(new demo.THREE.Vector2(1, 1), s, r, t)); C.addPass(new OutputPass()); }
+  const oldP = C.passes.slice(1);
+  C.passes = [first]; const nb = addBloom(C, s, r, t); const newP = C.passes.slice(1);
+  if (S < 1) nb.setSize(Math.round(W * S), Math.round(H * S));
   const use = ps => { C.passes = [first, ...ps]; };
   const px = new Uint8Array(4), sync = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
   const grab = () => { const b = new Uint8Array(W * H * 4); C.render(); gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, b); return b; };
@@ -70,10 +73,10 @@ with sync_playwright() as p:
     pg.goto(a.base + a.page + a.query + a.hash, wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
     pg.wait_for_timeout(a.settle)
-    r = pg.evaluate(PROBE, a.frames)
+    r = pg.evaluate(PROBE, [a.frames, a.scale])
     b.close()
-ok = r["max"] <= 2 and r["differ2"] < .005 and not errors
-print(f"{a.page}{a.hash}  canvas {r['W']}x{r['H']} quality {r['quality']} MSAA {r['samples']}: "
+ok = (a.scale < 1 or (r["max"] <= 2 and r["differ2"] < .005)) and not errors
+print(("" if a.scale == 1 else f"bloom at {a.scale} of the canvas: ") + f"{a.page}{a.hash}  canvas {r['W']}x{r['H']} quality {r['quality']} MSAA {r['samples']}: "
       f"frame {r['old_ms']} -> {r['new_ms']} ms (saves {r['saves_ms']} ms), picture: max diff {r['max']}/255, "
       f"{100 * r['differ']:.2f}% of pixels differ, {100 * r['differ2']:.3f}% by more than 1  {'ok' if ok else 'FAIL'}" + (f"  errors: {errors}" if errors else ""))
 sys.exit(0 if ok else 1)
