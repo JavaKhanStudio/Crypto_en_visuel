@@ -1,0 +1,80 @@
+<!doctype html>
+<!-- r330 lab: does each figure of lib/cast.js go together and print? lib/fit.js checks it at the size it prints
+     (?mm=60), and this page draws what it finds on the figure, ghosted: red where two parts fill the same space,
+     orange where a ring, the head or the hat is stopped on its way down the pin, magenta a bit that prints loose
+     from its part, yellow a wall under 1 mm. ?setting=roman, ?kinds=a,b, ?pose=straight (round 2's arms), ?turn=RADIANS for a shot, ?apart=1 pulls
+     the pieces apart (the marks follow their part). Drag a row to turn it. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The cast: does it fit and print?</title>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<style>
+  body { margin: 0; background: #0b0d12; color: #d8dce6; font: 15px system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 16px 16px 6px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 100ch; }
+  section { margin: 0 16px 18px; } h2 { font-size: 15px; margin: 0 0 4px; color: #ffd27a; } h2 small { color: #9aa3b5; font-weight: 400; }
+  canvas { display: block; width: 100%; max-width: 1400px; border: 1px solid #252a35; border-radius: 8px; cursor: grab; }
+  .names { display: grid; max-width: 1400px; font-size: 12px; color: #9aa3b5; gap: 6px; }
+  .names div b { display: block; text-align: center; color: #d8dce6; } .names div b.ok { color: #7fd18f; } .names div b.bad { color: #ff7a7a; }
+  .k { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; vertical-align: -1px; }
+</style></head><body>
+<h1>The cast: does it go together, and does it print? (lib/fit.js)</h1>
+<p>Each figure is checked at the size it prints, from what the export would print, in voxels of 0.2 mm, and drawn ghosted with what is wrong:
+<span class="k" style="background:#ff3040"></span>two parts in the same space
+<span class="k" style="background:#ff9a20"></span>a ring, the head or the hat stopped on its way down the neck pin
+<span class="k" style="background:#e040ff"></span>a bit that prints loose from its part
+<span class="k" style="background:#ffe040"></span>a wall under 1 mm.
+Sockets are cut by what goes in them (the neck pin, the head's stud, the head under a hat), with 0.2 mm of play.</p>
+<div id="rows"></div>
+<script type="module">
+import * as THREE from 'three';
+import { person, explode, CAST, DISGUISES } from '../../lib/cast.js';
+import { check, describe } from '../../lib/fit.js';
+const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45), mm = +(q.get('mm') ?? 60), apart = q.has('apart'), pose = q.get('pose') ?? 'bent';
+const settings = q.get('setting') ? q.get('setting').split(',') : Object.keys(DISGUISES);
+const COLOR = { ' x ': 0xff3040, slides: 0xff9a20, loose: 0xe040ff, thin: 0xffe040 };
+const colorOf = key => Object.entries(COLOR).find(([w]) => key.includes(w))?.[1];
+const report = {};
+for (const d of settings) {
+  const kinds = q.get('kinds') ? q.get('kinds').split(',') : Object.keys(DISGUISES[d]), n = Math.max(kinds.length, 4), aspect = n / 2 / (apart ? 1.9 : 1);
+  const sec = document.createElement('section');
+  sec.innerHTML = `<h2>${d}</h2><canvas style="aspect-ratio:${aspect}"></canvas><div class="names" style="grid-template-columns:repeat(${n},1fr)"></div>`;
+  document.getElementById('rows').append(sec);
+  const canvas = sec.querySelector('canvas'), names = sec.querySelector('.names');
+  const r = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x141824);
+  scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x2a2418, 1.4));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(4, 8, 6); scene.add(sun);
+  const figs = [], W = 2.5;
+  kinds.forEach((kind, i) => {
+    const f = person(kind, { disguise: d, pose }), res = check(f, { h: mm }), lines = describe(res);
+    report[`${kind} ${d}`] = lines;
+    // the marks, one small cube a voxel, in the part they belong to so they follow it apart
+    const cube = new THREE.BoxGeometry(1, 1, 1), s = res.voxel / res.k, P = f.userData.pieces;
+    const partGroup = key => { const name = key.split(/ x | slides| loose| thin/)[0]; return name === 'body' || name === 'hand' ? P.body : name.startsWith('ring') ? P.shoulder : P[name] ?? P.body; };
+    for (const key of res.keys) {
+      const at = res.voxels(key), m = new THREE.InstancedMesh(cube, new THREE.MeshBasicMaterial({ color: colorOf(key), depthTest: false, transparent: true, opacity: .9 }), at.length);
+      m.renderOrder = 2; const M = new THREE.Matrix4(), host = partGroup(key);
+      at.forEach((p, j) => m.setMatrixAt(j, M.makeScale(s, s, s).setPosition(p[0] - host.position.x, p[1] - host.position.y, p[2] - host.position.z)));
+      host.add(m);
+    }
+    f.traverse(o => { if (o.isMesh && !o.isInstancedMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = .35; o.material.depthWrite = false; } });
+    if (apart) explode(f, 1);
+    f.position.x = (i - (n - 1) / 2) * W; f.rotation.y = turn0; scene.add(f); figs.push(f);
+    const div = document.createElement('div');
+    div.innerHTML = `<b class="${res.ok ? 'ok' : 'bad'}">${CAST[kind].name}: ${res.ok ? 'fits, prints' : lines.length + ' to fix'}</b>${res.ok ? '' : lines.map(l => `<div>${l}</div>`).join('')}`;
+    names.append(div);
+  });
+  const fov = 22, h = n * W / aspect, cam = new THREE.PerspectiveCamera(fov, aspect, .1, 200);
+  const dist = h / 2 / Math.tan(fov / 2 * Math.PI / 180), cy = apart ? 2.75 : 1.6;
+  cam.position.set(0, cy + .6, dist); cam.lookAt(0, cy, 0);
+  const draw = () => { const w = canvas.clientWidth; r.setSize(w, w / aspect, false); r.render(scene, cam); };
+  let drag = null;
+  canvas.onpointerdown = e => { drag = e.clientX; canvas.setPointerCapture(e.pointerId); };
+  canvas.onpointermove = e => { if (drag === null) return; for (const f of figs) f.rotation.y += (e.clientX - drag) * .01; drag = e.clientX; draw(); };
+  canvas.onpointerup = () => drag = null;
+  addEventListener('resize', draw); draw();
+}
+window.fitReport = report;
+window.labReady = true;
+</script>
+</body></html>
