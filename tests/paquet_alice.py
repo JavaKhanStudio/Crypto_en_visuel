@@ -92,7 +92,7 @@ with sync_playwright() as p:
         pg.evaluate("demo.story.go(4)"); pg.wait_for_function("demo.inside.active", timeout=20000)
         s = pg.evaluate(STATE)
         check(f"{tag}: Back into step 5 zooms in again", s["ins"] == 2 and s["beat"] == "lock", s)
-        pg.click("#lang button[data-lang=en]"); pg.wait_for_timeout(600)
+        pg.evaluate("document.querySelector('#lang button[data-lang=en]').click()"); pg.wait_for_timeout(600)   # a DOM click: the top bar may have slid out of view (lib/topbar.js, r406)
         s = pg.evaluate(STATE)
         check(f"{tag}: English inside rebuilds the room on the English packet", s["active"] and s["order"] == "ATTACK AT 6AM TOMORROW", s)
         t = pg.evaluate(BYTES, "lock")
