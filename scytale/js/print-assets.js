@@ -17,6 +17,13 @@ const rod = id => stick(STICKS[id][2], STICKS[id][3]);
 // the three dark grooves along a stick (0.04 square bars on the wood): painted lines, not shapes
 const grooves = (d, o) => ({ grooves: o.children[0].children.filter(c => c.geometry?.type === 'BoxGeometry') });
 
+// the cradles printed deeper (r553): in the scene a fork is 0.32 wide, narrower than the sticks it shows
+// holding (0.56 across at 4 a turn, 0.70 at 5), its prongs float beside a post 0.18 x 0.3. Printed, the
+// prongs spread 3 times as far (the fork 0.96 wide, the thickest stick fits) and each post is 4.4 times
+// as deep, so the prongs stand on its ends and it stands on the bed. The scene keeps its own.
+const depth = (o, dd) => o.children.filter(c => c.geometry.parameters.depth === dd);
+export const deep = (d, o) => ({ posts: [depth(o, .3), [1, 1, 4.4]], prongs: [depth(o, .08), [1, 1, 3]] });
+
 export const ASSETS = [
   { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
   { id: 'bob', label: "Bob, flat cap and leather apron", kind: 'figure', size: { h: 60 }, get: () => person('b') },
@@ -30,7 +37,7 @@ export const ASSETS = [
   { id: 'scytale-5', label: "Eve's thicker stick, 5 letters a turn", kind: 'prop', size: { max: 70 },
     get: () => rod('eG'), strip: grooves },
   { id: 'cradles', label: 'The two forked stands a stick rests in (one pair under each stick)', kind: 'prop', size: { max: 56 },
-    get: d => d.stage.sticks.a.userData.cradles },
+    get: d => d.stage.sticks.a.userData.cradles, scale: deep },
   { id: 'stylus', label: "Alice's bronze stylus", kind: 'prop', size: { h: 30 }, get: () => stylus() },
   { id: 'table', label: 'A long table, the sticks at its back, the strip at its front (one each for Alice, Eve, Bob)', kind: 'prop', size: { max: 100 },
     get: () => table(...TABLE_SIZE.a) },
