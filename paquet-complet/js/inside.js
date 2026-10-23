@@ -48,7 +48,7 @@ const INK = { key: { fg: '#e3b8ff', bg: '#2a1838', size: 62 }, mac: { fg: '#8fd1
 // and what it gives is shown. Every tile is a byte of the card's (packet.js receive).
 // A block is 16 bytes as a 4x4 square (cell), read left to right, top to bottom, like a card row.
 function bobRoom(scene, pkt, portrait, evil) {
-  buildRoom(scene, portrait, { rows: 28, owner: 'b' }); scene.fog.far = 260;   // the whole machine, seen once, is further than 1.4's wall
+  buildRoom(scene, portrait, { rows: 28, owner: 'b', cols: 80, high: 48 }); scene.fog.far = 260;   // the whole machine, seen once, is further than 1.4's wall; the wall as wide as Alice's and taller than its lights, so no dark shows past it on a phone or a wide screen (r571)
   const r = P.receive(pkt), late = evil ? P.receive(pkt, false) : r;
   const ct = A.concat(pkt.C), msg = A.concat([pkt.iv, ct]), out = A.concat(A.cbcDec(r.keys.slice(0, 32), pkt.iv, pkt.C));
   const pad = out[out.length - 1], keep = out.length - pad, eq = [...r.mine].map((x, i) => x === pkt.tag[i]);
