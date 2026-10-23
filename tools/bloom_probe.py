@@ -39,10 +39,10 @@ PROBE = """async ([N, S]) => {
   // the old chain, fresh, and the new one, both after the episode's own RenderPass
   const W = R.domElement.width, H = R.domElement.height;
   C.passes = [first];
-  if (S < 1) addBloom(C, s, r, t); else { C.addPass(new UnrealBloomPass(new demo.THREE.Vector2(1, 1), s, r, t)); C.addPass(new OutputPass()); }
+  if (S < 1) { const ob = addBloom(C, s, r, t); ob.scale = 1; ob.setSize(W, H); } else { C.addPass(new UnrealBloomPass(new demo.THREE.Vector2(1, 1), s, r, t)); C.addPass(new OutputPass()); }
   const oldP = C.passes.slice(1);
   C.passes = [first]; const nb = addBloom(C, s, r, t); const newP = C.passes.slice(1);
-  if (S < 1) nb.setSize(Math.round(W * S), Math.round(H * S));
+  nb.scale = S; nb.setSize(W, H);   // r542: by hand, over lib/bloom.js's HiDPI half
   const use = ps => { C.passes = [first, ...ps]; };
   const px = new Uint8Array(4), sync = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
   const grab = () => { const b = new Uint8Array(W * H * 4); C.render(); gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, b); return b; };
@@ -59,7 +59,7 @@ PROBE = """async ([N, S]) => {
   for (let k = 0; k < 5; k++) { use(oldP); const o = once(); use(newP); const v = once(); olds.push(o); news.push(v); ds.push(o - v); }
   const med = x => x.sort((p, q) => p - q)[x.length >> 1];
   use(was);
-  return { W, H, samples: C.renderTarget1.samples, quality: document.documentElement.dataset.quality, max, differ: n / (W * H), differ2: n2 / (W * H),
+  return { W, H, bright: [ub.renderTargetBright.width, ub.renderTargetBright.height], samples: C.renderTarget1.samples, quality: document.documentElement.dataset.quality, max, differ: n / (W * H), differ2: n2 / (W * H),
     old_ms: +med(olds).toFixed(2), new_ms: +med(news).toFixed(2), saves_ms: +med(ds).toFixed(2) };
 }"""
 
@@ -76,7 +76,7 @@ with sync_playwright() as p:
     r = pg.evaluate(PROBE, [a.frames, a.scale])
     b.close()
 ok = (a.scale < 1 or (r["max"] <= 2 and r["differ2"] < .005)) and not errors
-print(("" if a.scale == 1 else f"bloom at {a.scale} of the canvas: ") + f"{a.page}{a.hash}  canvas {r['W']}x{r['H']} quality {r['quality']} MSAA {r['samples']}: "
+print(("" if a.scale == 1 else f"bloom at {a.scale} of the canvas: ") + f"{a.page}{a.hash}  canvas {r['W']}x{r['H']} quality {r['quality']} MSAA {r['samples']} (page's bloom bright pass {r['bright'][0]}x{r['bright'][1]}): "
       f"frame {r['old_ms']} -> {r['new_ms']} ms (saves {r['saves_ms']} ms), picture: max diff {r['max']}/255, "
       f"{100 * r['differ']:.2f}% of pixels differ, {100 * r['differ2']:.3f}% by more than 1  {'ok' if ok else 'FAIL'}" + (f"  errors: {errors}" if errors else ""))
 sys.exit(0 if ok else 1)

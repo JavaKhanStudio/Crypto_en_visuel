@@ -33,7 +33,7 @@ a = ap.parse_args()
 GRAB = """(S) => {
   const C = demo.composer, R = demo.renderer, b = C.passes.find(p => p.isBloom);
   const W = R.domElement.width, H = R.domElement.height, shot = () => { C.render(); return R.domElement.toDataURL('image/png'); };
-  const A = shot(); b.setSize(Math.round(W * S), Math.round(H * S)); const B = shot(); b.setSize(W, H);
+  b.scale = 1; b.setSize(W, H); const A = shot(); b.scale = S; b.setSize(W, H); const B = shot(); b.scale = undefined; b.setSize(W, H);
   return [A, B];
 }"""
 
