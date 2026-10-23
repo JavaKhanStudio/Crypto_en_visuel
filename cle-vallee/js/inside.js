@@ -275,16 +275,17 @@ function rsaRoom(scene, send, portrait) {
   scene.add(pL, qL, times2, nL, eL, pad2, bracket, r250);
   const topN = C2.n.y + 8 * Pt;
   // r473: on a phone at rest the whole wall leaves its words about 6 px tall; from 9.8 s they grow
-  // GROW times (cap about 11 px) and stack round the wall: n's line and the RSA-250 plate above it,
-  // e's label left of its three tiles, the padlock's plate under the padlock. Wall top/bottom edges:
+  // GROW times (cap about 11 px) and stack round the wall: the RSA-250 plate on the wall's top, its bracket
+  // hanging from it down n's right side (r532: 100 px apart they did not read as one), n's line above the
+  // plate, e's label left of its three tiles, the padlock's plate under the padlock. Wall top/bottom edges:
   const GROW = 2.5, edgeT = C2.n.y + 7.5 * Pt + Pt / 2, edgeB = C2.n.y - 7.5 * Pt - Pt / 2;
   const base = new Map([nL, eL, pad2, r250].map(l => [l, l.scale.clone()]));
   const grown = (l, f) => l.scale.copy(base.get(l)).multiplyScalar(f);
   const restAt = f => {   // where the words sit for a growth f (1 = as laid, GROW = at rest)
     const hn = nL.userData.h * f, hr = r250.userData.h * 3 * f, he = eL.userData.h * f, hp = pad2.userData.h * f;
-    const nY = edgeT + .3 + hn / 2, rY = nY + hn / 2 + .4 + hr / 2;
-    return { n: v(C2.n.x, nY, .9), r: v(C2.n.x, rY, 1), e: v(C2.e.x - 1.5 * Pt - .3, C2.e.y, 0), p: v(C2.lock.x + 1.5, C2.lock.y - .3 - hp / 2, .9),
-      top: rY + hr / 2 + .4, bottom: C2.lock.y - .3 - hp - .4 };
+    const rY = edgeT + .3 + hr / 2, nY = rY + hr / 2 + .4 + hn / 2;
+    return { n: v(C2.n.x, nY, .9), r: v(C2.n.x, rY, 1), rFoot: rY - hr / 2 + .15, e: v(C2.e.x - 1.5 * Pt - .3, C2.e.y, 0), p: v(C2.lock.x + 1.5, C2.lock.y - .3 - hp / 2, .9),
+      top: nY + hn / 2 + .4, bottom: C2.lock.y - .3 - hp - .4 };
   };
 
   const all = [...Object.values(big), ...Object.values(load), ...Object.values(letters), times, equals, phi, dL, box1.g, box2.g, pub, priv, calc1, calc2,
@@ -355,6 +356,9 @@ function rsaRoom(scene, send, portrait) {
       eL.position.lerpVectors(v(C2.e.x, C2.e.y + 1.4, 0), at2.e, q); eL.center.set(.5 + .5 * q, .5);
       pad2.position.lerpVectors(C2.lock.clone().add(v(0, -1.2, .9)), at2.p, q);
       r250.position.copy(at2.r);
+      // the bracket starts under the plate's foot (the plate is drawn over it) and runs down n's first 829 bits
+      const foot = at2.rFoot - topN, len = (R250 * Pt + foot) * b;
+      bracket.scale.set(1 + 1.5 * q, Math.max(.01, len), 1); bracket.position.y = topN + foot - len / 2;   // as thick as the words grew, ~5 px
     }
   }
   function pose(beat, time) {
