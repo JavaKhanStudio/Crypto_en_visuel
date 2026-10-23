@@ -1,12 +1,4 @@
-.narration .step-text { color: #e6dfcf; min-height: 3em; }
-/* r174/r236: the step text's paragraphs and list (js/md.js) */
-.step-text p { margin: 0; }
-.step-text p + p, .step-text ul + p { margin-top: 6px; }
-.step-text p + ul { margin-top: 3px; }
-.step-text ul { margin: 0; padding-left: 1.25em; }
-.step-text li { margin: 2px 0; }
-.step-text li::marker { color: var(--muted); }
-.step-text strong { color: #fff; }
+/* r174/r236: the step text's coloured words (js/md.js); its paragraphs and list are lib/episode.css's (r606) */
 .tone-g { color: #f2c24f; font-weight: 700; }
 .tone-r { color: #ff7a85; font-weight: 700; }
 .tone-b { color: #9fc0ff; font-weight: 700; }

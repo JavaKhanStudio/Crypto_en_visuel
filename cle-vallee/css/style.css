@@ -1,14 +1,6 @@
-.narration .step-text { color: #e6dfcf; min-height: 3em; }
 /* r233 (r176 roll-out): the step text's paragraphs and list (lib/md.js); the tones are the card's
    and the riders' colours: 1 violet the AES key (and both keys), 2 blue the IV, 3 gold the
    ciphertext, 4 green the HMAC key and the seal, r red what Eve rewrites */
-.step-text p { margin: 0; }
-.step-text p + p, .step-text ul + p { margin-top: 6px; }
-.step-text p + ul { margin-top: 3px; }
-.step-text ul { margin: 0; padding-left: 1.25em; }
-.step-text li { margin: 2px 0; }
-.step-text li::marker { color: var(--muted); }
-.step-text strong { color: #fff; }
 .tone-1 { color: #e3b8ff; font-weight: 700; }
 .tone-2 { color: #9fd3f0; font-weight: 700; }
 .tone-3 { color: #ffd84d; font-weight: 700; }

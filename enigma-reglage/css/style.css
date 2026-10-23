@@ -1,13 +1,5 @@
-.narration .step-text { color: #e6dfcf; min-height: 3em; }
 /* r240: the step text's paragraphs, list and coloured letters (lib/md.js); gold and orange are the
    card's going and coming-back colours, blue the new wire of the ring step (story.js NEW_WIRE) */
-.step-text p { margin: 0; }
-.step-text p + p, .step-text ul + p { margin-top: 6px; }
-.step-text p + ul { margin-top: 3px; }
-.step-text ul { margin: 0; padding-left: 1.25em; }
-.step-text li { margin: 2px 0; }
-.step-text li::marker { color: var(--muted); }
-.step-text strong { color: #fff; }
 .tone-g { color: #ffd84d; font-weight: 700; }
 .tone-r { color: #ff9a5c; font-weight: 700; }
 .tone-b { color: #7fd8ff; font-weight: 700; }

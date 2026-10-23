@@ -1,14 +1,6 @@
-.narration .step-text { color: #e6dfcf; min-height: 3em; }
 /* r243: the step text's paragraphs, list and coloured words (lib/md.js), in the scene's inks:
    gold is a fingerprint (the hash cards' hex), blue a salt (the base's salt column), red the ✖ of
    Eve's look-up that finds nothing */
-.step-text p { margin: 0; }
-.step-text p + p, .step-text ul + p { margin-top: 6px; }
-.step-text p + ul { margin-top: 3px; }
-.step-text ul { margin: 0; padding-left: 1.25em; }
-.step-text li { margin: 2px 0; }
-.step-text li::marker { color: var(--muted); }
-.step-text strong { color: #fff; }
 .tone-g { color: #ffd84d; font-weight: 700; overflow-wrap: anywhere; }
 .tone-b { color: #7fb6ff; font-weight: 700; }
 .tone-r { color: #ff8a9a; font-weight: 700; }

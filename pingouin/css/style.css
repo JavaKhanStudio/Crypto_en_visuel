@@ -1,13 +1,5 @@
-.narration .step-text { color: #e6dfcf; min-height: 3em; }
 /* r174/r242: the step text's paragraphs and list (js/md.js); its colours are the card's: gold hex
    bytes, red for what repeats or Eve changed, blue for the modes. A coloured value stays on one line. */
-.step-text p { margin: 0; }
-.step-text p + p, .step-text ul + p { margin-top: 6px; }
-.step-text p + ul { margin-top: 3px; }
-.step-text ul { margin: 0; padding-left: 1.25em; }
-.step-text li { margin: 2px 0; }
-.step-text li::marker { color: var(--muted); }
-.step-text strong { color: #fff; }
 .step-text span { white-space: nowrap; }
 .tone-g { color: #ffd84d; font-weight: 700; }
 .tone-r { color: #ff8f9a; font-weight: 700; }

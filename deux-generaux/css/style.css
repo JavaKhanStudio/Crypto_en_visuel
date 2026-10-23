@@ -1,13 +1,5 @@
-.narration .step-text { color: #e6dfcf; min-height: 3em; }
 /* r230: the step text's paragraphs, list and coloured words (lib/md.js); green is what the scene
    shows green (a victory, --ok), red is Eve's colour: what is caught, lost or broken */
-.step-text p { margin: 0; }
-.step-text p + p, .step-text ul + p { margin-top: 6px; }
-.step-text p + ul { margin-top: 3px; }
-.step-text ul { margin: 0; padding-left: 1.25em; }
-.step-text li { margin: 2px 0; }
-.step-text li::marker { color: var(--muted); }
-.step-text strong { color: #fff; }
 .tone-g { color: var(--ok); font-weight: 700; }
 .tone-r { color: #ff8a9a; font-weight: 700; }
 /* r93: a step's points as tiles under its text (Eve's four tricks); 2 by 2 on a phone */
