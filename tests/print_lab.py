@@ -59,6 +59,7 @@ with sync_playwright() as p:
     rows = pg.evaluate("""() => printLab.rows.map(r => ({ id: r.a.id, no: r.a.printable === false, why: r.a.why, err: r.error,
         n: r.fix?.ps.length, mm: r.mm, size: r.size, issues: r.issues, left: r.left, skipped: r.parts?.skipped, fixes: r.fix?.log.length,
         closed: r.after?.map(c => !c.open && !c.flat), bodies: r.fix?.bodies.map(b => b.name),
+        stripped: [...new Set(r.parts?.stripped.map(p => p.part) || [])],
         unchecked: !!r.tr.querySelector('.unchecked'), checked: r.tr.querySelector('.checked')?.textContent,
         can: !r.tr.querySelector('input[type=checkbox]').disabled }))""")
     for r in rows:
@@ -98,6 +99,11 @@ with sync_playwright() as p:
         vols = [volume(read_stl(files[n])) for n, c in zip(pieces, r["closed"]) if c]
         report(f"{i}: closed pieces face outwards", all(v > 0 for v in vols), f"{len(vols)} closed, min volume {min(vols, default=0):.1f} mm3")
         report(f"{i}: PRINT.txt", f"{i}/PRINT.txt" in files and (not r["fixes"] or "Fixed for printing" in files[f"{i}/PRINT.txt"].decode()))
+        if r["stripped"]:   # r453: what the list strips (1.1's flags and capes) is named in PRINT.txt, and no piece of it is written
+            txt = files.get(f"{i}/PRINT.txt", b"").decode()
+            report(f"{i}: PRINT.txt lists the parts removed for print", all(f"{n}: removed for print" in txt for n in r["stripped"]), ", ".join(r["stripped"]))
+        if i.startswith("rider-"):   # r453: the 'triangle on top of him' is the beacon gem, a glow left out since r394
+            report(f"{i}: no beacon gem in the files", not any("octahedron" in n.lower() for n in files if n.startswith(f"{i}/")), ", ".join(n.split("/")[-1] for n in files if n.startswith(f"{i}/pieces/"))[:120])
     zb = base64.b64decode(pg.evaluate("""async ids => { const { zip } = await import('../../lib/print.js');
         const b = new Uint8Array(await zip(printLab.files(ids)).arrayBuffer()); let s = ''; for (const c of b) s += String.fromCharCode(c); return btoa(s); }""", pair))
     zf = zipfile.ZipFile(io.BytesIO(zb))
@@ -109,22 +115,20 @@ with sync_playwright() as p:
         pg.locator(f"tr.asset[data-id={figure}]").click(); pg.wait_for_timeout(800)
         pg.screenshot(path=f"out/print_lab-{ep}-{figure}.png")
     # r451: the list shape's fields, on the fixture list
-    # the real rider-a's cape proves strip removes a piece that exists; an episode without it has nothing to compare
-    real_cape = any(n.startswith("rider-a/pieces/") and "-plane-" in n for n in files) or "rider-a" not in ids
     pg.goto(f"{base}lab/print/?ep={ep}&assets=tests/print/shape-assets.js")
     pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
     sh = pg.evaluate("""async () => { const r = printLab.rows.find(r => r.a.id === 'shape-rider'), c = printLab.rows.find(r => r.a.id === 'shape-checked');
         const P = await import('../../lib/print.js'), z = ps => P.bounds(ps).size[2];
         const scroll = r.fix.ps.find(p => p.scaled === 'scroll'), raw = P.pieces(r.a.get(), { omit: [] }).find(p => p.type === 'CylinderGeometry' && p.name === 'Cylinder' && Math.abs(P.bounds([p]).size[2] - .8) < .05);
-        return { stripped: r.parts.stripped.map(p => p.part), inFix: r.fix.ps.filter(p => p.part).length, log: r.fix.log,
+        return { rawCape: P.pieces(r.a.get(), { omit: [] }).some(p => p.type === 'PlaneGeometry'), stripped: r.parts.stripped.map(p => p.part), inFix: r.fix.ps.filter(p => p.part).length, log: r.fix.log,
           bodies: r.fix.bodies.map(b => ({ name: b.name, n: b.ps.length, tris: b.ps.reduce((s, p) => s + p.tris.length / 9, 0) })),
           scroll: scroll && z([scroll]), rawScroll: raw && z([raw]), left: r.left,
           badge: !!r.tr.querySelector('.unchecked'), cBadge: !!c.tr.querySelector('.unchecked'), cMark: c.tr.querySelector('.checked')?.textContent }; }""")
     fl = pg.evaluate("""ids => printLab.files(ids).map(f => ({ name: f.name,
         b64: typeof f.data === 'string' ? btoa(unescape(encodeURIComponent(f.data))) : btoa(Array.from(f.data, c => String.fromCharCode(c)).join('')) }))""", ["shape-rider"])
     sf = {f["name"]: base64.b64decode(f["b64"]) for f in fl}; txt = sf.get("shape-rider/PRINT.txt", b"").decode()
-    report("strip: the cape is out of the files and listed in PRINT.txt", sh["stripped"] == ["cape"] and not sh["inFix"] and real_cape
-        and not any("-plane-" in n for n in sf) and "cape: removed for print" in txt, f"rider-a has a cape piece: {real_cape}")
+    report("strip: the cape is out of the files and listed in PRINT.txt", sh["stripped"] == ["cape"] and not sh["inFix"] and sh["rawCape"]
+        and not any("-plane-" in n for n in sf) and "cape: removed for print" in txt, f"the unstripped rider has a cape piece: {sh['rawCape']}")
     report("scale: the scroll is 1.5 times as long", sh["scroll"] and abs(sh["scroll"] / sh["rawScroll"] - 1.5) < .02 and "scroll: reshaped for print" in txt, f"{sh['rawScroll']} -> {sh['scroll']}")
     bt = {b["name"]: b for b in sh["bodies"]}
     ok = set(bt) == {"main", "rider"}

@@ -3,24 +3,27 @@
 // built by the episode's own builder; size is its board-game size (lib/print.js fit: h = height in
 // mm, max = longest side in mm); omit names the parts that are light, not matter; ground is the asset's
 // y where it meets the ground, cut there on export so it stands flat (lib/print.js repair). An asset that
-// cannot be printed says why. A new asset in the scene gets its line here.
+// cannot be printed says why. A new asset in the scene gets its line here. strip names the decoration left
+// out of the printed piece only (Simon on r396, r453: the castles' flags, the riders' capes); the scene keeps it.
 import { buildRider, guard } from '../../lib/messenger.js';
 
 const kids = (o, test) => o.children.find(test);
 
 export const ASSETS = [
   { id: 'castle-a', label: "Alice's castle (the humans' white city)", kind: 'landmark', size: { max: 150 }, ground: 0,
-    get: d => d.world.castleA, omit: d => [d.world.castleA.userData.glow] },   // the team ring at its foot is a glow
+    get: d => d.world.castleA, omit: d => [d.world.castleA.userData.glow],   // the team ring at its foot is a glow
+    strip: d => ({ flag: d.world.castleA.userData.flag }) },
   { id: 'castle-b', label: "Bob's castle (the elves' towers)", kind: 'landmark', size: { max: 150 }, ground: 0,
-    get: d => d.world.castleB, omit: d => [d.world.castleB.userData.glow] },   // the team ring at its foot is a glow
+    get: d => d.world.castleB, omit: d => [d.world.castleB.userData.glow],   // the team ring at its foot is a glow
+    strip: d => ({ flag: d.world.castleB.userData.flag }) },
   { id: 'city', label: "Eve's city and her tower with the Eye", kind: 'landmark', size: { max: 150 }, ground: 0,
     get: d => d.world.city, omit: d => [d.world.city.userData.pivot, d.world.city.userData.spot] },
   { id: 'rider-a', label: "Alice's messenger on his horse", kind: 'figure', size: { h: 90 },
     // the gem above his head is a glow (a beacon to spot him from far), not matter
-    get: () => buildRider('a'), omit: (d, o) => [o.userData.beacon] },
+    get: () => buildRider('a'), omit: (d, o) => [o.userData.beacon], strip: (d, o) => ({ cape: o.userData.cape }) },
   { id: 'rider-b', label: "Bob's messenger on his horse", kind: 'figure', size: { h: 90 },
     // the gem above his head is a glow (a beacon to spot him from far), not matter
-    get: () => buildRider('b'), omit: (d, o) => [o.userData.beacon] },
+    get: () => buildRider('b'), omit: (d, o) => [o.userData.beacon], strip: (d, o) => ({ cape: o.userData.cape }) },
   { id: 'guard', label: "Eve's guard with his spear", kind: 'figure', size: { h: 60 },
     get: () => guard() },
   { id: 'soldier', label: 'A soldier of the armies (each army is 48 of them)', kind: 'figure', size: { h: 25 },
