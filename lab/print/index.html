@@ -105,14 +105,27 @@ function resize() {
   const [w, h] = Math.min(left, r.height) >= Math.min(r.width, above) ? [left, r.height] : [r.width, above];
   renderer.setSize(r.width, r.height, false); camera.aspect = w / h;
   camera.setViewOffset(w, h, 0, 0, r.width, r.height); camera.updateProjectionMatrix();
+  backOff();
+}
+// r562: back far enough that the whole bounding sphere fits the narrower of the two fields of view (a
+// cube's near corner sat 1.4 spans from a camera 2.2 spans out, and filled the tall preview pane);
+// r583: again whenever the free region changes, along the line the camera already looks down
+let framed = null;
+function backOff() {
+  if (!framed) return;
+  const fov = Math.min(camera.fov, 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect)));
+  const dist = Math.max(framed.span * 2.2, framed.radius / Math.sin(THREE.MathUtils.degToRad(fov / 2)) * 1.1);
+  camera.position.sub(controls.target).setLength(dist).add(controls.target); controls.update();
 }
 addEventListener('resize', resize); resize();
+// r583: the panel is filled after the region was measured, and grows when its comments load
+new ResizeObserver(resize).observe($('rv'));
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 
 function show(row) {
-  resize();
   for (const r of window.printLab.rows) r.tr.classList.toggle('on', r === row);
   panel(row);
+  framed = null; resize();
   shown.clear(); if (grid) scene.remove(grid);
   if (!row.parts) { $('cap').textContent = row.a.label + ': ' + row.a.why; return; }
   // r451: each body stands on the bed on its own, side by side as it prints, 10 mm apart; the parts
@@ -133,11 +146,8 @@ function show(row) {
   const s = row.mm, span = Math.max(w, s[1], s[2]);
   const cells = Math.ceil(Math.max(w, s[2]) / 10) + 4;
   grid = new THREE.GridHelper(cells * 10, cells, 0x3a4252, 0x232936); scene.add(grid);
-  // r562: back far enough that the whole bounding sphere fits the narrower of the two fields of view (a
-  // cube's near corner sat 1.4 spans from a camera 2.2 spans out, and filled the tall preview pane)
-  const fov = Math.min(camera.fov, 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect)));
-  const dist = Math.max(span * 2.2, Math.hypot(w, s[1], s[2]) / 2 / Math.sin(THREE.MathUtils.degToRad(fov / 2)) * 1.1);
-  controls.target.set(0, s[1] * .45, 0); camera.position.set(1.3, 1.0, 1.7).setLength(dist).add(controls.target); controls.update();
+  framed = { span, radius: Math.hypot(w / 2, s[1] * .55, s[2] / 2) };   // from the target, 0.45 of the height up
+  controls.target.set(0, s[1] * .45, 0); camera.position.set(1.3, 1.0, 1.7).add(controls.target); backOff();
   // r453: in several bodies each is sized as it prints (a castle without its flag stands lower than with it)
   const nb = bodies.length, st = row.parts.stripped.length, mm = b => bounds(b.ps).size.map(x => (x * k).toFixed(0));
   $('cap').textContent = `${row.a.label}: ${s[0]} × ${s[2]} mm on the bed, ${s[1]} mm high${nb > 1 ? " assembled" : ""}, ${row.fix.ps.length} pieces`
