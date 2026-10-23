@@ -2,7 +2,8 @@
 <!-- r330 lab: does each figure of lib/cast.js go together and print? lib/fit.js checks it at the size it prints
      (?mm=60), and this page draws what it finds on the figure, ghosted: red where two parts fill the same space,
      orange where a ring, the head or the hat is stopped on its way down the pin, magenta a bit that prints loose
-     from its part, yellow a wall under 1 mm. ?setting=roman, ?kinds=a,b, ?pose=straight (round 2's arms), ?turn=RADIANS for a shot, ?apart=1 pulls
+     from its part, yellow a wall under 1 mm, red too where an arm or what it holds meets a part as it swings, and
+     cyan (not a fault) the slot the robe is hollowed with for the arms' swing. ?setting=roman, ?kinds=a,b, ?pose=straight (round 2's arms), ?turn=RADIANS for a shot, ?apart=1 pulls
      the pieces apart (the marks follow their part). Drag a row to turn it. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The cast: does it fit and print?</title>
@@ -21,8 +22,9 @@
 <span class="k" style="background:#ff3040"></span>two parts in the same space
 <span class="k" style="background:#ff9a20"></span>a ring, the head or the hat stopped on its way down the neck pin
 <span class="k" style="background:#e040ff"></span>a bit that prints loose from its part
-<span class="k" style="background:#ffe040"></span>a wall under 1 mm.
-Sockets are cut by what goes in them (the neck pin, the head's stud, the head under a hat), with 0.2 mm of play.</p>
+<span class="k" style="background:#ffe040"></span>a wall under 1 mm
+<span class="k" style="background:#40d0ff"></span>not a fault: the slot cut in the robe for the arms to swing in (up to 35° forward).
+Sockets are cut by what goes in them (the neck pin, a hat's peg, an arm's shoulder pin, the head under a hat), with 0.2 mm of play; the hat's peg and each arm's pin end in a bulb 0.5 mm wider than the socket's lip, so they snap in. An arm, with what it holds, is swung through its whole range and must meet nothing (red if it does).</p>
 <div id="rows"></div>
 <script type="module">
 import * as THREE from 'three';
@@ -30,7 +32,7 @@ import { person, explode, CAST, DISGUISES } from '../../lib/cast.js';
 import { check, describe } from '../../lib/fit.js';
 const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45), mm = +(q.get('mm') ?? 60), apart = q.has('apart'), pose = q.get('pose') ?? 'bent';
 const settings = q.get('setting') ? q.get('setting').split(',') : Object.keys(DISGUISES);
-const COLOR = { ' x ': 0xff3040, slides: 0xff9a20, loose: 0xe040ff, thin: 0xffe040 };
+const COLOR = { ' x ': 0xff3040, slides: 0xff9a20, loose: 0xe040ff, thin: 0xffe040, swings: 0xff3040, slot: 0x40d0ff };
 const colorOf = key => Object.entries(COLOR).find(([w]) => key.includes(w))?.[1];
 const report = {};
 for (const d of settings) {
@@ -49,12 +51,15 @@ for (const d of settings) {
     const f = person(kind, { disguise: d, pose }), res = check(f, { h: mm }), lines = describe(res);
     report[`${kind} ${d}`] = lines;
     // the marks, one small cube a voxel, in the part they belong to so they follow it apart
-    const cube = new THREE.BoxGeometry(1, 1, 1), s = res.voxel / res.k, P = f.userData.pieces;
-    const partGroup = key => { const name = key.split(/ x | slides| loose| thin/)[0]; return name === 'body' || name === 'hand' ? P.body : name.startsWith('ring') ? P.shoulder : P[name] ?? P.body; };
+    const cube = new THREE.BoxGeometry(1, 1, 1), s = res.voxel / res.k, P = f.userData.pieces; f.updateMatrixWorld(true);
+    const partGroup = key => {   // a swing is in space, around the arm, not on it
+      if (key.includes(' swings into ')) return P.body;
+      const name = key.split(/ x | slides| loose| thin| slot/)[0];
+      return name.startsWith('ring') ? P.shoulder : name === 'arm left' ? P.arms[0] : name === 'arm right' ? P.arms[1] : P[name] ?? P.body; };
     for (const key of res.keys) {
       const at = res.voxels(key), m = new THREE.InstancedMesh(cube, new THREE.MeshBasicMaterial({ color: colorOf(key), depthTest: false, transparent: true, opacity: .9 }), at.length);
-      m.renderOrder = 2; const M = new THREE.Matrix4(), host = partGroup(key);
-      at.forEach((p, j) => m.setMatrixAt(j, M.makeScale(s, s, s).setPosition(p[0] - host.position.x, p[1] - host.position.y, p[2] - host.position.z)));
+      m.renderOrder = 2; const M = new THREE.Matrix4(), host = partGroup(key), v = new THREE.Vector3();
+      at.forEach((p, j) => m.setMatrixAt(j, M.makeScale(s, s, s).setPosition(host.worldToLocal(v.set(...p)))));
       host.add(m);
     }
     f.traverse(o => { if (o.isMesh && !o.isInstancedMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = .35; o.material.depthWrite = false; } });

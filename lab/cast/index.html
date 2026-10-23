@@ -1,6 +1,7 @@
 <!doctype html>
 <!-- r330 lab: the cast from lib/cast.js as toys made of pieces. Row 1 pulls figures apart (body, rings on the neck
-     pin, head with its pin and stud, hat, held item); row 2 shows the satchel on anyone; then the kinds bare,
+     pin, head with its pin, hat with its peg, the arms off their shoulder pins, held item); 'arms up' swings them
+     forward as far as they go; row 2 shows the satchel on anyone; then the kinds bare,
      today (against the episodes' own copies), and one row per setting. Drag a row to turn its figures;
      ?turn=RADIANS sets the angle for a shot. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,11 +14,12 @@
   canvas { display: block; width: 100%; max-width: 1400px; border: 1px solid #252a35; border-radius: 8px; cursor: grab; }
   .names { display: grid; max-width: 1400px; font-size: 13px; color: #9aa3b5; text-align: center; }
 </style></head><body>
-<h1>The cast as toys (lib/cast.js), round 3</h1>
+<h1>The cast as toys (lib/cast.js), round 4</h1>
+<p><b>Round 4</b> (Simon, 23 Oct: « The arm will need to be inserted with a socket if we want to be able to move them. The hair will need to be clipable on the head »): the arms are their own pieces now. Each snaps into the robe on a 2.4 mm pin across the shoulder (r395's probe size) that ends in a bulb 0.5 mm wider than the socket's lip, and turns on it, up to 35° forward, in a slot the robe is hollowed with (cyan in <a href="fit.html" style="color:#ffd27a">fit.html</a>). Every hat and hair has a peg under it that snaps the same way into a socket on top of the head, so it clips on and off. lib/fit.js checks the snaps, and swings each arm with what it holds through its whole range (at 40°, Alice's signal pad meets her scarf, so the range stops at 35°). Stops at the ends of the swing are r395's.</p>
 <p><b>Round 3</b>: every figure below goes together and prints at 60 mm, checked by lib/fit.js (<a href="fit.html" style="color:#ffd27a">fit.html</a> draws what it finds). The arm is new: the forearm comes forward and the fist stands upright with a hole down through it, so a banner's pole goes through and an item stands on a pin (round 2's straight arm could not hold anything without the item cutting into the fist: <a href="fit.html?pose=straight&setting=roman" style="color:#ffd27a">see it</a>). The satchel's strap crosses the back: in front, the forearms would stop its ring coming down.</p>
-<p>Every figure is five pieces that come apart. <b>Body</b>: robe, arms and hands in one print, the kind's colour, a socket at the neck, a hole through the right fist.
-<b>Rings</b>: every ring drops over the neck pin and sits on the shoulders; what hangs from it (a scarf tail, a toga's sash, a strap, a tabard) hangs between the arms, so it goes on and off with the arms printed on. The head holds it down.
-<b>Head</b>: the face and its fixed trait, a pin under it (the neck, hidden once assembled), a stud on top. <b>Hat</b>: hair or a hat pressed onto the stud. Eve's is always black. <b>Item</b>: a pole through the fist, or an item on a pin in it.
+<p>Every figure is seven pieces that come apart. <b>Body</b>: the robe, the kind's colour, a socket at the neck and one in each shoulder. <b>Arms</b>: two, each snapped into its shoulder, a hole through the fist.
+<b>Rings</b>: every ring drops over the neck pin and sits on the shoulders; what hangs from it (a scarf tail, a toga's sash, a strap, a tabard) hangs between the arms, so it goes on and off with the arms on. The head holds it down.
+<b>Head</b>: the face and its fixed trait, a pin under it (the neck, hidden once assembled), a socket on top. <b>Hat</b>: hair or a hat with a peg that snaps into the head. Eve's is always black. <b>Item</b>: a pole through the fist, or an item on a pin in it.
 Printed 60 mm tall (r196's figure size): neck pin 5 mm, fist hole 3 mm, every wall 1 mm or more.</p>
 <p>What never changes (the kind): Alice: blue robe, bun, blue scarf ring. Bob: yellow robe, leather belt with a gold buckle, flush with the robe. Eve: red robe, black mask with white eyes, a black hat. Messenger: the satchel (strap, wax seal, post horn), the piece the others can borrow.</p>
 <div id="rows"></div>
@@ -33,11 +35,14 @@ const col = (k, f) => [CAST[k].name, f];
 const old = { a: () => kasiski('a'), b: () => kasiski('b'), e: () => kasiski('e'), n: () => kasiski('n'),
   g: () => { const o = garde('g'); o.children[0].scale.setScalar(1); return o; }, v: () => vpn('v'), i: () => vpn('i') };
 const apart = (k, o) => () => { const f = person(k, o); explode(f, 1); return f; };
+const up = (k, o) => () => { const f = person(k, o); for (const a of f.userData.pieces.arms) a.rotation.x = a.userData.swing[0] * Math.PI / 180; return f; };
 const SETTING = { roman: 'scytale', wartime: 'enigma 5.1-5.3: the German navy\'s radio room, Eve at Bletchley Park', medieval: 'the saga 1.1-1.6: the two generals, their messenger, Eve the spy' };
 const ROWS = [
-  ['pieces', 'pulled apart: body, rings, head (pin and stud), hat, item', 1.9, [
+  ['pieces', 'pulled apart: body, arms, rings, head (its pin), hat (its peg), item', 1.9, [
     ['Alice, today', apart('a')], ['Bob, today', apart('b')], ['messenger, today', apart('n')],
     ['Alice, roman', apart('a', { disguise: 'roman' })], ['Eve, medieval', apart('e', { disguise: 'medieval' })], ['Bob, medieval', apart('b', { disguise: 'medieval' })]]],
+  ['arms up', 'each arm turned on its shoulder pin as far as it goes, 35° forward', 1.0, [
+    ['Alice, today', up('a')], ['Bob, roman', up('b', { disguise: 'roman' })], ['Eve, wartime', up('e', { disguise: 'wartime' })], ['Bob, medieval', up('b', { disguise: 'medieval' })]]],
   ['the satchel on anyone', 'the messenger\'s ring on the other kinds\' pins', 1.0, [
     ['Alice', () => person('a', { shoulder: 'satchel', hand: 'letter' })], ['Bob', () => person('b', { shoulder: 'satchel', hand: 'letter' })],
     ['Eve', () => person('e', { shoulder: 'satchel', hat: 'fedora' })], ['messenger', () => person('n', { hand: 'letter', hat: 'travellerHat' })]]],
