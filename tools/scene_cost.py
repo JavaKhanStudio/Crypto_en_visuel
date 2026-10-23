@@ -112,6 +112,16 @@ MEASURE = """async (N) => {
   scene.traverseVisible(o => { if ((o.isPointLight || o.isSpotLight) && o.intensity > 0) out.lights.push(o); });
   out.lights = out.lights.map(l => ({ light: l.type + (l.name ? ' ' + l.name : '') + ' in ' + (labels.get(l.parent) || name(l.parent)),
     saves_ms: saves(() => l.visible = true, () => l.visible = false) }));
+  // r618: the Eye's fire is no light but a term in every lit material near it (lib/saga/world.js fireGlow);
+  // hidden, its uniform goes to 0 and every pixel skips it
+  const fire = W.city && W.city.userData.fireLight;
+  if (fire && !fire.isLight) {
+    out.lights.push({ light: 'fireGlow (no light, r618) in city', saves_ms: saves(() => fire.visible = true, () => fire.visible = false) });
+    // the PointLight it replaced, put back in its place for the paired rounds: what the glow saves against it
+    const pl = new (await import('three')).PointLight(0xff4422, fire.intensity, 70, 1.6); pl.position.copy(fire.position); fire.parent.add(pl);
+    const asLight = v => { pl.visible = v; fire.visible = !v; };
+    asLight(false); out.fireVsLight_ms = -saves(() => asLight(false), () => asLight(true)); pl.removeFromParent(); fire.visible = true;
+  }
   out.parts = [];
   for (const o of [...scene.children]) {
     if (!o.visible) continue;
@@ -178,6 +188,8 @@ print(f"idle       {r['idle']['fps']} fps, {r['idle']['cpu_pct']}% of a core on 
 print(f"world.update {r.get('worldUpdate_ms')} ms a frame (CPU)   gpu memory: {r['memory']}")
 for x in r.get("lights", []):
     print(f"light      {x['light'][:40]:40s} costs {x['saves_ms']:5.2f} ms   (hidden: the lit materials without it)")
+if r.get("fireVsLight_ms") is not None:
+    print(f"  the PointLight it replaced would cost {r['fireVsLight_ms']:5.2f} ms more than fireGlow (paired)")
 print("part hidden            saves ms  calls   meshes   instances      tris")
 for x in r["parts"]:
     print(f"  {x['part'][:20]:20s} {x['saves_ms']:8.2f} {x['saves_calls']:6d} {x['meshes']:8d} {x['instances']:11d} {x['tris']:9d}")
