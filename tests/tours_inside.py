@@ -4,8 +4,9 @@ step 5 'sign' zooms into Alice's keep (SHA-256, PSS, RSA with her private key), 
 through to Bob's (his check with her public key), step 7 comes out of Bob's window; step 11 'gcm'
 zooms into Alice's keep again (AES-GCM), step 12 'gcmEve' cuts to Bob's (InvalidTag), step 13 comes
 out. Checks, desktop and phone: one zoom per chapter and one cut; the frame and the speaker's bubble
-sit in the free band at every moment that moves the frame (the room's clock held there), except on a
-phone where the step's text leaves less than a fifth of the screen (SKIP: Simon's call on r368);
+sit in the free band at every moment that moves the frame (the room's clock held there); on a phone
+the step text is folded to 3 lines inside a room (r368, r372), and should a text still leave less than
+a fifth of the screen, the frame checks are reported as SKIP, never as ok;
 the room's bytes are the card's (the block, the signature, the two digests, the GCM ciphertext and
 tag, Bob's tag); Back from step 13 zooms into Bob's keep; a language switch inside rebuilds the room
 on the English packets; #story=6 straight in enters Bob's keep; no page errors. Serve the repo first
