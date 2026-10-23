@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>À toi de jouer — Crypto en visuel</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+  <link rel="stylesheet" href="../lib/episode.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "../vendor/three/three.module.min.js",
+        "three/addons/": "../vendor/three/addons/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="bubbles"></div>
+
+  <header id="topbar">
+    <div class="brand">
+      <span class="crest">🎲</span>
+      <div>
+        <a class="series" href="../" data-i18n="series">Crypto en visuel</a>
+        <h1 data-i18n="title">À toi de jouer</h1>
+        <p data-i18n="subtitle"></p>
+      </div>
+    </div>
+    <div class="right">
+      <button id="sound" class="icon" title="Son" aria-label="Son">🔈</button>
+      <div id="lang" role="group" aria-label="Langue">
+        <button data-lang="fr">FR</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Story mode: each step's three choices (lib/choices.js) under its text -->
+  <section id="story" class="panel bottom">
+    <div class="narration">
+      <h2 id="step-title"></h2>
+      <div id="step-text" class="step-text"></div>
+    </div>
+    <div id="step-choices"></div>
+    <div class="nav">
+      <button id="prev" data-i18n="nav.prev">◀ Précédent</button>
+      <span id="step-count"></span>
+      <button id="next" class="primary" data-i18n="nav.next">Suivant ▶</button>
+    </div>
+  </section>
+
+  <div id="toast"></div>
+  <div id="loading"><div class="spinner"></div><p data-i18n="loading">Construction des châteaux…</p></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
