@@ -26,7 +26,7 @@ export const STEPS = [
   // the last step is the doors out, each with its picture; the episode it opens, 1.2, is last, at the right
   { id: 'end', ch: 3, refs: { '1.2': 5 }, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', go: x => x.mode('sandbox') },
-      { k: 'quiz', img: 'img/door-quiz.jpg', en: 'img/door-quiz.en.jpg', go: x => x.mode('quiz') },
+      { k: 'quiz', img: 'img/door-quiz.jpg', go: x => x.mode('quiz') },
       { k: 'home', img: '../assets/doors/home-2.jpg', href: '../' },
       { k: 'next', img: '../eve-lit-tout/vignette.jpg', href: '../eve-lit-tout/', hash: '#story=5' }] },
 ];

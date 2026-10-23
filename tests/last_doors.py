@@ -6,7 +6,7 @@ where it is when the pointer leaves and goes on from there; a phone (no hover) h
 Phone and desktop. Serve the repo root on 8793 first.
 Another episode's last step (r121): tests/last_doors.py <slug> <last step> <next slug> [--no-clips],
 e.g. tests/last_doors.py scytale 12 enigma (--no-clips for an episode whose doors have none)"""
-import os, sys
+import os, re, sys
 from playwright.sync_api import sync_playwright
 import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
 from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
@@ -29,7 +29,8 @@ with sync_playwright() as p:
         checks = {
             "four doors": len(got) == 4,
             "every picture loaded": all(d["img"] for d in got),
-            "next is last": got[-1]["cls"] == "door next" and got[-1]["href"] == f"../{NEXT}/?lang={lang}",
+            # a next door may land on a named step of its episode (lib/doors.js hash:, aes-interieur -> 1.2 #story=5)
+            "next is last": got[-1]["cls"] == "door next" and re.fullmatch(rf"\.\./{NEXT}/\?lang={lang}(#story=\d+)?", got[-1]["href"] or ""),
             "next at the right, bottom row": all(got[-1]["x"] >= d["x"] - 1 and got[-1]["y"] >= d["y"] - 1 for d in got),
             "home links in language": got[2]["href"] == f"../?lang={lang}",
         }
