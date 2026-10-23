@@ -39,7 +39,7 @@ export const STEPS = [
   { id: 'fall', refs: { '1.3': 8 }, ch: 0, shot: 'city', orbit: .04, view: 'fall', say: ['e'] },
   // r363: Bob makes his padlock inside his keep, a room of two beats (inside.js rsaRoom): RSA by hand
   // on 5 and 11, then the 2048-bit n; the camera comes out at 'deliver'. A step can name another
-  // window with door: (inside.js DOORS, keepWindow)
+  // window with door: (inside.js ROOMS, lib/room.js; 'b' is the elf hill's lower-talan door, r425)
   { id: 'padlock', ch: 1, shot: 'castleB', view: 'toy', say: ['b'], inside: 'rsa' },
   { id: 'rsa2048', ch: 1, shot: 'castleB', view: 'pubkey', say: ['b'], inside: 'rsa' },
   { id: 'deliver', ch: 1, shot: 'both', view: 'pubkey', go: async x => { await x.ride('padlock'); } },
