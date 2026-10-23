@@ -4,7 +4,8 @@
 // the way out through it; the picked ones go into the castle builders as userData.doors, the contract
 // lib/room.js reads (r424): { focus, normal, near: { pos, target } }, made here by door() as keepDoors
 // makes the old keep's (focus 3.52 behind the glass, near 12.48 out, 3.5 up, 3 aside).
-// make: a lit opening the castle does not have yet (drawn by openings(), and added to the castle with the pick).
+// make: a lit opening the castle does not have yet (drawn by openings()). Simon picked 'hall' and 'talan'
+// (r425): castles.js now builds their doors and sets userData.doors, so they have no make here any more.
 import * as THREE from 'three';
 import { M } from '../../lib/saga/world.js';
 
@@ -21,13 +22,13 @@ export const CANDIDATES = {
     { id: 'tower', n: 1, name: 'citadel tower window', about: 'The tall white tower, its window over the valley, 18 m up: the highest, a slit .25 wide.',
       glass: V(-.6, TOP + T * .5 + 1.6, -1 + .7), normal: V(0, 0, 1) },
     { id: 'hall', n: 2, name: 'the hall\'s door', about: 'The hall beside the tower and the white tree, on the top tier: a lit door to add on its valley face.',
-      glass: V(-1.2, TOP + .65, 1.3 + .9 + .01), normal: V(0, 0, 1), make: { w: .7, h: 1.3 } },
+      glass: V(-1.2, TOP + .65, 1.3 + .9 + .01), normal: V(0, 0, 1) },
     { id: 'tier', n: 3, name: 'top tier window', about: 'A lit window of the top tier\'s wall, 10.5 m up, one of the eight it already has.',
       glass: V(Math.cos(TIER) * 3.5 * 1.005, TOP - 1.3, Math.sin(TIER) * 3.5 * 1.005), normal: V(Math.cos(TIER), 0, Math.sin(TIER)) },
   ],
   b: [
     { id: 'talan', n: 1, name: 'great mallorn, lower talan', about: 'A lit door in the great mallorn\'s trunk on its first platform, 10.8 m up (to add).',
-      glass: V(-1.4, Y0 + .38 * H + .75, -trunkR(.38 + .75 / H) - .01), normal: V(0, 0, -1), make: { w: .7, h: 1.4 } },
+      glass: V(-1.4, Y0 + .38 * H + .75, -trunkR(.38 + .75 / H) - .01), normal: V(0, 0, -1) },
     { id: 'high', n: 2, name: 'great mallorn, high talan', about: 'The same, on its upper platform, 16.2 m up, under the gold crown: the lady\'s hall (to add).',
       glass: V(-1.4, Y0 + .64 * H + .75, -trunkR(.64 + .75 / H) - .01), normal: V(0, 0, -1), make: { w: .7, h: 1.4 } },
     { id: 'gate', n: 3, name: 'gate tower window', about: 'The valley-side gate tower\'s third lit slit, 4.1 m up: low, by the road.',
