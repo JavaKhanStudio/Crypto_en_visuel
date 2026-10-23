@@ -20,6 +20,7 @@ ap.add_argument("--at", default="1,4,8,12,16,20")
 ap.add_argument("--lang", default="fr")
 ap.add_argument("--size", default="1440x860")
 ap.add_argument("--settle", type=int, default=1800)
+ap.add_argument("--mask", type=int, default=0, help="mock (r474): fade the scene to dark over N px under the top controls")
 a = ap.parse_args()
 w, h = map(int, a.size.split("x"))
 errors, shots = [], []
@@ -31,6 +32,12 @@ with sync_playwright() as p:
     pg.wait_for_function("window.demo && demo.ready && demo.inside.active", timeout=60000)
     pg.add_style_tag(content=".bubble { transition: none !important; }")
     pg.wait_for_timeout(2500)
+    if a.mask:   # a mock, not the page's: a dark gradient laid on the canvas from the bar's foot down
+        pg.evaluate("""n => { const bar = Math.max(...['topbar', 'modes', 'lang'].map(i => document.getElementById(i)?.getBoundingClientRect().bottom || 0));
+          const c = document.querySelector('canvas'), d = document.createElement('div');
+          d.style.cssText = `position:fixed;left:0;right:0;top:0;height:${bar + n}px;pointer-events:none;
+            background:linear-gradient(to bottom, #0b0806 ${bar}px, rgba(11,8,6,.0) ${bar + n}px)`;
+          c.after(d); }""", a.mask)
     for s in [float(x) for x in a.at.split(",")]:
         pg.evaluate(f"demo.inside.hold = {s}")
         pg.wait_for_timeout(a.settle)
