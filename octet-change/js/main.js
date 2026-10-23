@@ -3,10 +3,8 @@
 // Deep links: #story=5, #sandbox, #quiz. ?lang=en. ?instant=1 skips camera flights and rides fast
 // (used by the headless screenshots in tools/shoot.py).
 import * as THREE from 'three';
-import { qualityComposer } from '../../lib/episode.js';
+import { qualityComposer, addBloom } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld, CASTLE_B } from '../../lib/saga/world.js';
 import { CameraRig } from '../../lib/saga/camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
@@ -44,8 +42,7 @@ if (instant) { const fly = rig.fly.bind(rig); rig.fly = shot => fly(shot, .001);
 
 const composer = qualityComposer(renderer);
 const renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
-composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .75, .55, .82));
-composer.addPass(new OutputPass());
+addBloom(composer, .75, .55, .82);   // r548: the bloom and the output pass, lib/bloom.js
 
 function resize() {
   const w = innerWidth, h = innerHeight;

@@ -5,9 +5,8 @@
 // then set demo.room.instant = false, demo.room.speed = 1 and call demo.room.play().
 import * as THREE from 'three';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { qualityComposer } from '../../lib/quality.js';
+import { addBloom } from '../../lib/bloom.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Quiz } from '../../lib/quiz.js';
 import { sfx } from '../../lib/sound.js';
@@ -35,8 +34,7 @@ const camera = new THREE.PerspectiveCamera(45, 1, .3, 300);
 const room = new Room({ camera, instant });
 const composer = qualityComposer(renderer);
 const renderPass = new RenderPass(room.scene, camera); composer.addPass(renderPass);
-composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .6, .55, .85));
-composer.addPass(new OutputPass());
+addBloom(composer, .6, .55, .85);   // r548: the bloom and the output pass, lib/bloom.js
 
 function resize() {
   const w = innerWidth, h = innerHeight;

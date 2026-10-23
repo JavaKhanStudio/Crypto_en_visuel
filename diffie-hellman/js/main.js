@@ -2,10 +2,8 @@
 // Deep links: #story=5, #sandbox, #quiz. ?lang=en. ?instant=1 skips camera flights and
 // plays the props' animations at once (used by the headless screenshots in tools/shoot.py).
 import * as THREE from 'three';
-import { qualityComposer } from '../../lib/episode.js';
+import { qualityComposer, addBloom } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { buildWorld } from './world.js';
 import { Stage } from './stage.js';
 import { CameraRig } from './camera.js';
@@ -52,8 +50,7 @@ if (instant) { const fly = rig.fly.bind(rig); rig.fly = shot => fly(shot, .001);
 
 const composer = qualityComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), .45, .5, .9));
-composer.addPass(new OutputPass());
+addBloom(composer, .45, .5, .9);   // r548: the bloom and the output pass, lib/bloom.js
 
 function resize() {
   const w = innerWidth, h = innerHeight;

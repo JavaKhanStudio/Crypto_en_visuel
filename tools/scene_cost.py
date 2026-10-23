@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """What a saga scene costs, part by part (r518): GPU time a frame, draw calls and triangles, for the
-whole scene, then with each top-level part hidden, the shadows off and the bloom off; the CPU of
+whole scene, then with each top-level part hidden, the shadows off, the composer off and the bloom pass alone off; the CPU of
 world.update(); the textures; and how much of a core the page burns while it sits idle.
 
 Serve the tree to measure first (python3 -m http.server PORT), then:
@@ -78,6 +78,11 @@ MEASURE = """async (N) => {
     shadowMap: R.shadowMap.enabled, gpu: (() => { const x = gl.getExtension('WEBGL_debug_renderer_info'); return x ? gl.getParameter(x.UNMASKED_RENDERER_WEBGL) : ''; })() };
   out.full = run();
   out.noBloom = run(() => R.render(scene, cam)); out.noBloom.saves_ms = saves(() => 0, () => 0, () => R.render(scene, cam));
+  // r548: 'noBloom' above drops the whole composer (its MSAA target, the bloom, the output pass) for a plain canvas
+  // render, which has no antialiasing at all; the bloom pass alone is the composer with that one pass switched off
+  const bloom = d.composer.passes.find(q => q.nMips || q.isBloom);
+  if (bloom) { bloom.enabled = false; out.bloomPass = run(); bloom.enabled = true;
+    out.bloomPass.saves_ms = saves(() => bloom.enabled = true, () => bloom.enabled = false); }
   const lights = []; scene.traverse(o => { if (o.isLight && o.castShadow) lights.push(o); });
   lights.forEach(l => l.castShadow = false); out.noShadow = run(); lights.forEach(l => l.castShadow = true);
   out.noShadow.saves_ms = saves(() => lights.forEach(l => l.castShadow = true), () => lights.forEach(l => l.castShadow = false));
@@ -130,7 +135,9 @@ with sync_playwright() as p:
 print(f"{r['page']}  {a.size}  canvas {r['size'][0]}x{r['size'][1]} (ratio {r['pixelRatio']}, quality {r['quality']}, MSAA {r['samples']})  {r['gpu']}")
 f = r["full"]
 print(f"frame      {f['ms']:6.2f} ms  {f['calls']:4d} calls  {f['tris']:8d} tris   (again at the end: {r['full2']['ms']} ms)")
-print(f"bloom      costs {r['noBloom']['saves_ms']:5.2f} ms  {f['calls'] - r['noBloom']['calls']:4d} calls")
+print(f"composer   costs {r['noBloom']['saves_ms']:5.2f} ms  {f['calls'] - r['noBloom']['calls']:4d} calls   (MSAA target + bloom + output, against a plain canvas render)")
+if r.get("bloomPass"):
+    print(f"  bloom pass alone  {r['bloomPass']['saves_ms']:5.2f} ms  {f['calls'] - r['bloomPass']['calls']:4d} calls   (so MSAA + output: {r['noBloom']['saves_ms'] - r['bloomPass']['saves_ms']:5.2f} ms)")
 print(f"shadow     costs {r['noShadow']['saves_ms']:5.2f} ms  {f['calls'] - r['noShadow']['calls']:4d} calls   shadow lights: {r['shadowLights']}")
 print(f"idle       {r['idle']['fps']} fps, {r['idle']['cpu_pct']}% of a core on the main thread ({r['idle']['script_pct']}% script), heap {r['idle']['heap_mb']} MB")
 print(f"world.update {r.get('worldUpdate_ms')} ms a frame (CPU)   gpu memory: {r['memory']}")
