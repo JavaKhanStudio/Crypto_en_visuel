@@ -6,18 +6,29 @@ within 1 mm), standing on z = 0, repaired (r394: lib/print.js repair leaves 0 op
 floating pieces, and PRINT.txt lists the fixes), and closed pieces with a positive volume (outward faces: the export
 turns Y up into Z up without mirroring). r451: every asset shows whether a human checked it, and the list
 shape's fields are proven on a fixture list (tests/print/shape-assets.js): a stripped part is absent from
-the files, a scaled part is scaled, a body is its own STL on the bed, a checked asset loses the badge. Prints each asset's line as the page shows it, shoots the
+the files, a scaled part is scaled, a body is its own STL on the bed, a checked asset loses the badge.
+r452: the lab runs only behind tools/serve_review.py (a plain static server gets the 'local only' page);
+a comment survives a reload and a fresh browser, Send makes one ticket with it (dry: the atelier add it
+would run), ticking 'checked' clears the badge. With no base, the test serves the repo itself through
+tools/serve_review.py in a temp review dir; a base you pass must be a serve_review.py. Prints each asset's line as the page shows it, shoots the
 page to out/print_lab-<ep>.png (a castle) and -<figure>.png. Serve the repo first (python3 -m http.server 8793), or pass a base URL.
 
-    python3 tests/print_lab.py [base] [ep]
+    python3 tests/print_lab.py [base] [ep]      (base '' or omitted: its own server)
 """
 import sys, struct, base64, io, zipfile
 from playwright.sync_api import sync_playwright
 import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
 from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 
-base = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
+import tempfile, json, threading, functools, http.server
+from serve_review import serve, ROOT
 ep = sys.argv[2] if len(sys.argv) > 2 else "deux-generaux"
+tmp = tempfile.mkdtemp(prefix="print_lab-"); dry = _os.path.join(tmp, "sent.jsonl")
+base = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else serve(0, review_dir=tmp, dry_send=dry)[0]
+class Quiet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *a): pass
+plain = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=ROOT))   # a plain static host, like Pages
+threading.Thread(target=plain.serve_forever, daemon=True).start()
 bad = []
 def report(name, ok, note=""):
     print(("ok   " if ok else "FAIL ") + name + ("  " + note if note else ""))
@@ -119,6 +130,42 @@ with sync_playwright() as p:
         ", ".join(f"{b['name']} {b['n']} pieces {b['tris']} tris" for b in sh["bodies"]))
     report("bodies: each repaired, nothing left to fix", not any(sh["left"].values()), str(sh["left"]))
     report("checked: the badge on an unchecked asset, a date on a checked one", sh["badge"] and not sh["cBadge"] and "2026-10-23" in (sh["cMark"] or "") and "NOT CHECKED BY A HUMAN" in txt, sh["cMark"])
+    # r452: Simon's review. Local only: a plain static server gets the notice, not the lab
+    pp = br.new_page(); pp.goto(f"http://127.0.0.1:{plain.server_address[1]}/lab/print/?ep={ep}"); pp.wait_for_selector("#local-only", timeout=20000)
+    report("local only: a plain static server shows the notice and loads nothing", pp.locator("#rows").count() == 0, pp.inner_text("#local-only").replace("\n", " ")[:90]); pp.close()
+    if len(sys.argv) > 1 and sys.argv[1]:
+        print("(review checks skipped: they write, so they run only on the test's own server)")
+    else:
+        lab = f"{base}lab/print/?ep={ep}"
+        pg.goto(lab + "#castle-a"); pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
+        report("#<asset> opens that asset", pg.locator("tr.asset.on").get_attribute("data-id") == "castle-a")
+        pg.fill("#rv-text", "the flag can go, and the base need not be this big"); pg.click("#rv-add")
+        pg.wait_for_selector("#review li .open")
+        pg.locator("tr.asset[data-id=rider-a]").click(); pg.fill("#rv-text", "no cape"); pg.click("#rv-add"); pg.wait_for_selector("#review li .open")
+        pg.locator("#rv-check").check(); pg.wait_for_selector("tr.asset[data-id=rider-a] .checked")
+        report("checked: the tick clears the badge", pg.locator("tr.asset[data-id=rider-a] .unchecked").count() == 0
+            and pg.locator("tr.asset[data-id=castle-a] .unchecked").count() == 1, pg.inner_text("tr.asset[data-id=rider-a] .checked"))
+        ctx = br.new_context(); fresh = ctx.new_page()   # a fresh browser: no cache, no storage
+        fresh.goto(lab + "#castle-a"); fresh.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
+        report("a comment survives a fresh browser", "the flag can go" in fresh.inner_text("#review")
+            and fresh.locator("tr.asset[data-id=rider-a] .checked").count() == 1, fresh.inner_text("tr.asset[data-id=castle-a] .mark").strip())
+        report("Send says how many comments are open", fresh.inner_text("#send") == "Send the 2 open comments to an agent", fresh.inner_text("#send"))
+        fresh.click("#send"); fresh.wait_for_selector("#sent .ok, #sent .bad")
+        sent = [json.loads(l) for l in open(dry)] if _os.path.exists(dry) else []
+        argv = sent[0]["argv"] if sent else []
+        det = argv[argv.index("--detail") + 1] if "--detail" in argv else ""
+        report("Send: ONE ticket on the episode's tag, every open comment, file:line, the lab link", len(sent) == 1 and argv[:2] == ["atelier", "add"]
+            and argv[argv.index("--tags") + 1] == ep and "the flag can go" in det and "no cape" in det
+            and re.search(rf"{ep}/js/print-assets.js:\d+", det) and f"lab/print/?ep={ep}#castle-a" in det, fresh.inner_text("#sent"))
+        fresh.reload(); fresh.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
+        rv = json.load(open(_os.path.join(tmp, f"{ep}.json")))
+        report("sent comments are marked with the ticket, none left to send", all(c["sent"] == sent[0]["ref"] for e in rv["assets"].values() for c in e["comments"])
+            and fresh.locator("#send").is_disabled() and "sent in" in fresh.inner_text("#review"), fresh.inner_text("#send"))
+        fresh.locator("tr.asset[data-id=rider-a]").click(); fresh.locator("#rv-check").uncheck(); fresh.wait_for_selector("tr.asset[data-id=rider-a] .unchecked")
+        report("unticking brings the badge back", True)
+        pg.reload(); pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
+        pg.locator("tr.asset[data-id=castle-a]").click(); pg.wait_for_timeout(600); pg.screenshot(path=f"out/print_lab-{ep}-review.png")
+        ctx.close()
     report("no page errors", not errs, "; ".join(errs)[:200])
     br.close()
 print("all ok" if not bad else f"FAIL: {len(bad)}")

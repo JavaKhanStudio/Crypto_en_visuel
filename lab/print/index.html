@@ -3,7 +3,10 @@
      episode running in a hidden same-origin iframe (its window.demo), checks each piece at board-game scale for an FDM printer
      (lib/print.js), shows it, and downloads the ticked ones as STL in one .zip. Not linked from the home: an admin page.
      ?ep=<slug> picks the episode; ?show=<asset id> previews one on load (for a shot); ?assets=tests/<path>.js reads that
-     list instead of the episode's (a test fixture, r451). -->
+     list instead of the episode's (a test fixture, r451); #<asset id> also previews one (the links r452's tickets carry).
+     LOCAL ONLY (r452): it runs only where tools/serve_review.py serves the repo (Atelier's Labs, 127.0.0.1:8794), which
+     keeps Simon's review (comments, checked ticks) in lab/print/review/<ep>.json and sends the comments as a ticket;
+     anywhere else it says so and loads nothing. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Print a scene · Crypto en visuel</title>
 <script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
@@ -28,6 +31,12 @@
   #legend { position: absolute; left: 12px; bottom: 10px; font-size: 12px; color: #9aa3b5; }
   .unchecked { display: inline-block; margin-top: 3px; padding: 0 6px; border-radius: 9px; font-size: 11px; background: #3a2a12; color: #f0b54a; border: 1px solid #6b4a18; }
   .checked { display: inline-block; margin-top: 3px; font-size: 11px; color: #7fd18b; }
+  #rv { position: absolute; right: 12px; bottom: 34px; width: 340px; max-height: 60%; overflow: auto; background: rgba(16, 19, 26, .92); border: 1px solid #2c3342; border-radius: 8px; padding: 10px 12px; }
+  #rv p { margin: 6px 0 0; } #review p { color: #9aa3b5; }
+  #review h2 { font-size: 14px; margin: 0 0 6px; } #review ul { margin: 6px 0; padding-left: 18px; } #review li { margin: 3px 0; }
+  #review textarea { width: 100%; box-sizing: border-box; min-height: 52px; font: inherit; background: #171b24; color: #d8dce6; border: 1px solid #333a49; border-radius: 6px; padding: 6px; }
+  .sent { color: #7f8aa0; font-size: 12px; } .open { color: #f0b54a; font-size: 12px; }
+  #local-only { grid-column: 1 / -1; padding: 40px; max-width: 640px; }
   iframe { position: absolute; left: -2000px; top: 0; width: 640px; height: 400px; border: 0; }
 </style></head><body>
 <div id="side">
@@ -38,7 +47,9 @@
   <p><button class="go" id="dl" disabled>Download the ticked assets (.zip)</button> <span id="sel"></span></p>
   <p style="font-size:12px">In the zip, per asset: <code>&lt;id&gt;.stl</code> (every piece in one file, for a one-colour print; an asset printed in several bodies has one <code>&lt;id&gt;-&lt;body&gt;.stl</code> each, to glue), <code>pieces/</code> (one STL per piece, named with its colour, for painting or colour changes), and <code>PRINT.txt</code> (sizes and what to fix). « open » is a piece whose surface is not closed, a slicer may refuse or misread it; « flat » has no thickness (a flag, a door), it needs one; « thin » is under 1 mm, two nozzle lines or fewer; « floating » touches nothing (a gem above a head), it needs a pin or a stand. The export fixes them (lib/print.js repair, each fix listed in PRINT.txt): open pieces capped, sheets thickened to 1 mm, thin ones widened to 1 mm, floating ones pinned to the nearest piece above or below, and a landmark cut at its ground so it stands flat. Parts the list removes for print (a flag, a cape) show as ghosts and are not in the files. An asset no human has checked yet says so in amber.</p>
 </div>
-<div id="view"><div id="cap"></div><div id="legend">Grid: 1 cm squares on the bed. <span class="bad">Red</span>: a piece to fix before printing. <span style="color:#ffb020">Amber</span>: fixed for printing (<a href="#" id="fixes" style="color:inherit">hide</a>). Drag to turn.</div></div>
+<div id="view"><div id="cap"></div>
+  <div id="rv"><div id="review"><h2>Review</h2><p>Pick an asset.</p></div>
+  <p><button id="send" disabled>Send the open comments to an agent</button> <span id="sent"></span></p></div><div id="legend">Grid: 1 cm squares on the bed. <span class="bad">Red</span>: a piece to fix before printing. <span style="color:#ffb020">Amber</span>: fixed for printing (<a href="#" id="fixes" style="color:inherit">hide</a>). Drag to turn.</div></div>
 <iframe id="frame" title="episode"></iframe>
 <script type="module">
 import * as THREE from 'three';
@@ -51,6 +62,15 @@ const slugs = [...(await (await fetch('../../home.js')).text()).matchAll(/slug: 
 const EPS = (await Promise.all(slugs.map(async e => (await fetch(`../../${e}/js/print-assets.js`, { method: 'HEAD' })).ok && e))).filter(Boolean);
 const q = new URLSearchParams(location.search), ep = EPS.includes(q.get('ep')) ? q.get('ep') : EPS[0];
 const $ = id => document.getElementById(id), state = $('state');
+// r452: local only. tools/serve_review.py answers the ping (Atelier's Labs, on this machine); anywhere else
+// (a public host, a plain http.server) the page says so and loads nothing
+const api = (path, body) => fetch(`../../review/api/${path}`, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : { cache: 'no-store' })
+  .then(async r => { const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || r.status); return j; });
+if (!await api('ping').then(j => j.ok, () => false)) {
+  document.body.innerHTML = '<div id="local-only"><h1>Print a scene</h1><p>This admin page runs only on Simon\'s machine, from Atelier\'s Labs (print-scene), where <code>tools/serve_review.py</code> serves the repo and keeps the review.</p></div>';
+  throw new Error('print lab: local only');
+}
+let review = await api(ep);
 for (const e of EPS) $('ep').add(new Option(e, e, e === ep, e === ep));
 $('ep').onchange = () => { q.set('ep', $('ep').value); location.search = q; };
 window.printLab = { ready: false, rows: [] };
@@ -83,6 +103,7 @@ renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, came
 
 function show(row) {
   for (const r of window.printLab.rows) r.tr.classList.toggle('on', r === row);
+  panel(row);
   shown.clear(); if (grid) scene.remove(grid);
   if (!row.parts) { $('cap').textContent = row.a.label + ': ' + row.a.why; return; }
   // r451: each body stands on the bed on its own, side by side as it prints, 10 mm apart; the parts
@@ -140,14 +161,44 @@ function measure(row) {
     + (row.parts.stripped.length ? `<br><span class="kind">removed for print: ${[...new Set(row.parts.stripped.map(p => p.part))].join(', ')}</span>` : '');
 }
 
+// ---------- r452: Simon's review, kept by tools/serve_review.py in lab/print/review/<ep>.json ----------
+// every asset says whether a human (Simon) has checked its print (the list's checked: or his tick here);
+// unchecked ones stay downloadable
+const entry = row => review.assets?.[row.a.id] ?? { checked: null, comments: [] };
+const checkedOn = row => entry(row).checked ?? (/^\d{4}-\d\d-\d\d$/.test(row.a.checked ?? '') ? row.a.checked : null);
+const esc = t => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+function mark(row) {
+  if (row.a.printable === false) return;
+  const on = checkedOn(row), n = entry(row).comments.length, open = entry(row).comments.filter(c => !c.sent).length;
+  row.cells.mark.innerHTML = (on ? `<br><span class="checked">checked by a human ${on}</span>` : '<br><span class="unchecked">not checked by a human</span>')
+    + (n ? ` <span class="kind">${n} comment${n > 1 ? 's' : ''}${open ? `, ${open} open` : ''}</span>` : '');
+}
+function sendable() { const n = Object.values(review.assets ?? {}).flatMap(e => e.comments).filter(c => !c.sent).length;
+  $('send').disabled = !n; $('send').textContent = n ? `Send the ${n} open comment${n > 1 ? 's' : ''} to an agent` : 'No open comment to send'; }
+function panel(row) {
+  const box = $('review'), e = entry(row), fromList = !entry(row).checked && checkedOn(row);
+  if (row.a.printable === false) { box.innerHTML = `<h2>Review · ${esc(row.a.label)}</h2><p>Not printable.</p>`; return; }
+  box.innerHTML = `<h2>Review · ${esc(row.a.label)}</h2>
+    <label><input type="checkbox" id="rv-check" ${checkedOn(row) ? 'checked' : ''} ${fromList ? 'disabled' : ''}> Checked by me${checkedOn(row) ? ` (${checkedOn(row)}${fromList ? ', in the list' : ''})` : ''}</label>
+    <ul>${e.comments.map(c => `<li>${esc(c.text)} <span class="${c.sent ? 'sent' : 'open'}">${c.at} · ${c.sent ? 'sent in ' + c.sent : 'open'}</span></li>`).join('') || '<li class="sent">no comment yet</li>'}</ul>
+    <textarea id="rv-text" placeholder="A comment on this asset: what to remove, shrink, split…"></textarea>
+    <p><button id="rv-add">Add the comment</button> <span id="rv-err" class="bad"></span></p>`;
+  const done = j => { review = j; mark(row); panel(row); sendable(); }, fail = err => { $('rv-err').textContent = err.message; };
+  $('rv-check').onchange = ev => api(`${ep}/checked`, { asset: row.a.id, on: ev.target.checked }).then(done, fail);
+  $('rv-add').onclick = () => { const t = $('rv-text').value.trim(); if (t) api(`${ep}/comment`, { asset: row.a.id, text: t }).then(done, fail); };
+}
+$('send').onclick = () => { $('send').disabled = true;
+  api(`${ep}/send`, {}).then(j => { review = j.review; $('sent').innerHTML = `<span class="ok">sent as ${j.ref}</span>`; for (const r of window.printLab.rows) mark(r);
+    const on = window.printLab.rows.find(r => r.tr.classList.contains('on')); if (on) panel(on); sendable(); },
+    err => { $('sent').innerHTML = `<span class="bad">${esc(err.message)}</span>`; sendable(); }); };
+sendable();
+
 for (const a of ASSETS) {
   const tr = document.createElement('tr'); tr.className = 'asset' + (a.printable === false ? ' no' : ''); tr.dataset.id = a.id;
-  // r451: every asset says whether a human (Simon) has checked its print; unchecked ones stay downloadable
-  const mark = a.printable === false ? '' : /^\d{4}-\d\d-\d\d$/.test(a.checked ?? '') ? `<br><span class="checked">checked by a human ${a.checked}</span>` : '<br><span class="unchecked">not checked by a human</span>';
-  tr.innerHTML = `<td><input type="checkbox" ${a.printable === false ? 'disabled' : ''}></td><td>${a.label}<br><span class="kind">${a.kind} · ${a.id}</span>${mark}</td><td class="size"></td><td class="n"></td><td class="st"></td>`;
+  tr.innerHTML = `<td><input type="checkbox" ${a.printable === false ? 'disabled' : ''}></td><td>${a.label}<br><span class="kind">${a.kind} · ${a.id}</span><span class="mark"></span></td><td class="size"></td><td class="n"></td><td class="st"></td>`;
   $('rows').append(tr);
-  const row = { a, tr, size: a.size, cells: { size: tr.querySelector('.size'), n: tr.querySelector('.n'), st: tr.querySelector('.st') } };
-  window.printLab.rows.push(row);
+  const row = { a, tr, size: a.size, cells: { size: tr.querySelector('.size'), n: tr.querySelector('.n'), st: tr.querySelector('.st'), mark: tr.querySelector('.mark') } };
+  window.printLab.rows.push(row); mark(row);
   if (a.printable === false) { row.cells.st.innerHTML = `<span class="why">not printable: ${a.why}</span>`; row.cells.size.textContent = '–'; }
   else {
     try {
@@ -172,7 +223,7 @@ function files(rows) {
     if (many) for (const b of r.fix.bodies) out.push({ name: `${r.a.id}/${r.a.id}-${slug(b.name)}.stl`, data: stl(b.ps, r.k) });
     else out.push({ name: `${r.a.id}/${r.a.id}.stl`, data: stl(ps, r.k) });
     const lines = [`${r.a.label}`, `${r.mm[0]} x ${r.mm[2]} mm on the bed, ${r.mm[1]} mm high, ${(r.k).toFixed(2)} mm per scene unit`,
-      /^\d{4}-\d\d-\d\d$/.test(r.a.checked ?? '') ? `Checked by a human on ${r.a.checked}.` : 'NOT CHECKED BY A HUMAN yet.',
+      checkedOn(r) ? `Checked by a human on ${checkedOn(r)}.` : 'NOT CHECKED BY A HUMAN yet.',
       ...(many ? [`Printed in ${r.fix.bodies.length} bodies, to glue: ${r.fix.bodies.map(b => `${r.a.id}-${slug(b.name)}.stl (${b.ps.length} pieces)`).join(', ')}`] : []),
       ...(r.fix.log.length ? [`Fixed for printing (${r.fix.log.length}):`, ...r.fix.log.map(l => '  ' + l)] : []), `${ps.length} pieces:`];
     ps.forEach((p, i) => {
@@ -193,7 +244,7 @@ $('dl').onclick = () => {
 };
 $('fixes').textContent = fixes ? 'hide' : 'show';
 $('fixes').onclick = e => { e.preventDefault(); fixes = !fixes; e.target.textContent = fixes ? 'hide' : 'show'; const on = window.printLab.rows.find(r => r.tr.classList.contains('on')); if (on) show(on); };
-const first = window.printLab.rows.find(r => r.a.id === q.get('show')) ?? window.printLab.rows.find(r => r.parts);
+const first = window.printLab.rows.find(r => r.a.id === (q.get('show') ?? decodeURIComponent(location.hash.slice(1)))) ?? window.printLab.rows.find(r => r.parts);
 if (first) show(first);
 state.textContent = `${ASSETS.length} assets`;
 window.printLab.ready = true;

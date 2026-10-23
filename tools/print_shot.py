@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """r394: shoots lab/print/ showing one asset (?show=<id>), the preview pane only, optionally zoomed in.
-Before/after a change to lib/print.js: serve the old tree on another port and pass --base.
-    tools/print_shot.py out/x.png --asset castle-b [--ep deux-generaux] [--zoom 1] [--base http://localhost:8793/] [--assets tests/print/shape-assets.js]"""
+Before/after a change to lib/print.js: serve the old tree on another port and pass --base. With no --base it
+serves this tree itself through tools/serve_review.py (r452: the lab runs only there), in a temp review dir.
+    tools/print_shot.py out/x.png --asset castle-b [--ep deux-generaux] [--zoom 1] [--base http://localhost:8811/] [--assets tests/print/shape-assets.js]"""
 import argparse
 from playwright.sync_api import sync_playwright
 from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("--asset", required=True)
 ap.add_argument("--ep", default="deux-generaux"); ap.add_argument("--zoom", type=float, default=1)
-ap.add_argument("--base", default="http://localhost:8793/")
+ap.add_argument("--base")
 ap.add_argument("--assets", help="a test list instead of the episode's, tests/<path>.js (r451)")
 a = ap.parse_args()
+if not a.base:
+    import tempfile; from serve_review import serve
+    a.base = serve(0, review_dir=tempfile.mkdtemp(prefix='print_shot-'))[0]
 with sync_playwright() as p:
     b = launch(p)
     pg = b.new_page(viewport={"width": 1400, "height": 860})

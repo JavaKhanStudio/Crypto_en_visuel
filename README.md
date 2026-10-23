@@ -394,7 +394,8 @@ que donne le cours.
   `simonbedardprog.com/ficelle*` et `www.simonbedardprog.com/ficelle*` vers le Worker ;
   `worker/ficelle.js` retire le préfixe `/ficelle` (et le remet dans les redirections).
 - `.assetsignore` garde hors du web `tools/`, `tests/`, `out/`, `worker/`, `.atelier`, `.claude`,
-  `README.md` et `wrangler.jsonc`.
+  `README.md`, `wrangler.jsonc` et `lab/print` (r452 : la page d'impression ne tourne que sur la machine
+  de Simon, derrière `tools/serve_review.py`).
 - La mise en ligne passe par la branche `prod` (Workers Builds, tableau de bord Cloudflare) :
   c'est Simon qui la pousse (`git push origin main:prod`). Les sessions du tableau ne poussent
   jamais `prod` et ne lancent jamais `wrangler deploy`.

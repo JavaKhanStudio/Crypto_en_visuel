@@ -1,5 +1,6 @@
 # Not served by the ficelle Worker (wrangler.jsonc): dev tools, tests,
-# captures, board files, and the Worker itself.
+# captures, board files, the Worker itself, and lab/print (r452: the print lab is
+# Simon's admin page, run only from Atelier's Labs on his machine).
 .git
 .atelier
 .claude
@@ -14,3 +15,4 @@ README.md
 node_modules
 .wrangler
 __pycache__
+lab/print

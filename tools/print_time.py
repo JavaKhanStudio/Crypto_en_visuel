@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """r450: how long lab/print/ takes to load an episode (page open to printLab.ready), and what
-floating() and repair() cost on each asset of its list, timed again in the page. Serve the repo first.
+floating() and repair() cost on each asset of its list, timed again in the page. With no base it serves
+the repo itself through tools/serve_review.py.
 
     python3 tools/print_time.py [base] [ep]
 """
@@ -9,7 +10,9 @@ from playwright.sync_api import sync_playwright
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from browser import launch
 
-base = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/"
+import tempfile
+from serve_review import serve   # r452: the lab runs only behind it
+base = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else serve(0, review_dir=tempfile.mkdtemp(prefix="print_time-"))[0]
 ep = sys.argv[2] if len(sys.argv) > 2 else "deux-generaux"
 with sync_playwright() as p:
     br = launch(p); pg = br.new_page(viewport={"width": 1400, "height": 860})
