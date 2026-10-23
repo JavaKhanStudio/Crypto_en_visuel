@@ -14,6 +14,7 @@ ap.add_argument("--page", default="encore-des-tours/")
 ap.add_argument("--from", dest="frm", type=int, default=5)
 ap.add_argument("--step", type=int, default=6)
 ap.add_argument("--runs", type=int, default=2)
+ap.add_argument("--window", type=int, default=5000, help="with --hitch: ms watched (r601: r492's warm under the veil delays ahead() past 5 s)")
 ap.add_argument("--hitch", action="store_true", help="instead: the frames over 50 ms from entering --from (from the step before) to 5 s after, while the next room is built ahead")
 a = ap.parse_args()
 PROBE = """async step => {
@@ -39,7 +40,7 @@ HITCH = """async step => { const t0 = performance.now(), ev = []; let last = t0;
   wrap(r, 'compileAsync', function (g, x) { const p = g.apply(this, x); p.then(() => at('compiled')); return p; });
   wrap(ins, 'warmUp', function (g, x) { const s = performance.now(); g.apply(this, x); at('warm ' + Math.round(performance.now() - s)); });
   await new Promise(res => { const tick = () => { const n = performance.now(); if (n - last > 50) ev.push([Math.round(n - t0), Math.round(n - last)]);
-    last = n; if (n - t0 < 5000) requestAnimationFrame(tick); else res(); }; requestAnimationFrame(tick); demo.story.go(step); });
+    last = n; if (n - t0 < WINDOW) requestAnimationFrame(tick); else res(); }; requestAnimationFrame(tick); demo.story.go(step); });
   return { ev, next: !!demo.inside.next, warm: !!demo.inside.next?.warm }; }"""
 with sync_playwright() as p:
     b = launch(p)
@@ -48,6 +49,6 @@ with sync_playwright() as p:
         pg.goto(f"{a.base}{a.page}#story={a.frm - 1 if a.hitch else a.frm}"); pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
         if a.hitch: pg.wait_for_timeout(3000)
         else: pg.wait_for_function("demo.inside.active && !demo.inside.arrival", timeout=30000); pg.wait_for_timeout(1500)
-        if a.hitch: print(f"run {run + 1}: frames over 50 ms (at ms, ms):", pg.evaluate(HITCH, a.frm - 1))
+        if a.hitch: print(f"run {run + 1}: frames over 50 ms (at ms, ms):", pg.evaluate(HITCH.replace("WINDOW", str(a.window)), a.frm - 1))
         else: print(f"run {run + 1}:", "  ".join(f"{k}@{t}" for k, t in pg.evaluate(PROBE, a.step - 1)))
         pg.close()

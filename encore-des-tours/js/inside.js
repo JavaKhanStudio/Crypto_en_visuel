@@ -559,6 +559,7 @@ function gcmEveRoom(scene, pk, portrait) {
 const ROOMS = { sign: { door: 'a', build: signRoom }, verify: { door: 'b', build: verifyRoom },
   gcm: { door: 'a', build: gcmRoom }, gcmEve: { door: 'b', build: gcmEveRoom } };
 // the engine's options (lib/room.js): a farther far plane, dimmer torches, and the stone room with the
-// owner's banners built around every machine
-export const ROOM = { rooms: ROOMS, far: 400, flame: 28, slide: true,
+// owner's banners built around every machine, its point lights padded to a multiple of 4 so the rooms
+// share their shaders (r601)
+export const ROOM = { rooms: ROOMS, far: 400, flame: 28, slide: true, lights: 4,
   shell: (scene, portrait, machine, owner) => buildRoom(scene, portrait, { size: machine.size, owner }) };
