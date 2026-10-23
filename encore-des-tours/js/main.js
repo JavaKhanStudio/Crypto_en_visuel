@@ -38,7 +38,7 @@ renderer.toneMappingExposure = 1.3;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1, .5, 1500);
-const world = buildWorld(scene, { castles: 'keep' });   // the keeps their rooms are built in (r423)
+const world = buildWorld(scene);   // Middle-earth's castles, shared with 1.1; the rooms go in by their valley doors (r430, r425)
 const tickers = new Set(); world.tickers = tickers;
 initFx(scene);
 const rig = new CameraRig(camera, canvas);

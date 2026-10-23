@@ -131,7 +131,7 @@ with sync_playwright() as p:
         go(pg, 11, "demo.inside.active")
         s = pg.evaluate(STATE)
         check(f"{tag} Back from step 13 zooms into Bob's keep", s["ins"] == 3 and s["door"] == "b" and s["beat"] == "gcmEve", s)
-        pg.click("#lang button[data-lang=en]"); pg.wait_for_timeout(800)
+        pg.evaluate("document.querySelector('#lang button[data-lang=en]').click()"); pg.wait_for_timeout(800)   # a DOM click: the top bar may have slid out of view (lib/topbar.js, r406)
         s = pg.evaluate(STATE)
         check(f"{tag} switching to English inside rebuilds the room on the English packets", s["active"] and s["order"] == "ATTACK AT 6AM TOMORROW", s)
         pg.goto(BASE + "?instant=1&lang=fr&direct=1#story=6")   # another query: a new page, not a hash change
