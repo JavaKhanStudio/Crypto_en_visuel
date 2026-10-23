@@ -75,7 +75,9 @@ const stand = buildPacket(); stand.scale.setScalar(3.4); stand.visible = false; 
 // beside the castle on a wide screen, where neither the card nor the panel covers it; in front of it
 // on a tall one, where the sides are out of frame
 // (r511: on a tall one the story panel takes the lower half, so Alice's shot backs off and looks lower,
-// the white city whole above the panel and the packet, a little smaller, before its lowest wall)
+// the white city whole above the panel and the packet, a little smaller, before its lowest wall).
+// TALL_SHOTS has no hold, so lib/saga/camera.js held() (r516) leaves it alone: held() alone fits the
+// whole castle box under its bubble room and shrinks the city to ~60 px at step 1 (r533's shots)
 const STANDS = { a: [CASTLE_A.x - 18, 14], b: [CASTLE_B.x - 18, -12] }, TALL = { a: [CASTLE_A.x + 8, 25], b: [CASTLE_B.x - 15, 20] };
 const TALL_SHOTS = { castleA: { pos: new THREE.Vector3(-30, 40, 62), target: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y - 15, 0) } };
 const frame = shot => (innerWidth < innerHeight && TALL_SHOTS[shot]) || shot;
