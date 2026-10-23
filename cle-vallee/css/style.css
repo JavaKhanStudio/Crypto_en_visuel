@@ -28,8 +28,17 @@
 /* Episode 1.3: the corner card (the packet, the byte Eve changes, the seals, what Bob decrypts) */
 #card { top: 96px; right: 14px; width: min(430px, calc(100% - 28px)); padding: 10px 14px 10px; }
 #card:empty { display: none; }
-/* r128 (as 1.5's r129): on a desktop a tall card stops above the story panel (the last step's doors raise it) and scrolls, never covering the step's text */
-@media (min-width: 901px) { #card { max-height: calc(100% - var(--dock, 14px) - 104px); overflow: auto; } }
+/* r128, r504 (as 1.5's r129, r478): on a desktop a tall card stops above the story panel (the last step's doors raise it) and scrolls,
+   never covering the step's text; main.js clip() sets its max-height to end on a whole row, and this last line
+   covers what is below it and says so, until the reader has scrolled to the end */
+@media (min-width: 901px) {
+  #card { overflow: auto; }
+  #card.more { padding-bottom: 0; }
+  #card.more::after { content: attr(data-more); position: sticky; bottom: 0; display: block; height: 24px; margin: 0 -14px; padding: 0 14px;
+    font: 600 12px/24px var(--sans); color: var(--b); background: rgb(22, 24, 34); border-top: 1px dashed var(--edge); cursor: pointer; }
+  #card.more.end::after { visibility: hidden; }
+  #card.more.tight::after { display: none; } #card.more.tight h3::after { content: ' ▾'; color: var(--muted); font-size: 12px; }
+}
 #card h3 { font: 600 15px var(--serif); margin: 0; color: var(--b); }
 #card .note { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; }
 #card .lbl { display: block; margin: 8px 0 2px; color: var(--muted); font: 600 11px var(--sans); letter-spacing: .06em; text-transform: uppercase; }

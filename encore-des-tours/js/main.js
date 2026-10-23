@@ -162,7 +162,53 @@ function dock() {
   const root = document.documentElement.style;
   root.setProperty('--dock', `${open ? innerHeight - open.getBoundingClientRect().top : 14}px`);
   root.setProperty('--top', `${top}px`);
+  clip();
 }
+// r478 (1.5), r504: on a desktop the card, capped above the story panel, stops on its last whole row, never halfway through
+// one, and its last line says that more is below until the reader has scrolled there. It runs again while the
+// card's top glides (lib/topbar.js: 96px to 14px as the top bar goes, and back).
+const ROWS = ':scope > *, .sizes > *, .tricks > *, .duo > *, .hex, .lbl, .code, .note, .order, .packet, li';   // a .duo box is one row
+function clip(fresh) {
+  const at = card.scrollTop;
+  card.style.maxHeight = ''; card.classList.remove('more', 'end', 'tight');
+  if (innerWidth <= 900 || !card.firstChild) return;
+  // the room: down to the open panel when they share columns (the last step's doors raise it), else the screen
+  const c = card.getBoundingClientRect(), open = Object.values(panels).find(p => !p.classList.contains('hidden') && p.offsetHeight);
+  const p = open?.getBoundingClientRect(), under = p && p.left < c.right && p.right > c.left;
+  card.style.maxHeight = `${Math.floor((under ? p.top : innerHeight) - 10 - c.top)}px`;
+  if (card.scrollHeight <= card.clientHeight + 1) return;
+  card.dataset.more = t('card.below');
+  card.classList.add('more');
+  const cap = card.clientHeight, cue = parseFloat(getComputedStyle(card, '::after').height) || 0;
+  const y0 = card.getBoundingClientRect().top + card.clientTop - card.scrollTop;
+  // an end is a row's bottom that no other row straddles (a grid row whose cells wrap to different heights)
+  const all = [...card.querySelectorAll(ROWS)].filter(r => r.offsetHeight), inner = ROWS.slice(ROWS.indexOf(',') + 1);
+  const leaves = all.filter(r => !r.querySelector(inner)).map(r => r.getBoundingClientRect()).map(r => [r.top - y0, r.bottom - y0]);
+  let end = 0;
+  for (const r of all) {
+    const b = r.getBoundingClientRect().bottom - y0;
+    if (b <= cap - cue && b > end && !leaves.some(([u, v]) => u < b - 1 && v > b + 1)) end = b;
+  }
+  const h3 = card.querySelector('h3')?.getBoundingClientRect().bottom - y0;
+  // no room for the title and the cue (a small screen with the top bar back): the title alone, with a ▾
+  if (end < h3) card.classList.add('tight');
+  card.style.maxHeight = `${Math.ceil(end < h3 ? h3 + 4 : end + cue) + card.offsetHeight - card.clientHeight}px`;
+  card.scrollTop = fresh ? 0 : at; ends();
+}
+const ends = () => card.classList.toggle('end', card.scrollTop + card.clientHeight >= card.scrollHeight - 2);
+card.addEventListener('scroll', ends);
+card.addEventListener('click', e => {   // a click on « more below » scrolls the card down
+  if (e.target === card && card.classList.contains('more') && e.clientY > card.getBoundingClientRect().bottom - 30)
+    card.scrollBy({ top: card.clientHeight * .7, behavior: 'smooth' });
+});
+let view = '';   // a new view (its title) starts at the top; a step updating its own card keeps the reader's scroll
+new MutationObserver(() => { const h = card.querySelector('h3')?.textContent ?? ''; clip(h !== view); view = h; }).observe(card, { childList: true });
+let gliding = false;
+card.addEventListener('transitionrun', e => {
+  if (e.propertyName !== 'top' || gliding) return;
+  gliding = true; const frame = () => { clip(); if (gliding) requestAnimationFrame(frame); }; frame();
+});
+for (const ev of ['transitionend', 'transitioncancel']) card.addEventListener(ev, e => { if (e.propertyName === 'top') { gliding = false; clip(); } });
 const docker = new ResizeObserver(dock);
 for (const el of [...Object.values(panels), document.getElementById('topbar')]) docker.observe(el);
 addEventListener('resize', dock);

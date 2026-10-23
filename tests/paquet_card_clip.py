@@ -1,26 +1,33 @@
 #!/usr/bin/env python3
-"""Episode 1.5 on a desktop: a corner card taller than the room above the story panel stops on a
+"""Episodes 1.5, 1.4 and 1.6 on a desktop: a corner card taller than the room above the story panel stops on a
 whole row, never halfway through one, and its last line « ▾ la suite plus bas » / '▾ more below'
-says what is hidden, until the reader scrolls to the end (r478, after r129 cut the IV in half).
+says what is hidden, until the reader scrolls to the end (r478, after r129 cut the IV in half; r504
+rolled it out to cle-vallee and encore-des-tours).
 
 Serve the repo first (python3 -m http.server 8793). Walks every story step, fr and en, at 1440x860,
 1280x720 and 1920x1080, and checks: the card stays off the story panel where they share columns;
 no row of the card (a line of hex, a label, a size, a list item) is cut by the card's visible bottom;
 an overflowing card shows the cue, a fitting one does not; scrolled to the end, the cue hides.
-Usage: tests/paquet_card_clip.py [base]"""
+Usage: tests/paquet_card_clip.py [base] [episode]   (episode: paquet-complet, the default, cle-vallee or encore-des-tours)"""
 import sys
 import os as _os; sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
 from browser import launch
 from playwright.sync_api import sync_playwright
 
-BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/") + "paquet-complet/"
-MEASURE = """() => {
+EP = sys.argv[2] if len(sys.argv) > 2 else "paquet-complet"
+BASE = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8793/") + EP + "/"
+# each episode's main.js ROWS: what one row of its card is
+ROWS = {
+  "paquet-complet": ":scope > *, .sizes > *, .tree > *, .why > *, .hex, .lbl, .code, .note, .order, .packet, li",
+  "cle-vallee": ":scope > *, .sizes > *, .chain > *, .hex, .lbl, .note, .order, .packet, li",
+  "encore-des-tours": ":scope > *, .sizes > *, .tricks > *, .duo > *, .hex, .lbl, .code, .note, .order, .packet, li",
+}[EP]
+MEASURE = """(ROWS) => {
   const card = document.getElementById('card'), panel = document.getElementById('story');
   if (!card.firstChild || card.classList.contains('hidden')) return null;
   const c = card.getBoundingClientRect(), p = panel.getBoundingClientRect();
   const cue = card.classList.contains('more') && !card.classList.contains('end') ? parseFloat(getComputedStyle(card, '::after').height) || 0 : 0;
   const seen = c.bottom - card.clientTop - cue;             // the lowest pixel of content a reader sees
-  const ROWS = ':scope > *, .sizes > *, .tree > *, .why > *, .hex, .lbl, .code, .note, .order, .packet, li';   // main.js's; a row holds none of the others
   const cut = [...card.querySelectorAll(ROWS)].filter(r => !r.querySelector(ROWS.slice(12)))
     .map(r => r.getBoundingClientRect()).filter(r => r.height && r.top < seen - 1 && r.bottom > seen + 1)
     .map(r => Math.round(r.top) + '-' + Math.round(r.bottom));
@@ -41,7 +48,7 @@ with sync_playwright() as p:
             n = int(pg.evaluate("document.getElementById('step-count').textContent.match(/\\d+\\s*\\/\\s*(\\d+)/)[1]"))
             def check(where):
                 global n_over
-                m = pg.evaluate(MEASURE)
+                m = pg.evaluate(MEASURE, ROWS)
                 if not m: return
                 was = len(bad)
                 if m["hits"]: bad.append(f"{where}: card bottom {m['bottom']} under the panel top {m['panel']}")

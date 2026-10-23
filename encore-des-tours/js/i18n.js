@@ -52,7 +52,7 @@ const fr = {
 
   // the corner card
   card: {
-    more: '⋮ {k} lignes de plus', bytes: '{k} octets',
+    more: '⋮ {k} lignes de plus', below: '▾ la suite plus bas', bytes: '{k} octets',
     fields: { num: 'n°', ek: 'clés fermées', iv: 'IV', ct: 'chiffré', tag: 'sceau', sig: 'signature' },
     tricks: 'Les tours d’Eve', stopped: 'arrêté', notYet: 'pas encore',
     tricksNote: 'Les quatre tours qu’Eve a dans son sac, quand le réseau lui appartient : elle lit tout, peut modifier un octet, rejouer un vieux paquet ou se faire passer pour Alice.',
@@ -216,7 +216,7 @@ const en = {
   ],
 
   card: {
-    more: '⋮ {k} more rows', bytes: '{k} bytes',
+    more: '⋮ {k} more rows', below: '▾ more below', bytes: '{k} bytes',
     fields: { num: 'no.', ek: 'locked keys', iv: 'IV', ct: 'ciphertext', tag: 'seal', sig: 'signature' },
     tricks: 'Eve’s tricks', stopped: 'stopped', notYet: 'not yet',
     tricksNote: 'The four tricks Eve has up her sleeve when the network is hers: she reads everything, can modify a byte, replay an old packet or pose as Alice.',
