@@ -62,13 +62,6 @@
 @media (max-width: 900px) { #card { top: auto; bottom: calc(var(--dock, 230px) + 8px); right: 8px; width: auto; max-width: calc(100% - 16px);
   max-height: calc(100% - var(--dock, 230px) - var(--top, 0px) - 16px); overflow: auto; } }
 
-/* r368, Simon's pick A: on a phone, in Bob's and Alice's keeps, the text folds to its first 3 lines so
-   the room keeps the screen; « Lire la suite ▾ » opens it (story.js render) */
-#step-more { display: none; margin-top: 4px; padding: .2em .6em; font-size: 13px; }
-@media (max-width: 900px) {
-  #story.roomy:not(.open) #step-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; min-height: 0; }
-  #story.roomy.long #step-more { display: inline-block; }
-}
 
 /* the sandbox's order field, and the story's link to another episode */
 #sb-order { width: 100%; font: 700 14px "Courier New", monospace; background: #1b1d2a; color: var(--ink); border: 1px solid var(--edge); border-radius: 8px; padding: 7px 8px; }

@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
 import { renderDoors } from '../../lib/doors.js';
+import { roomFold } from '../../lib/fold.js';
 import { render } from '../../lib/md.js';
 import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
 import * as A from '../../lib/saga-aes.js';
@@ -64,8 +65,7 @@ export class Story {
       actions: document.getElementById('step-actions'), count: document.getElementById('step-count'),
       chapters: document.getElementById('chapters'), prev: document.getElementById('prev'), next: document.getElementById('next'),
       panel: document.getElementById('story'), more: document.getElementById('step-more') };
-    this.el.more.onclick = () => { this.el.panel.classList.toggle('open'); this.fold(); };
-    addEventListener('resize', () => this.fold());
+    this.fold = roomFold(this.el.panel, this.el.text, this.el.more, t);   // r368's phone fold in a room (lib/fold.js)
     this.el.prev.onclick = () => this.go(this.i - 1);
     this.el.next.onclick = () => this.go(this.i + 1);
     onLang(() => { if (STEPS[this.i].inside) this.ctx.inside.rebuild(packets()); this.render(true); this.card(); });
@@ -111,8 +111,7 @@ export class Story {
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
     this.el.title.textContent = s.t; render(this.el.text, s.p); linkify(this.el.text, lang, step.refs);   // « épisode 1.4 » links to its step (r119)
-    if (!langOnly) this.el.panel.classList.remove('open');
-    this.el.panel.classList.toggle('roomy', !!step.inside); this.fold();
+    this.fold(!!step.inside, !langOnly);
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
     this.el.prev.disabled = this.i === 0; this.el.next.disabled = this.i === STEPS.length - 1;
     this.el.chapters.innerHTML = '';
@@ -137,14 +136,6 @@ export class Story {
     this.el.next.classList.toggle('primary', !anim || this.seen);
     if (!this.seen) this.el.next.classList.remove('shine');
     if (langOnly) for (const s2 of step.say || []) this.say(s2, undefined, step.inside ? () => this.ctx.inside.anchor() : undefined);
-  }
-
-  // r368, Simon's pick A: in a room on a phone the text shows its first 3 lines (style.css #story.roomy),
-  // so the room keeps the screen; « Lire la suite ▾ » shows only when that cuts the text, and opens it
-  fold() {
-    const { panel, text, more } = this.el;
-    if (!panel.classList.contains('open')) panel.classList.toggle('long', text.scrollHeight > text.clientHeight + 2);
-    more.textContent = t(panel.classList.contains('open') ? 'nav.less' : 'nav.more');
   }
 
   // the step's animation has played: Suivant takes the gold back and shines once to call the eye
