@@ -356,10 +356,10 @@ export class Room {
   // the speaker's bubble: the top of what the camera holds, a third in
   anchor() { const b = this.want?.box; return b ? v(b.min.x + (b.max.x - b.min.x) * .3, b.max.y + .3) : v(0, 8); }
 
-  // the free band: below the top bar, above the story panel, left of an open corner card (1.2's)
+  // the free band: below the top bar (and its tab, lib/topbar.js: on a phone the bar is tucked behind it, r567), above the story panel, left of an open corner card (1.2's)
   band() {
     const W = innerWidth, H = innerHeight, r = id => document.getElementById(id)?.getBoundingClientRect();
-    const bar = [r('topbar'), r('modes'), r('lang')].filter(b => b && b.height).reduce((m, b) => Math.max(m, b.bottom), 0);
+    const bar = [r('topbar'), r('modes'), r('lang'), r('topbar-tab')].filter(b => b && b.height).reduce((m, b) => Math.max(m, b.bottom), 0);
     const panel = ['story', 'sandbox'].map(id => document.getElementById(id)).find(p => p && !p.classList.contains('hidden') && p.offsetHeight);
     const card = document.getElementById('card'), cr = r('card');
     let top = bar + 8, bottom = H, left = 0, right = W, pr;

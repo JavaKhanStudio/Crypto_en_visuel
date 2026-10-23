@@ -5,8 +5,7 @@
 // then set demo.room.instant = false, demo.room.speed = 1 and call demo.room.play().
 import * as THREE from 'three';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { qualityComposer } from '../../lib/quality.js';
-import { addBloom } from '../../lib/bloom.js';
+import { qualityComposer, addBloom } from '../../lib/episode.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Quiz } from '../../lib/quiz.js';
 import { sfx } from '../../lib/sound.js';
