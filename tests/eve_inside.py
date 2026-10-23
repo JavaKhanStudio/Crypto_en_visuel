@@ -66,7 +66,7 @@ with sync_playwright() as p:
         pg.evaluate("demo.story.go(6)"); pg.wait_for_function("demo.inside.active", timeout=20000)
         s = pg.evaluate(STATE)
         check(f"{tag} Back into step 7 zooms in again, on the beat 'cbc'", s["ins"] == 2 and s["beat"] == "cbc", s)
-        pg.click("#lang button[data-lang=en]"); pg.wait_for_timeout(600)
+        pg.evaluate("document.querySelector('#lang button[data-lang=en]').click()"); pg.wait_for_timeout(600)   # a DOM click: the top bar may have slid out of view (lib/topbar.js, r406)
         s = pg.evaluate(STATE)
         check(f"{tag} switching to English inside rebuilds the room on the English order", s["active"] and s["order"] == "ATTACK AT DAWN TOMORROW", s)
         pg.goto(BASE + "?instant=1&lang=fr&direct=1#story=6")   # another query: a new page, not a hash change; pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
