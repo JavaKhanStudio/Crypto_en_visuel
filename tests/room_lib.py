@@ -18,7 +18,7 @@ for ep in ROOMS:
     checks.append((f"{ep}: no class Inside in js/inside.js", "class Inside" not in ins))
     checks.append((f"{ep}: no DOORS or keepWindow of its own", re.search(r"\b(DOORS|keepWindow)\b", ins) is None))
     checks.append((f"{ep}: main.js imports Inside from lib/room.js",
-                   "import { Inside } from '../../lib/room.js';" in main and "castles: { a: world.castleA, b: world.castleB }, ...ROOM" in main))
+                   "import { Inside } from '../../lib/room.js';" in main and re.search(r"castles: \{ a: world\.castleA, b: world\.castleB \},(?: \w+,)* \.\.\.ROOM", main) is not None))   # options between (composer, r597)
     # r485: the parts of a room (tiles, words, the stone room) are lib/room-parts.js's
     left = re.findall(r"^(?:export )?(?:function (tileTex|face|tile|label|relabel|buildRoom)\b|const (side|BOX|faces|show|paint|glyph) =)", ins, re.M)
     checks.append((f"{ep}: no room part of its own (lib/room-parts.js){' — ' + str(left) if left else ''}", not left))

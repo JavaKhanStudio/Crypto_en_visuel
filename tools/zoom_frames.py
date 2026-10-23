@@ -5,6 +5,9 @@ Inside.fit, Bubbles.settle and renderer.render (the GPU wait shows up in render)
 after the swap with a long render is the room's first draw: lib/room.js warmUp(room, true) moves it to
 the glass, under the whole veil.
     tools/zoom_frames.py octet-change/ 5 [--base URL]    # the step that zooms in (1-based)
+r602: --ahead first builds the step's room ahead from the page (inside.ahead(name, packets()), what the
+episode's story.js does on the step before), waits until it is warm, then zooms: the swap should then
+be a frame like the others, and it prints whether enter() took that room.
 """
 import argparse
 from playwright.sync_api import sync_playwright
@@ -13,6 +16,7 @@ from browser import launch   # r401
 ap = argparse.ArgumentParser()
 ap.add_argument("page"); ap.add_argument("step", type=int)
 ap.add_argument("--base", default="http://localhost:8793/")
+ap.add_argument("--ahead", action="store_true")
 a = ap.parse_args()
 with sync_playwright() as p:
     b = launch(p); pg = b.new_page(viewport={"width": 1280, "height": 760})
@@ -27,7 +31,14 @@ with sync_playwright() as p:
         window.__f.push({ t: Math.round(n - t0), gap: Math.round(n - last), scene: ins.active ? 'room' : 'valley', ...(window.__cur || {}) });
         window.__cur = {}; last = n; requestAnimationFrame(tick); };
       requestAnimationFrame(tick); }""")
+    if a.ahead:
+        print("ahead: warm in", pg.evaluate(f"""async () => {{ const m = await import(location.pathname + 'js/story.js'), s = m.STEPS[{a.step - 1}];
+          const t = performance.now(); demo.inside.ahead(s.inside, (m.packets || (() => m.sendOf(s.key || 1)))());
+          await demo.inside.next.ready; window.__ahead = demo.inside.next.warm && demo.inside.next.room;
+          return Math.round(performance.now() - t) + ' ms' + (window.__ahead ? '' : ' (NOT warm)'); }}"""))
+        pg.wait_for_timeout(500)
     pg.evaluate(f"demo.story.go({a.step - 1})"); pg.wait_for_timeout(4000)
+    if a.ahead: print("taken by enter():", pg.evaluate("demo.inside.room === window.__ahead"))
     f = pg.evaluate("window.__f"); b.close()
 sw = next(i for i in range(1, len(f)) if f[i]["scene"] != f[i - 1]["scene"])
 for r in f[max(0, sw - 4):sw + 8]:
