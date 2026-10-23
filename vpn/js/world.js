@@ -10,7 +10,7 @@ import { router, table, cup, building, hall, setPlate, awning, pole, house, TABL
 import { raw, onLang } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
-const CABLE_Y = 4.2;
+export const CABLE_Y = 4.2;
 // the two server halls, roofless (r360): centre and size; the packet's stop (NODES.i, NODES.v) is over
 // the middle of the front row of racks, just inside the front wall, and Victor stands before that row.
 // Small halls, the back wall just behind the last row (r382: no empty row, fewer machines)
