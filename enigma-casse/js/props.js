@@ -13,6 +13,7 @@
 // phi = i * STEP.
 import * as THREE from 'three';
 import { A, ROTORS, REFLECTOR, KEYBOARD, NAMES, pairs } from './enigma.js';
+import { FLOOR } from '../../lib/enigma/world.js';
 
 export const COLORS = { a: 0x4da3ff, b: 0xffc24d, e: 0xff3347 };
 export const STEP = Math.PI * 2 / 26;
@@ -271,17 +272,8 @@ export function rack() {
   return g;
 }
 
-// A desk on four legs, its top at TOP_DESK.
-export const DESK_TOP = 7.5;
-export function desk(w = 14, d = 7) {
-  const g = new THREE.Group(), wood = mat(0x5a3a22, { roughness: .85 });
-  const top = new THREE.Mesh(new THREE.BoxGeometry(w, .4, d), wood); top.position.y = DESK_TOP - .2; top.castShadow = top.receiveShadow = true; g.add(top);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(.5, DESK_TOP - .4, .5), wood);
-    leg.position.set(sx * (w / 2 - .5), (DESK_TOP - .4) / 2, sz * (d / 2 - .5)); leg.castShadow = true; g.add(leg);
-  }
-  return g;
-}
+// A desk on four legs, its top at DESK_TOP: the one of 5.1-5.3, in lib/enigma/desk.js (r489, r579).
+export { desk, DESK_TOP } from '../../lib/enigma/desk.js';
 
 // A character, facing +z, 17 units tall (1.7 m). kind: 'a' Alice, 'b' Bob, 'e' Eve.
 export function person(kind) {
@@ -382,4 +374,21 @@ export function bombe() {
   };
   g.userData.setRun(0, 0);
   return g;
+}
+
+// Eve's side in this episode (r579: the forest is lib/enigma/world.js, this is what 5.3 adds to it).
+// Her machine takes the middle of her desk, so the lamp, notepad and receiver move aside (EVE_DESK);
+// behind her desk, the slate; at her right, on its own boards, the bombe, turned toward her.
+// EVE.slate is the foot of the slate's face, its legs reaching the ground EVE.slate.y below.
+export const EVE = { slate: new THREE.Vector3(0, 13, -42), bombe: new THREE.Vector3(34, 0, -38) };
+export const SLATE_W = 40, SLATE_H = 15;
+export const EVE_DESK = { lamp: new THREE.Vector3(5.7, 0, -2.4), pad: new THREE.Vector3(-4, 0, 1.9), radio: new THREE.Vector3(-3, 0, -1.7) };
+export function evePost(scene, { floor, extras }) {
+  const sl = slate(SLATE_W, SLATE_H, EVE.slate.y); sl.position.copy(EVE.slate); scene.add(sl);
+  const bf = floor(30, 16); bf.position.copy(EVE.bombe).add(new THREE.Vector3(0, 0, 2)); scene.add(bf);
+  const bo = bombe(); bo.position.copy(EVE.bombe).setY(FLOOR); bo.rotation.y = -.35; scene.add(bo);
+  extras.slate = sl; extras.bombe = bo;
+  const bl = new THREE.PointLight(0xffd9a8, 160, 50, 1.4); bl.position.copy(EVE.bombe).add(new THREE.Vector3(-4, 26, 14)); scene.add(bl);
+  // a lamp hung over the slate, so the chalk can be read at night
+  const sll = new THREE.PointLight(0xffd9a8, 120, 40, 1.4); sll.position.copy(EVE.slate).add(new THREE.Vector3(0, SLATE_H + 4, 6)); scene.add(sll);
 }

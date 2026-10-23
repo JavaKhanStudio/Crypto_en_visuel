@@ -4,11 +4,10 @@
 // mm, max = longest side in mm); omit names the parts that are light, not matter; strip the decoration
 // a print does without; ground is the asset's y where it meets the ground, cut there on export so it
 // stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
-// gets its line here. The winter forest is this episode's own (js/world.js), not the saga's valley;
+// gets its line here. The winter forest is lib/enigma/world.js (shared with 5.1/5.2, Eve's slate and bombe added by props.js evePost), not the saga's valley;
 // one unit is 10 cm, so a person (17 units) at 60 mm puts the posts at about 3.5 mm a unit.
 // The wires inside the rotors are lines, and lines are not printed (lib/print.js skips them).
-import { machine, rotor, reflector, desk, person } from './props.js';
-import { PLACES } from './world.js';
+import { machine, rotor, reflector, desk, person, EVE } from './props.js';
 
 const kids = (o, test) => o.children.find(test);
 const all = (o, test) => { const r = []; o.traverse(c => c !== o && test(c) && r.push(c)); return r; };
@@ -42,7 +41,7 @@ export const ASSETS = [
   { id: 'notepad', label: 'A notepad and its pen (one on each desk)', kind: 'prop', size: { max: 20 },
     get: d => d.world.extras.a.pad },
   { id: 'slate', label: "Eve's slate on its two legs, where she moves the crib along the cipher and draws the menu (the chalk is screen text: write it on)",
-    kind: 'landmark', size: { max: 140 }, ground: -PLACES.e.slate.y, get: d => d.world.extras.slate },
+    kind: 'landmark', size: { max: 140 }, ground: -EVE.slate.y, get: d => d.world.extras.slate },
   { id: 'bombe', label: 'The bombe, a cabinet as tall as a man: three banks of twelve drum sets, the relay lamps along its foot (the drums\' letters are painted)',
     kind: 'landmark', size: { h: 70 }, ground: 0, get: d => d.world.extras.bombe, strip: letters },
   { id: 'floor', label: 'The wooden floor under a post (and the smaller one under the bombe), so nothing stands in the snow', kind: 'landmark', size: { max: 120 }, ground: 0,

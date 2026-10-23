@@ -9,8 +9,8 @@
 // under the intercepted cipher and the menu is drawn, and the bombe that runs a menu through the
 // 17 576 positions of one rotor order (enigma.js does the arithmetic; this draws it).
 import * as THREE from 'three';
-import { PLACES, TOP_Y, FLOOR, MAST_H } from './world.js';
-import { machine, person, rack, COLORS, STEP, R, RC, wirePoints, loopPoints, at, DRUM, SLOTS, socketAt, cablePoints, FRONT, APART_C } from './props.js';
+import { PLACES, TOP_Y, FLOOR, MAST_H } from '../../lib/enigma/world.js';
+import { machine, person, rack, COLORS, STEP, R, RC, wirePoints, loopPoints, at, DRUM, SLOTS, socketAt, cablePoints, FRONT, APART_C, EVE } from './props.js';
 import { A, ROTORS, NAMES, BARE, STARTS, press, clashes, menuLetters, bombe as runBombe, check, scrambler, posOf } from './enigma.js';
 import { burst, ring } from '../../lib/fx.js';
 import { sfx } from '../../lib/sound.js';
@@ -553,7 +553,7 @@ export class Stage {
   // st.slate: { cipher, crib, k: the place the crib sits at (0-based, its first letter under
   // cipher letter k), marks: { place: 'out' | 'ok' } } · st.menu: { links, n: links drawn,
   // trace: { letters, vals, upto } } (a guess followed round a loop: vals[j] is letters[j]'s cable)
-  slateAt(x, y) { return PLACES.e.slate.clone().add(v(x, y, .4)); }
+  slateAt(x, y) { return EVE.slate.clone().add(v(x, y, .4)); }
   colX(i, len) { return (i - (len - 1) / 2) * 1.6; }
   drawSlate() {
     const g = this.slateG;
