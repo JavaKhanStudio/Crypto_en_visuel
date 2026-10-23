@@ -59,7 +59,7 @@ addEventListener('resize', resize); resize();
 const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
 // steps 5-6 (Alice signs, Bob checks) and 11-12 (AES-GCM, Eve's byte) happen inside the keeps, in rooms
 // where the machines run on the real bytes (r103, r162)
-inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant, castles: { a: world.castleA, b: world.castleB }, ...ROOM }); resize();
+inside = new Inside({ renderer, renderPass, camera, rig, bubbles, instant, castles: { a: world.castleA, b: world.castleB }, composer, ...ROOM }); resize();
 const toastEl = document.getElementById('toast');
 let toastTimer;
 function toast(text, ms = 3200) { toastEl.textContent = text; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms); }
