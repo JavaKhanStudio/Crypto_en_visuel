@@ -87,6 +87,11 @@ MEASURE = """async (N) => {
   lights.forEach(l => l.castShadow = false); out.noShadow = run(); lights.forEach(l => l.castShadow = true);
   out.noShadow.saves_ms = saves(() => lights.forEach(l => l.castShadow = true), () => lights.forEach(l => l.castShadow = false));
   out.shadowLights = lights.map(l => [l.type, l.shadow.mapSize.x]);
+  // r543: the map redrawn on every frame against the frame as the page draws it (the saga's moon redraws
+  // only when a caster or the light moved, so on a still step the difference is the whole redraw)
+  const redraw = () => { lights.forEach(l => l.shadow.needsUpdate = true); draw(); };
+  out.shadowRedraw_ms = -saves(() => 0, () => 0, redraw);
+  out.shadowCached = lights.length > 0 && lights.every(l => l.shadow.autoUpdate === false);
   out.parts = [];
   for (const o of [...scene.children]) {
     if (!o.visible) continue;
@@ -139,6 +144,8 @@ print(f"composer   costs {r['noBloom']['saves_ms']:5.2f} ms  {f['calls'] - r['no
 if r.get("bloomPass"):
     print(f"  bloom pass alone  {r['bloomPass']['saves_ms']:5.2f} ms  {f['calls'] - r['bloomPass']['calls']:4d} calls   (so MSAA + output: {r['noBloom']['saves_ms'] - r['bloomPass']['saves_ms']:5.2f} ms)")
 print(f"shadow     costs {r['noShadow']['saves_ms']:5.2f} ms  {f['calls'] - r['noShadow']['calls']:4d} calls   shadow lights: {r['shadowLights']}")
+print(f"  map redrawn every frame would add {r['shadowRedraw_ms']:5.2f} ms; "
+      + ("the page redraws it only when a caster or the light moved (r543), so the rest is shading the receivers" if r['shadowCached'] else "the page already does"))
 print(f"idle       {r['idle']['fps']} fps, {r['idle']['cpu_pct']}% of a core on the main thread ({r['idle']['script_pct']}% script), heap {r['idle']['heap_mb']} MB")
 print(f"world.update {r.get('worldUpdate_ms')} ms a frame (CPU)   gpu memory: {r['memory']}")
 print("part hidden            saves ms  calls   meshes   instances      tris")
