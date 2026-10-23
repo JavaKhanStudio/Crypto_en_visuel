@@ -125,4 +125,4 @@ if (h === 'sandbox' || h === 'quiz') setMode(h);
 else setMode('story', { step: Math.max(0, Math.min(STEPS.length - 1, (parseInt(h.split('=')[1]) || 1) - 1)) });
 loop();
 document.getElementById('loading').classList.add('done');
-window.demo = { THREE, renderer, composer, camera, room, story, sandbox, quiz, setMode, bubbles, ready: true };
+window.demo = { THREE, renderer, composer, camera, scene: room.scene, room, story, sandbox, quiz, setMode, bubbles, ready: true };

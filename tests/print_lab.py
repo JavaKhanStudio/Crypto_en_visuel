@@ -118,7 +118,8 @@ with sync_playwright() as p:
     report("the .zip opens, every CRC right", zf.testzip() is None and zf.read(f"{pair[0]}/{pair[0]}.stl") == files[f"{pair[0]}/{pair[0]}.stl"], f"{len(zf.namelist())} files")
     pg.locator(f"tr.asset[data-id={land}]").click(); pg.wait_for_timeout(800)
     pg.screenshot(path=f"out/print_lab-{ep}.png")
-    figure = next((i for i in ids if "rider" in i), None) or next((i for i in ids if kinds[i] == "figure"), None)
+    figure = next((i for i in ids if "rider" in i), None) or next((i for i in ids if kinds[i] == "figure"), None) \
+    or next((i for i in ids if i != land), None)   # r470: an episode with no figure (11: cubes, tiles, a box) is reviewed on another asset
     if figure:
         pg.locator(f"tr.asset[data-id={figure}]").click(); pg.wait_for_timeout(800)
         pg.screenshot(path=f"out/print_lab-{ep}-{figure}.png")
