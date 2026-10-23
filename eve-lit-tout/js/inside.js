@@ -133,7 +133,7 @@ function aesRoom(scene, send, portrait) {
     keyObj.position.lerpVectors(keyHome, lockOut, kMove).lerp(lockIn, kIn);
     keyTurn.rotation.y = (b === 0 ? (1 - kf) * Math.PI : 0) + kTurn * Math.PI / 2;
     violet.emissiveIntensity = b === 1 && time > .5 && time < 1.9 ? 1.4 : .6;
-    keyLbl.position.copy(keyObj.position).add(portrait ? v(0, 1.4) : v(0, 3.1)); show(keyLbl, b === 0 ? kf : b === 1 ? 1 - kMove : 0);
+    keyLbl.position.copy(keyObj.position).add(portrait ? v(0, 1.75) : v(0, 3.95)); show(keyLbl, b === 0 ? kf : b === 1 ? 1 - kMove : 0);   // clear above the bow (its top: 3.05 up, .95 on a phone) (r521)
 
     const rise = b === 0 ? 0 : b === 1 ? span(time, 0, .9) : 1;
     boxRoot.visible = rise > .01; riser.scale.setScalar(Math.max(.001, rise)); show(name, rise); show(round, b === 1 ? span(time, 4.4, 4.8) : b > 1 ? 1 : 0);
@@ -183,7 +183,7 @@ function aesRoom(scene, send, portrait) {
   const corners = (c, h = 2.3, up = 3.2) => [v(c.x - h - (portrait ? 0 : .9), c.y - h), v(c.x + h + (portrait ? 0 : .9), c.y + up)];
   const boxC = [P(-3.5 * bs, -2.7 * bs - (portrait ? 0 : 1.2)), P(3.5 * bs, 2.7 * bs)];
   const mouth = [P(3.5 * bs - 1, -2.7 * bs), P(3.5 * bs - 1, 2.7 * bs)];   // the box's way out, where a phone watches the output
-  const rackF = [rackAt(0), rackAt(31), keyHome, v(keyHome.x, keyHome.y + 3.4), v(keyHome.x - (portrait ? 2 : 3), keyHome.y + 3.4)];
+  const rackF = [rackAt(0), rackAt(31), keyHome, v(keyHome.x, keyHome.y + (portrait ? 3.4 : 4.4)), v(keyHome.x - (portrait ? 2 : 3), keyHome.y + (portrait ? 3.4 : 4.4))];
   const frames = {
     key: () => rackF,
     aes: time => !portrait ? [...corners(at.P1), ...corners(at.C1), ...boxC, rackAt(0), rackAt(31)]
