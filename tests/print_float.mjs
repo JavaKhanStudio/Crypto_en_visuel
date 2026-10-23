@@ -59,6 +59,9 @@ report('a piece buried in another: touches', !floating(ps, 1)[1]);
 // a beacon above a head: floating, pinned
 ps = [keep, box('beacon', [-1, 40, -1], [1, 42, 1])]; fx = repair(ps, 1);
 report('a beacon 10 mm above the keep: floating, pinned', floating(ps, 1)[1] && !floating(fx.ps, 1).some(Boolean), fx.log.join('; '));
+// r510: the pin ends on the keep's top face, straight down 10 mm, not slanted 16.2 mm to its corner
+const post = bounds([fx.ps[2]]);
+report('the beacon\'s pin runs 10 mm straight down onto the keep\'s top', /\(10\.0 mm\)/.test(fx.log[0]) && post.size[0] < 2 && post.size[2] < 2 && post.lo[1] <= 30 && post.lo[1] > 29 && post.hi[1] >= 40 - 1e-6, `pin x ${post.size[0].toFixed(2)} z ${post.size[2].toFixed(2)} y ${post.lo[1].toFixed(2)}..${post.hi[1].toFixed(2)}`);
 
 console.log(bad ? `${bad} FAIL` : 'all ok');
 process.exit(bad ? 1 : 0);
