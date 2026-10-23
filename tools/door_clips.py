@@ -19,6 +19,8 @@ in French, for every language (r290, Simon: a clip per language is a cost with n
       (garde's sandbox still is this clip's first frame: ffmpeg -i garde/img/door-sandbox.mp4 -frames:v 1 -vf scale=320:180, the card hidden)
     tools/door_clips.py paquet-complet --next encore-des-tours --next-hash '#story=8' --sandbox-click '#sb-send'
       (r479: 1.6's replay keeps the rider, the packet and Eve's castle in frame; '#story=3' shows grass after 0.5 s)
+    tools/door_clips.py encore-des-tours --next a-toi-de-jouer --next-hash '#story=6' --next-click '.choice[data-k=hmac]' --only next
+      (r508: 1.7's rides start from a choice; Eve's own rider leaves her city with the forged packet)
     tools/door_clips.py pingouin --next sel --next-hash '#story=7' --sandbox-click '#sb-encrypt,#sb-send' --box sandbox=348,96,992,458
 """
 import argparse, base64, os, subprocess, tempfile, time
@@ -29,6 +31,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("slug")
 ap.add_argument("--next", required=True, help="the next episode's folder")
 ap.add_argument("--next-hash", default="#story=2", help="a story step whose #play makes a good clip")
+ap.add_argument("--next-click", default="#play", help="what starts the next episode's ride (1.7 has no #play: a choice, '.choice[data-k=hmac]')")
 ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--only", default="", help="comma list of sandbox,quiz,home,next")
 ap.add_argument("--sandbox-keys", default="", help="type these letters on #sb-keys instead of clicking #sb-burst (enigma: OUI)")
@@ -89,7 +92,7 @@ def nxt(pg):
     pg.goto(f"{a.base}{a.next}/{a.next_hash}"); pg.wait_for_function(ready, timeout=60000)
     # the panels go before the click (r135: the clip's first frame is the last one before it, which showed them)
     pg.wait_for_timeout(2600); pg.evaluate(hide); pg.wait_for_timeout(1000)
-    pg.evaluate("document.getElementById('play').click()"); pg.wait_for_timeout(200)
+    pg.evaluate("s => document.querySelector(s).click()", a.next_click); pg.wait_for_timeout(200)
     # the clip is the step's ride, from the click (in eve-lit-tout: the rider reaches Eve's gate)
     t = time.time(); pg.wait_for_timeout(SEC * 1000 + 300)
     return t, (0, 0, W, H)

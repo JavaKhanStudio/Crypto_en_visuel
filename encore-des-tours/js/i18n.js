@@ -150,7 +150,7 @@ const fr = {
       a: 'Lire, modifier, usurper, rejouer : quatre tours, et de quoi les arrêter.' },
     end: { t: 'À votre tour de jouer Eve', p: "Dans l'atelier attaque-défense, c'est vous qui jouez Eve, contre la messagerie d'un autre binôme. La carte donne les questions à poser à leur code, tour par tour : chaque réponse qui ouvre une porte est une faiblesse à consigner sur votre fiche. Dans le bac à sable, choisissez le tour d'Eve et les défenses de Bob, et regardez ce qui passe. Le paquet de base a son épisode, en détail : l'épisode 1.5 pour le paquet complet, l'épisode 1.3 pour le sceau, l'épisode 1.4 pour le cadenas.",
       doors: { sandbox: ['Bac à sable', 'Le tour d’Eve contre les défenses de Bob : ce qui passe'], quiz: ['Quiz', 'Sept questions pour vérifier'],
-        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 2 · Le cadenas de Bob ▶', 'Tout le monde peut fermer le cadenas, seul Bob peut l’ouvrir'] } },
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 1.7 · À toi de jouer\u00a0▶', 'Trois choix à chaque étape : à toi de faire passer l’ordre'] } },
   },
 
   // sandbox
@@ -311,7 +311,7 @@ const en = {
       a: 'Read, modify, pose, replay: four tricks, and what stops them.' },
     end: { t: 'Your turn to play Eve', p: "In the attack-defense workshop, you play Eve, against another pair's messenger. The card gives the questions to ask of their code, trick by trick: every answer that opens a door is a weakness to write down on your sheet. In the sandbox, choose Eve's trick and Bob's defenses, and watch what gets through. The base packet has its own episode, in detail: episode 1.5 for the whole packet, episode 1.3 for the seal, episode 1.4 for the padlock.",
       doors: { sandbox: ['Sandbox', 'Eve’s trick against Bob’s defenses: what gets through'], quiz: ['Quiz', 'Seven questions to check'],
-        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 2 · Bob’s Padlock ▶', 'Anyone can snap the padlock shut, only Bob can open it'] } },
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 1.7 · Your Move\u00a0▶', 'Three choices at every step: get the order past Eve'] } },
   },
 
   'sb.title': 'Sandbox',

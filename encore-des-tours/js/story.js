@@ -58,12 +58,12 @@ export const STEPS = [
   { id: 'gcm', ch: 3, shot: 'castleA', view: 'gcm', show: ['a', ['iv', 'ct', 'tag']], say: ['a'], inside: 'gcm' },
   { id: 'gcmEve', ch: 3, shot: 'castleB', view: 'gcmEve', show: ['b', ['iv', 'ct', 'tag'], 'ct'], say: ['b'], inside: 'gcmEve' },
   { id: 'final', ch: 4, shot: 'castleA', view: 'final', show: ['a', ALL], say: ['a'] },
-  // r105/r130: the last step is the doors out, each with its picture and its hover clip; the next episode (2) is last, at the right
+  // r105/r130: the last step is the doors out, each with its picture and its hover clip; the next episode (1.7, r508) is last, at the right
   { id: 'end', ch: 4, shot: 'overview', orbit: .06, view: 'play', doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
       { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
-      { k: 'next', img: '../cadenas/vignette.jpg', clip: 'img/door-next.mp4', href: '../cadenas/' }] },
+      { k: 'next', img: '../a-toi-de-jouer/vignette.jpg', clip: 'img/door-next.mp4', href: '../a-toi-de-jouer/' }] },
 ];
 
 export class Story {
