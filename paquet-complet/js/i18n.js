@@ -27,7 +27,7 @@ const fr = {
 
   // the corner card
   card: {
-    whole: 'Le paquet complet', bytes: '{n} octets', more: '⋮ {n} lignes de plus',
+    whole: 'Le paquet complet', bytes: '{n} octets', more: '⋮ {n} lignes de plus', below: '▾ la suite plus bas',
     fields: { ek: 'clés fermées', iv: 'IV', ct: 'chiffré', tag: 'sceau' },
     role: { ek: 'clé AES ‖ clé HMAC, RSA-2048-OAEP : Bob seul les ouvre', iv: 'au hasard : le même ordre ne donne jamais le même chiffré',
       ct: 'l’ordre, AES-256-CBC : illisible sans la clé AES', tag: 'HMAC-SHA256 de IV ‖ chiffré : trahit tout octet changé' },
@@ -169,7 +169,7 @@ const en = {
   'm.busy': 'A messenger is already on the road.',
 
   card: {
-    whole: 'The whole packet', bytes: '{n} bytes', more: '⋮ {n} more rows',
+    whole: 'The whole packet', bytes: '{n} bytes', more: '⋮ {n} more rows', below: '▾ more below',
     fields: { ek: 'locked keys', iv: 'IV', ct: 'ciphertext', tag: 'seal' },
     role: { ek: 'AES key ‖ HMAC key, RSA-2048-OAEP: only Bob opens them', iv: 'random: the same order never gives the same ciphertext',
       ct: 'the order, AES-256-CBC: unreadable without the AES key', tag: 'HMAC-SHA256 of IV ‖ ciphertext: gives away any changed byte' },
