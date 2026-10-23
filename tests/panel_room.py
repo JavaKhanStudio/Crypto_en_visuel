@@ -4,7 +4,8 @@
 Serve the repo first (python3 -m http.server 8793), or pass --base <url>. For every episode, goes to its
 last story step, fr and en, at 360x640 (and 390x844), with the top bar open (a tap on #topbar-tab when it
 starts tucked) and tucked, and checks that the #story panel's top is under the bottom of #modes, #lang,
-#topbar and #sound. Shots to out/panel-room-<ep>-<lang>-<w>.png."""
+#topbar and #sound. With the bar tucked, the last step's doors show whole, no scroll inside .actions (r568: on a
+short phone they go four in a row). Shots to out/panel-room-<ep>-<lang>-<w>.png."""
 import sys, argparse
 from playwright.sync_api import sync_playwright
 import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'tools'))
@@ -24,7 +25,8 @@ MEASURE = """() => {
     const r = e.getBoundingClientRect(); return r.bottom > 0 ? r : null; };
   const story = box('story');
   const top = Math.max(0, ...['topbar', 'modes', 'lang', 'sound'].map(id => box(id)?.bottom ?? 0));
-  return { story: story && [story.top, story.bottom, story.height], top, h: innerHeight };
+  const d = document.querySelector('#story .actions.doors');
+  return { story: story && [story.top, story.bottom, story.height], top, h: innerHeight, doors: d && [d.scrollHeight, d.clientHeight] };
 }"""
 bad, rows = [], []
 with sync_playwright() as p:
@@ -52,7 +54,9 @@ with sync_playwright() as p:
                     s = m["story"]
                     where = f"{ep} {w}x{h} {lang} step {n} ({state})"
                     if not s: bad.append(f"{where}: no story panel"); continue
-                    rows.append(f"{where}: controls end {m['top']:.0f}, panel {s[0]:.0f}-{s[1]:.0f} ({s[2]:.0f} px)")
+                    dr = m["doors"]
+                    rows.append(f"{where}: controls end {m['top']:.0f}, panel {s[0]:.0f}-{s[1]:.0f} ({s[2]:.0f} px)" + (f", doors {dr[0]}/{dr[1]} px" if dr else ""))
+                    if dr and state == "tucked" and dr[0] > dr[1] + 1: bad.append(f"{where}: the doors scroll ({dr[0]} px in {dr[1]})")
                     if s[0] < m["top"] - 1: bad.append(f"{where}: panel top {s[0]:.0f} over the controls ending at {m['top']:.0f}")
                     if s[1] > m["h"] + 1: bad.append(f"{where}: panel bottom {s[1]:.0f} below the screen ({m['h']})")
                     pg.screenshot(path=f"out/panel-room-{ep}-{lang}-{w}-{state}.png")
