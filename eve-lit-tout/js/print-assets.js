@@ -43,10 +43,7 @@ export const ASSETS = [
   { id: 'aes-box', label: 'The AES-256 machine: its lock on top and its 14 round lamps', kind: 'prop', size: { max: 60 },
     get: () => find(room(), isBox).parent },   // the gold edges are lines, not matter: the lab skips them
   { id: 'aes-key', label: 'The AES key, violet, that turns in the lock', kind: 'prop', size: { h: 40 },
-    get: () => find(room(), isBow).parent.parent,
-    // the shaft's top (1.55 up) ends on the bow's inner edge and showed inside the ring (Simon on r454):
-    // printed 6% shorter from its foot, it ends at 1.40, inside the bow's tube (1.15 to 1.55)
-    scale: (d, o) => ({ shaft: [o.children[0].children.find(c => c.geometry.type === 'CylinderGeometry'), [1, .94, 1]] }) },
+    get: () => find(room(), isBow).parent.parent },
   { id: 'xor-ring', label: 'The CBC gate: the gold ring where a block meets the one before (⊕)', kind: 'prop', size: { max: 30 },
     get: () => find(room(), isRing) },
   { id: 'terrain', label: 'The valley (hills and the road)', kind: 'ground', printable: false,

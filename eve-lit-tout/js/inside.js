@@ -44,7 +44,7 @@ function aesRoom(scene, send, portrait) {
   const violet = new THREE.MeshStandardMaterial({ color: 0xb77ff0, emissive: 0xb77ff0, emissiveIntensity: .6, metalness: .5, roughness: .3 });
   const keyObj = new THREE.Group(), keyTurn = new THREE.Group(); keyObj.add(keyTurn);
   const bow = new THREE.Mesh(new THREE.TorusGeometry(.75, .2, 10, 24), violet); bow.position.y = 2.1; keyTurn.add(bow);
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.14, .14, 2.6, 8), violet); shaft.position.y = .25; keyTurn.add(shaft);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.14, .14, 2.45, 8), violet); shaft.position.y = .175; keyTurn.add(shaft);   // its top (1.40) inside the bow's tube, not on its inner edge (r573)
   for (const [y, w] of [[-.5, .55], [-.85, .4]]) { const tooth = new THREE.Mesh(new THREE.BoxGeometry(w, .2, .2), violet); tooth.position.set(w / 2, y, 0); keyTurn.add(tooth); }
   keyObj.rotation.z = portrait ? Math.PI / 2 : 0; scene.add(keyObj);
   const keyHome = portrait ? v(rackC.x, rackC.y + 3.4) : v(rackC.x - 8.6, rackC.y - 1);
