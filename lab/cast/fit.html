@@ -23,8 +23,8 @@
 <span class="k" style="background:#ff9a20"></span>a ring, the head or the hat stopped on its way down the neck pin
 <span class="k" style="background:#e040ff"></span>a bit that prints loose from its part
 <span class="k" style="background:#ffe040"></span>a wall under 1 mm
-<span class="k" style="background:#40d0ff"></span>not a fault: the slot cut in the robe for the arms to swing in (up to 35° forward).
-Sockets are cut by what goes in them (the neck pin, a hat's peg, an arm's shoulder pin, the head under a hat), with 0.2 mm of play; the hat's peg and each arm's pin end in a bulb 0.5 mm wider than the socket's lip, so they snap in. An arm, with what it holds, is swung through its whole range and must meet nothing (red if it does).</p>
+<span class="k" style="background:#40d0ff"></span>not a fault: where a part is hollowed for one that turns against it (none since round 5: the arms stand clear of the robe).
+Sockets are cut by what goes in them (the neck pin, a hat's peg, an arm's shoulder pin, the head under a hat), with 0.2 mm of play; the hat's peg and each arm's pin end in a bulb 0.5 mm wider than the socket's lip, so they snap in. An arm, with what it holds, is turned through its whole range (hanging to 60° forward) and must meet nothing, the robe included (red if it does).</p>
 <div id="rows"></div>
 <script type="module">
 import * as THREE from 'three';
@@ -55,7 +55,7 @@ for (const d of settings) {
     const partGroup = key => {   // a swing is in space, around the arm, not on it
       if (key.includes(' swings into ')) return P.body;
       const name = key.split(/ x | slides| loose| thin| slot/)[0];
-      return name.startsWith('ring') ? P.shoulder : name === 'arm left' ? P.arms[0] : name === 'arm right' ? P.arms[1] : P[name] ?? P.body; };
+      return name.startsWith('ring') ? P.shoulder : name === 'arm right' ? P.arms[0] : name === 'arm left' ? P.arms[1] : P[name] ?? P.body; };
     for (const key of res.keys) {
       const at = res.voxels(key), m = new THREE.InstancedMesh(cube, new THREE.MeshBasicMaterial({ color: colorOf(key), depthTest: false, transparent: true, opacity: .9 }), at.length);
       m.renderOrder = 2; const M = new THREE.Matrix4(), host = partGroup(key), v = new THREE.Vector3();
