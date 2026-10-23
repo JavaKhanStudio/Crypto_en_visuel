@@ -4,6 +4,8 @@ screen's top? Each room step of the five saga room episodes, at 390x844 and 360x
 held at rest), the canvas read back (no HTML on it) and its top 64 CSS px searched for the room's dark
 beyond the wall (scene.background 0x120c08): the rows from the screen's top edge down that are mostly dark.
     tools/room_top.py [--base URL] [--out out/r503/top] [ep ...]     # prints each step, then all ok / N bad
+r616: --desk does the same at 1440x860 and 1280x720 (mouse, the top bar away), where 1.2's wall stopped
+~195 px under the screen's top.
 """
 import argparse, base64, io, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -14,16 +16,19 @@ from PIL import Image
 ap = argparse.ArgumentParser()
 ap.add_argument("eps", nargs="*", default="eve-lit-tout octet-change cle-vallee paquet-complet encore-des-tours".split())
 ap.add_argument("--base", default="http://localhost:8793/"); ap.add_argument("--out", default="")
+ap.add_argument("--desk", action="store_true")
 a = ap.parse_args()
-STRIP = 64   # CSS px: the bar's height and more
+STRIP = 360 if a.desk else 64   # CSS px: the bar's height and more (a desktop gap ran to ~195 px)
 bad = 0
 with sync_playwright() as p:
     b = launch(p)
     for ep in a.eps:
-        for w, h in [(390, 844), (360, 640)]:
-            ctx = b.new_context(viewport={"width": w, "height": h}, has_touch=True, is_mobile=True, device_scale_factor=2)
+        for w, h in [(1440, 860), (1280, 720)] if a.desk else [(390, 844), (360, 640)]:
+            ctx = (b.new_context(viewport={"width": w, "height": h}) if a.desk else
+                   b.new_context(viewport={"width": w, "height": h}, has_touch=True, is_mobile=True, device_scale_factor=2))
             pg = ctx.new_page(); errors = []; pg.on("pageerror", lambda e: errors.append(str(e)))
             pg.goto(f"{a.base}{ep}/?instant=1#story=1"); pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
+            if a.desk: pg.mouse.move(w / 2, h - 5); pg.wait_for_timeout(2600)   # the bar slides away (lib/topbar.js)
             steps = pg.evaluate("""async () => { const m = await import(location.pathname + 'js/story.js');
               return m.STEPS.map((s, i) => s.inside ? i : -1).filter(i => i >= 0); }""")
             for i in steps:
