@@ -210,17 +210,8 @@ export function machine() {
   return g;
 }
 
-// A desk on four legs, its top at TOP_DESK.
-export const DESK_TOP = 7.5;
-export function desk(w = 14, d = 7) {
-  const g = new THREE.Group(), wood = mat(0x5a3a22, { roughness: .85 });
-  const top = new THREE.Mesh(new THREE.BoxGeometry(w, .4, d), wood); top.position.y = DESK_TOP - .2; top.castShadow = top.receiveShadow = true; g.add(top);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(.5, DESK_TOP - .4, .5), wood);
-    leg.position.set(sx * (w / 2 - .5), (DESK_TOP - .4) / 2, sz * (d / 2 - .5)); leg.castShadow = true; g.add(leg);
-  }
-  return g;
-}
+// A desk on four legs: one copy for the family, lib/enigma/desk.js (r489).
+export { desk, DESK_TOP } from '../../lib/enigma/desk.js';
 
 // A character, facing +z, 17 units tall (1.7 m). kind: 'a' Alice, 'b' Bob, 'e' Eve.
 export function person(kind) {

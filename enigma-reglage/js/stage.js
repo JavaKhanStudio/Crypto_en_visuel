@@ -6,7 +6,7 @@
 // a rotor sits turned against its letters by its ring. apply(state) puts everything where a story
 // step says, instantly; the async actions animate from there and write back into st.
 import * as THREE from 'three';
-import { PLACES, TOP_Y, FLOOR, MAST_H } from './world.js';
+import { PLACES, TOP_Y, FLOOR, MAST_H } from '../../lib/enigma/world.js';
 import { machine, person, rack, COLORS, STEP, R, RC, wirePoints, loopPoints, at, DRUM, SLOTS, socketAt, cablePoints, FRONT, APART_C } from './props.js';
 import { A, ROTORS, NAMES, BARE, press } from './enigma.js';
 import { burst, ring } from '../../lib/fx.js';

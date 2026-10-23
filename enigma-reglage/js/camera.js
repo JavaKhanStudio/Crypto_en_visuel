@@ -1,7 +1,7 @@
 // Camera moves: eased flights between shots and a slow idle orbit. OrbitControls is only live when nothing is flying.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { PLACES, TOP_Y } from './world.js';
+import { PLACES, TOP_Y } from '../../lib/enigma/world.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 // Named shots: where the camera sits, what it looks at. M: a machine, on its desk; its drum, taken

@@ -4,7 +4,7 @@
 // the cipher goes out by radio, past Eve's aerial, to Bob. apply(state) puts everything where a
 // story step says, instantly; the async actions animate from there and write back into st.
 import * as THREE from 'three';
-import { PLACES, TOP_Y, FLOOR, MAST_H } from './world.js';
+import { PLACES, TOP_Y, FLOOR, MAST_H } from '../../lib/enigma/world.js';
 import { machine, person, COLORS, STEP, R, RC, wirePoints, loopPoints, at, DRUM } from './props.js';
 import { A, ROTORS, ORDER, press } from './enigma.js';
 import { burst, ring } from '../../lib/fx.js';

@@ -4,7 +4,7 @@
 // mm, max = longest side in mm); omit names the parts that are light, not matter; strip the decoration
 // a print does without; ground is the asset's y where it meets the ground, cut there on export so it
 // stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
-// gets its line here. The winter forest is this episode's own (js/world.js), not the saga's valley.
+// gets its line here. The winter forest is this episode's own (lib/enigma/world.js, shared with 5.1/5.2), not the saga's valley.
 // The wires inside the rotors are lines, and lines are not printed (lib/print.js skips them).
 import { machine, rotor, reflector, desk, person } from './props.js';
 

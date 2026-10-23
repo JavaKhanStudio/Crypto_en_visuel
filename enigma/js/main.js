@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { qualityComposer, addBloom } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { buildWorld } from './world.js';
+import { buildWorld } from '../../lib/enigma/world.js';
 import { Stage } from './stage.js';
 import { CameraRig } from './camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
