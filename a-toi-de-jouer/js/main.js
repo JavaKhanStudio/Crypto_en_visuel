@@ -8,7 +8,7 @@ import { qualityComposer } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B } from '../../lib/saga/world.js';
+import { buildWorld, CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
 import { CameraRig } from '../../lib/saga/camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from '../../lib/messenger.js';
@@ -52,27 +52,39 @@ addEventListener('resize', resize); resize();
 // ---------- the pieces ----------
 const bubbles = new Bubbles(camera, { raw: i18n.raw }); bubbles.instant = instant;
 const wait = ms => new Promise(r => setTimeout(r, instant ? Math.min(ms, 60) : ms));
-const tops = { a: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y + 22, 0), b: new THREE.Vector3(CASTLE_B.x, CASTLE_B.y + 22, 0) };
+const tops = { a: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y + 22, 0), b: new THREE.Vector3(CASTLE_B.x, CASTLE_B.y + 22, 0),
+  e: new THREE.Vector3(CITY.x, 24, CITY.z) };
 
 // The ride of a choice: Alice's rider leaves her castle, Eve's guards stop him under her walls (stopAt
 // .5, where the road passes her gate), he holds up his scroll and Eve says what she makes of it (eve);
 // she lets him go, and Bob at his gate says what he got (bob), or, with reject, turns him away.
-// Resolves 'delivered' or 'rejected', or 'cancelled' when the reader leaves the step.
+// Eve's own rider (from: 'city', in Alice's colours on a dark horse, as in 1.6) leaves her gate with
+// her forgery or her copy, Eve saying what it is. Resolves 'delivered' or 'rejected', or 'cancelled'
+// when the reader leaves the step.
 const riders = new Set(), said = [];   // said: what Eve and Bob say aloud, for tests/jouer_story.py
-async function ride({ eve, bob, reject = false, live = () => true }) {
-  const m = new Messenger(world, { from: 'a', fate: reject ? 'reject' : 'deliver', stopAt: .5, speed: instant ? 400 : 30 });
+async function ride({ eve, bob, from = 'a', reject = false, live = () => true }) {
+  const city = from === 'city';
+  const m = new Messenger(world, { from, forged: city, fate: reject ? 'reject' : 'deliver', stopAt: city ? null : .5, speed: instant ? 400 : 30 });
   const scroll = m.obj.userData.scroll;
   riders.add(m); sfx.send();
-  rig.chase(m.obj);
-  const held = await Promise.race([m.stopped, m.done]);
-  if (held !== m || !live()) return 'cancelled';
-  sfx.reject(); rig.fly('gate', 1.2);
-  scroll.scale.set(2.2, 2.2, 2.2); scroll.position.y = 5.2;
-  bubbles.show('eve-read', 'e', eve, () => m.position.clone().add(new THREE.Vector3(0, 8, 0))); said.push(['e', eve]);
-  await wait(3600);
-  if (!live()) return 'cancelled';
-  bubbles.hide('eve-read'); scroll.scale.set(1, 1, 1); scroll.position.y = 3.3;
-  m.release(); rig.chase(m.obj);
+  const big = () => { scroll.scale.set(2.2, 2.2, 2.2); scroll.position.y = 5.2; }, small = () => { scroll.scale.set(1, 1, 1); scroll.position.y = 3.3; };
+  if (city) {
+    m.paused = true; rig.fly('gate', instant ? .001 : 1.2); big();
+    bubbles.show('eve-read', 'e', eve, tops.e); said.push(['e', eve]);
+    await wait(3000);
+    if (!live()) return 'cancelled';
+    bubbles.hide('eve-read'); small(); m.paused = false; rig.chase(m.obj);
+  } else {
+    rig.chase(m.obj);
+    const held = await Promise.race([m.stopped, m.done]);
+    if (held !== m || !live()) return 'cancelled';
+    sfx.reject(); rig.fly('gate', 1.2); big();
+    bubbles.show('eve-read', 'e', eve, () => m.position.clone().add(new THREE.Vector3(0, 8, 0))); said.push(['e', eve]);
+    await wait(3600);
+    if (!live()) return 'cancelled';
+    bubbles.hide('eve-read'); small();
+    m.release(); rig.chase(m.obj);
+  }
   const r = await m.done; riders.delete(m);
   if (r === 'cancelled' || !live()) return r;
   r === 'rejected' ? sfx.reject() : sfx.arrive();
