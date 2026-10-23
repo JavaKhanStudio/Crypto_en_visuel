@@ -8,6 +8,9 @@ A moved rule that now loses to a rule it used to beat shows as a property that d
     tools/style_diff.py http://localhost:8810/ http://localhost:8811/ [ep ...]
 
 Bubbles, the canvas and the loading veil move with time, so their geometry is not compared.
+r605: lib/topbar.js writes --top and --clear from the top bar's live rect while it glides, so a page
+caught mid-glide in one tree only said BAD with no CSS change: every page is opened with ?topbar=pin
+(the bar stays shown) and read once the bar and the card have no transition left running.
 """
 import sys
 from pathlib import Path
@@ -34,6 +37,8 @@ GRAB = """() => {
   }
   return out;
 }"""
+# r605: nothing in the top bar or the card still gliding (lib/topbar.js follows them into --top/--clear)
+SETTLED = """() => !document.getAnimations().some(a => a.playState === 'running' && a.effect?.target?.closest?.('#topbar, #topbar-tab, #card'))"""
 STATES = [('story', ''), ('sandbox', '#sandbox'), ('quiz', '#quiz')]
 bad = 0
 with sync_playwright() as p:
@@ -44,9 +49,10 @@ with sync_playwright() as p:
                 got = []
                 for base in (A, B):
                     pg = b.new_page(viewport={'width': w, 'height': h})
-                    pg.goto(f'{base}{ep}/?instant=1&quality=normal{hash_}', wait_until='load')
+                    pg.goto(f'{base}{ep}/?instant=1&quality=normal&topbar=pin{hash_}', wait_until='load')
                     pg.wait_for_function('window.demo && window.demo.ready', timeout=60000)
                     pg.wait_for_timeout(600)
+                    pg.wait_for_function(SETTLED, timeout=10000)
                     got.append(pg.evaluate(GRAB)); pg.close()
                 diffs = []
                 for k in sorted(set(got[0]) | set(got[1])):
