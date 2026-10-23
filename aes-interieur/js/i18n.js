@@ -68,7 +68,7 @@ const fr = {
       a: 'Une lettre, et tout le bloc change.' },
     end: { t: "Ce qu'il y a dans la boîte", p: "AES-256 sur un bloc, c'est : un AddRoundKey, puis 14 tours de SubBytes, ShiftRows, MixColumns (sauf au dernier) et AddRoundKey. Pour déchiffrer, Bob fait tout à l'envers, avec les mêmes clés de tour : chaque étape a son inverse.\n\nDans le bac à sable, changez un octet du bloc ou de la clé, et regardez-le se répandre.",
       doors: { sandbox: ['Bac à sable', 'Un octet du bloc ou de la clé, et ce qu’il devient'], quiz: ['Quiz', 'Six questions pour vérifier'],
-        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 1.2 · Eve lit tout ▶', 'La boîte fermée : le padding, CBC et l’IV'] } },
+        home: ['Tous les épisodes', 'La série Crypto en visuel'], next: ['Épisode 1.2 · Eve lit tout\u00a0▶', 'La boîte fermée : le padding, CBC et l’IV'] } },
   },
 
   // sandbox
@@ -147,7 +147,7 @@ const en = {
       a: 'One letter, and the whole block changes.' },
     end: { t: 'What is in the box', p: 'AES-256 on one block is: one AddRoundKey, then 14 rounds of SubBytes, ShiftRows, MixColumns (except in the last) and AddRoundKey. To decrypt, Bob does everything backwards, with the same round keys: each step has its inverse.\n\nIn the sandbox, change a byte of the block or of the key, and watch it spread.',
       doors: { sandbox: ['Sandbox', 'One byte of the block or of the key, and what becomes of it'], quiz: ['Quiz', 'Six questions to check'],
-        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 1.2 · Eve Reads Everything ▶', 'The closed box: padding, CBC and the IV'] } },
+        home: ['All episodes', 'The Crypto, Visualized series'], next: ['Episode 1.2 · Eve Reads Everything\u00a0▶', 'The closed box: padding, CBC and the IV'] } },
   },
 
   'sb.title': 'Sandbox',

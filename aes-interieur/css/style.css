@@ -80,3 +80,17 @@
 #veil { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 380ms ease;
   background: radial-gradient(circle at 50% 50%, #ffc070 0%, #d08a3a 28%, #6a3a12 70%, #1a0e06 100%); }
 #veil.on { opacity: 1; }
+
+/* r595: on a phone the last step's doors are one row (story.js phone: 'row'), and a grid row is as tall as its tallest
+   tile: the next door's long name (« Episode 1.2 · Eve Reads Everything », 5 lines in a quarter of 360 px) left the three
+   others half empty. The next door gets 2.4 times the width, its picture cropped to about the others' height (40 / 9 for
+   16 / 9), so its name takes two lines like theirs. lib/doors.js keeps the door itself; this is only the row's proportions. */
+@media (max-width: 720px) {
+  #step-actions.doors-row { grid-template-columns: 1fr 1fr 1fr 2.4fr; }
+  #step-actions.doors-row .door.next img { aspect-ratio: 40 / 9; }
+  /* the English name still takes three lines there (200 px of words): the other doors' pictures fill the height the row
+     has, cropped, so no tile is blank under its name */
+  #step-actions.doors-row .door { display: flex; flex-direction: column; }
+  #step-actions.doors-row .door .pic { flex: 1 0 auto; display: flex; }
+  #step-actions.doors-row .door:not(.next) img { aspect-ratio: auto; height: 100%; min-height: 0; flex: 1; }
+}
