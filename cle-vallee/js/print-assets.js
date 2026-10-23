@@ -36,8 +36,10 @@ export const ASSETS = [
     get: () => buildRider('b'), omit: (d, o) => [o.userData.beacon], strip: (d, o) => ({ cape: o.userData.cape }) },
   { id: 'guard', label: "Eve's guard with his spear", kind: 'figure', size: { h: 60 },
     get: () => guard() },
-  { id: 'keys', label: "Alice's two keys, the AES key (violet) over the HMAC key (green)", kind: 'prop', size: { max: 35 },
-    get: () => cargo('keys') },
+  // the scene holds them upright, one over the other: laid flat on the bed (r558), side by side, joined at
+  // their bows, cut where the bits' flat faces meet the bed so the whole key rests on it
+  { id: 'keys', label: "Alice's two keys, the AES key (violet) beside the HMAC key (green)", kind: 'prop', size: { max: 35 }, ground: -.03,
+    get: () => { const g = new THREE.Group(), k = cargo('keys'); k.rotation.x = -Math.PI / 2; g.add(k); return g; } },
   { id: 'padlock-open', label: "Bob's open padlock, his public key", kind: 'prop', size: { h: 35 },
     get: () => cargo('open'), strip: (d, o) => ({ keyhole: holes(o) }) },
   { id: 'padlock-locked', label: "The padlock snapped shut on Alice's keys", kind: 'prop', size: { h: 40 },
