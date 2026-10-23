@@ -8,7 +8,7 @@ import { qualityComposer, addBloom } from '../../lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { buildWorld, CASTLE_A, CASTLE_B, CITY, heightAt } from '../../lib/saga/world.js';
 import { cargo as buildCargo, packet as buildPacket } from './props.js';
-import { CameraRig } from '../../lib/saga/camera.js';
+import { CameraRig, holdOn } from '../../lib/saga/camera.js';
 import { initFx, updateFx, fireworks } from '../../lib/fx.js';
 import { Messenger } from '../../lib/messenger.js';
 import { Bubbles } from '../../lib/bubbles.js';
@@ -75,7 +75,7 @@ const stand = buildPacket(); stand.scale.setScalar(3.4); stand.visible = false; 
 const STANDS = { a: [CASTLE_A.x - 18, 14], b: [CASTLE_B.x - 18, -12], e: [CITY.x - 16, 30] }, TALL = { a: [CASTLE_A.x + 15, 20], b: [CASTLE_B.x - 15, 20], e: [CITY.x, 34] };
 tickers.add((dt, time) => { if (stand.visible) { stand.rotation.y = Math.sin(time * .5) * .45; stand.position.y = stand.userData.y + Math.sin(time * 1.3) * .4; } });
 function showcase(at, bricks = [], mark = null) {
-  stand.visible = !!at;
+  stand.visible = !!at; holdOn(at ? stand : null);   // a phone's castle shot keeps the packet, not the whole castle, in the band (r538)
   if (!at) return;
   const tall = innerWidth < innerHeight, [x, z] = (tall ? TALL : STANDS)[at];
   stand.userData.y = Math.max(heightAt(x, z), 0) + (tall ? 31 : 18); stand.position.set(x, stand.userData.y, z);
