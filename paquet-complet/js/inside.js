@@ -48,7 +48,7 @@ const INK = { key: { fg: '#e3b8ff', bg: '#2a1838', size: 62 }, mac: { fg: '#8fd1
 // and what it gives is shown. Every tile is a byte of the card's (packet.js receive).
 // A block is 16 bytes as a 4x4 square (cell), read left to right, top to bottom, like a card row.
 function bobRoom(scene, pkt, portrait, evil) {
-  buildRoom(scene, portrait, { rows: 28 }); scene.fog.far = 260;   // the whole machine, seen once, is further than 1.4's wall
+  buildRoom(scene, portrait, { rows: 28, owner: 'b' }); scene.fog.far = 260;   // the whole machine, seen once, is further than 1.4's wall
   const r = P.receive(pkt), late = evil ? P.receive(pkt, false) : r;
   const ct = A.concat(pkt.C), msg = A.concat([pkt.iv, ct]), out = A.concat(A.cbcDec(r.keys.slice(0, 32), pkt.iv, pkt.C));
   const pad = out[out.length - 1], keep = out.length - pad, eq = [...r.mine].map((x, i) => x === pkt.tag[i]);
@@ -207,7 +207,7 @@ function bobRoom(scene, pkt, portrait, evil) {
 // is made. One room, four beats on ONE clock (OFF): a beat starts where the one before ended, so any
 // step straight in shows the moves before it done. Every tile is a byte of the card's (packet.js send).
 function aliceRoom(scene, s, portrait) {
-  buildRoom(scene, portrait, { rows: 40, cols: 80, cx: 7 }); scene.fog.far = 260;   // wide: the packet stands at the right of the rows
+  buildRoom(scene, portrait, { rows: 40, cols: 80, cx: 7, owner: 'a' }); scene.fog.far = 260;   // wide: the packet stands at the right of the rows
   const plain = A.pad(s.raw), ct = A.concat(s.C), keys = s.keys;
   const Y0 = 39, Y1 = 28.5, Y2 = 18, Y3 = 6.4, Q = .62, BP = 5.1, PX = 26.6;
   const cell = (c, j) => v(c.x + (j % 4 - 1.5) * 1.12, c.y - (Math.floor(j / 4) - 1.5) * 1.12);
@@ -366,5 +366,6 @@ function aliceRoom(scene, s, portrait) {
 const ROOMS = { alice: { door: 'a', build: (scene, pk, portrait) => aliceRoom(scene, pk.s, portrait) },
   open: { door: 'b', build: (scene, pk, portrait) => bobRoom(scene, pk.s, portrait, false) },
   why: { door: 'b', build: (scene, pk, portrait) => bobRoom(scene, pk.evil, portrait, true) } };
-// the engine's options (lib/room.js)
-export const ROOM = { rooms: ROOMS };
+// the engine's options (lib/room.js): slide, from Alice's room straight to Bob's the picture slides
+// across (Simon on r496), not out over the valley and in again
+export const ROOM = { rooms: ROOMS, slide: true };
