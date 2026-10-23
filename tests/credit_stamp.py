@@ -3,7 +3,8 @@
 simonbedardprog.com/ficelle, inside the window and not covered by anything (elementFromPoint at the
 centre of each part lands in the stamp). On the home: both logos and the words « Fait par
 SimonBedardProg / avec Atelier ». In an episode (Simon, r340: « the simonbedardprog logo is enough »):
-Simon's logo alone, in the top bar, its title saying the words. Walks the home and, for each episode
+Simon's logo alone, in the top bar, its title saying the words (the bar pinned, ?topbar=pin: r406 takes
+the whole bar, logo included, out of the way, and this checks where the logo sits when it is shown). Walks the home and, for each episode
 given, story / sandbox / quiz at 1440, 1100, 390 and 360 px wide; writes out/credit-<page>.png, a strip
 of the stamp's surroundings for each case. Serve the repo first (python3 -m http.server 8793).
     tests/credit_stamp.py deux-generaux [more episodes] [--base URL]"""
@@ -48,7 +49,7 @@ with sync_playwright() as p:
             for name, hsh in cases:
                 pg = b.new_page(viewport={"width": w, "height": h}); errs = []
                 pg.on("pageerror", lambda e: errs.append(str(e)))
-                pg.goto(f"{a.base}{page}{'/' if page else ''}?instant=1{hsh}", wait_until="load")
+                pg.goto(f"{a.base}{page}{'/' if page else ''}?instant=1&topbar=pin{hsh}", wait_until="load")
                 if page: pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
                 if not page: pg.evaluate("document.querySelector('footer')?.scrollIntoView()")
                 pg.wait_for_timeout(1500)

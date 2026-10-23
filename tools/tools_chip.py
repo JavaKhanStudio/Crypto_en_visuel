@@ -24,7 +24,7 @@ with sync_playwright() as p:
     for ep in eps:
         for w, h in SIZES:
             pg = b.new_page(viewport={"width": w, "height": h})
-            pg.goto(f"http://localhost:8793/{ep}/?instant=1&quality=normal", wait_until="load")
+            pg.goto(f"http://localhost:8793/{ep}/?instant=1&topbar=pin&quality=normal", wait_until="load")
             pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
             d = pg.evaluate(PROBE)
             t, why = d["tools"], []

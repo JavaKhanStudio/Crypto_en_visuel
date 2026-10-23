@@ -17,7 +17,7 @@ EPISODES = sys.argv[1:] or ["enigma", "enigma-reglage", "enigma-casse", "garde",
 MEASURE = """() => {
   const r = id => { const e = document.getElementById(id); return e && !e.classList.contains('hidden') && e.offsetHeight ? e.getBoundingClientRect() : null; };
   const card = r('card'), panel = r('story') || r('sandbox');
-  const top = Math.max(...['topbar', 'modes', 'lang'].map(id => document.getElementById(id)?.getBoundingClientRect().bottom ?? 0));
+  const top = Math.max(...['topbar', 'modes', 'lang', 'topbar-tab'].map(id => document.getElementById(id)?.getBoundingClientRect().bottom ?? 0));
   return { card: card && [card.top, card.bottom, card.right], panel: panel && panel.top, top, n: demo.story.steps?.length ?? null };
 }"""
 bad = []
@@ -25,11 +25,14 @@ with sync_playwright() as p:
     b = launch(p)
     for ep in EPISODES:
         for w, h in [(390, 844), (1440, 900)]:
-            pg = b.new_page(viewport={"width": w, "height": h})
+            # r406: a phone has a finger, so its top bar starts tucked behind the tab (lib/topbar.js); the
+            # desktop is measured once the bar has slid away from the still mouse. ?topbar=pin is the bar shown.
+            pg = b.new_context(viewport={"width": w, "height": h}, has_touch=w < 900, is_mobile=w < 900).new_page()
             errors = []
             pg.on("pageerror", lambda e: errors.append(str(e)))
             pg.goto(f"{BASE}{ep}/?instant=1#story=1", wait_until="load")
             pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
+            if w >= 900: pg.wait_for_timeout(2400)   # the bar away (IDLE 1.8 s + its 0.45 s slide)
             n = pg.evaluate("document.getElementById('step-count').textContent.match(/\\d+\\s*\\/\\s*(\\d+)/)[1]")
             shots = []
             for i in range(int(n)):

@@ -15,7 +15,7 @@ BASE = "http://localhost:8793/"
 EPISODES = sys.argv[1:] or ["deux-generaux", "cadenas", "diffie-hellman", "scytale", "enigma", "enigma-reglage", "enigma-casse", "pingouin", "sel", "garde", "eve-lit-tout", "octet-change", "cle-vallee", "paquet-complet", "encore-des-tours", "kasiski", "vpn", "aes-interieur"]
 MEASURE = """() => {
   const box = (el, name) => { const r = el.getBoundingClientRect(); return { name, x: r.left, y: r.top, w: r.width, h: r.height }; };
-  const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz', 'credit', 'ladder'].map(id => document.getElementById(id))
+  const walls = ['topbar', 'modes', 'lang', 'sound', 'card', 'story', 'sandbox', 'quiz', 'credit', 'ladder', 'topbar-tab'].map(id => document.getElementById(id))
     .filter(el => el && !el.classList.contains('hidden') && el.offsetHeight).map(el => box(el, '#' + el.id));
   const bubbles = [...document.querySelectorAll('#bubbles .bubble.show')].filter(el => getComputedStyle(el).visibility !== 'hidden')
     .map(el => box(el, 'bubble ' + el.querySelector('.who').textContent));
@@ -30,11 +30,14 @@ with sync_playwright() as p:
             sfx = "" if lang == "fr" else "-en"
             before = len(bad)
             for w, h in [(390, 844), (1440, 900)]:
-                pg = br.new_page(viewport={"width": w, "height": h})
+                # r406: a phone has a finger, so its top bar starts tucked behind the tab (lib/topbar.js); the
+                # desktop is measured once the bar has slid away from the still mouse. ?topbar=pin is the bar shown.
+                pg = br.new_context(viewport={"width": w, "height": h}, has_touch=w < 900, is_mobile=w < 900).new_page()
                 errors = []
                 pg.on("pageerror", lambda e: errors.append(str(e)))
                 pg.goto(f"{BASE}{ep}/?instant=1&lang={lang}#story=1", wait_until="load")
                 pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
+                if w >= 900: pg.wait_for_timeout(2400)   # the bar away (IDLE 1.8 s + its 0.45 s slide)
                 pg.add_style_tag(content=".bubble { transition: opacity .35s !important; }")   # measure where a bubble goes, not its glide
                 n = int(pg.evaluate("document.getElementById('step-count').textContent.match(/(\\d+)\\D*$/)[1]"))
                 shots = []
