@@ -1,0 +1,61 @@
+// What of episode 4 can be printed (r461, r196): every asset of the scene, for lab/print/?ep=scytale.
+// get(demo) returns the asset's 3D object, read from the running page (demo = its window.demo) or
+// built by the episode's own builder; size is its board-game size (lib/print.js fit: h = height in
+// mm, max = longest side in mm); omit names the parts that are light, not matter; strip the decoration
+// a print does without; ground is the asset's y where it meets the ground, cut there on export so it
+// stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
+// gets its line here. The Greek village is this episode's own (js/world.js), not the saga's valley.
+// The sticks and their cradles are sized together: a printed stick rests in its printed cradles.
+import { stick, stylus, person } from './props.js';
+import { table, TABLE_SIZE } from './world.js';
+import { STICKS } from './stage.js';
+
+const kids = (o, test) => o.children.find(test);
+const width = (c, w) => c.isMesh && c.geometry.type === 'BoxGeometry' && c.geometry.parameters.width === w;
+// a scytale as the story lays it on a table: k letters a turn, its own wood
+const rod = id => stick(STICKS[id][2], STICKS[id][3]);
+// the three dark grooves along a stick (0.04 square bars on the wood): painted lines, not shapes
+const grooves = (d, o) => ({ grooves: o.children[0].children.filter(c => c.geometry?.type === 'BoxGeometry') });
+
+export const ASSETS = [
+  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
+  { id: 'bob', label: "Bob, flat cap and leather apron", kind: 'figure', size: { h: 60 }, get: () => person('b') },
+  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
+  { id: 'courier', label: "The messenger with his broad hat (he carries the strip rolled on his head)", kind: 'figure', size: { h: 60 },
+    get: () => person('n') },
+  { id: 'scytale-4', label: "Alice's and Bob's scytale, 4 letters a turn", kind: 'prop', size: { max: 70 },
+    get: () => rod('a'), strip: grooves },
+  { id: 'scytale-3', label: "Eve's thinner stick, 3 letters a turn", kind: 'prop', size: { max: 70 },
+    get: () => rod('eT'), strip: grooves },
+  { id: 'scytale-5', label: "Eve's thicker stick, 5 letters a turn", kind: 'prop', size: { max: 70 },
+    get: () => rod('eG'), strip: grooves },
+  { id: 'cradles', label: 'The two forked stands a stick rests in (one pair under each stick)', kind: 'prop', size: { max: 56 },
+    get: d => d.stage.sticks.a.userData.cradles },
+  { id: 'stylus', label: "Alice's bronze stylus", kind: 'prop', size: { h: 30 }, get: () => stylus() },
+  { id: 'table', label: 'A long table, the sticks at its back, the strip at its front (one each for Alice, Eve, Bob)', kind: 'prop', size: { max: 100 },
+    get: () => table(...TABLE_SIZE.a) },
+  { id: 'cottage', label: "Alice's cottage (blue roof)", kind: 'landmark', size: { max: 110 }, ground: 0,
+    get: d => d.world.houseA },
+  { id: 'tower', label: "Eve's watchtower by the road, red slits and roof", kind: 'landmark', size: { h: 150 }, ground: 0,
+    get: d => d.world.eveTower },
+  { id: 'workshop', label: "Bob's workshop: chimney and forge (the forge's glow is a light, left out)", kind: 'landmark', size: { max: 120 }, ground: 0,
+    get: d => d.world.shop },
+  { id: 'house', label: 'A house of the village (6 around, white walls, terracotta roofs)', kind: 'landmark', size: { max: 90 }, ground: 0,
+    get: d => kids(d.scene, c => c.isGroup && width(c.children[0], 5.5)) },
+  { id: 'temple', label: 'The small Doric temple on the hill', kind: 'landmark', size: { max: 120 }, ground: 0,
+    get: d => kids(d.scene, c => c.isGroup && c.children.length > 20 && c.children.some(m => m.geometry?.type === 'ExtrudeGeometry')) },
+  { id: 'tree', label: 'An olive tree of the groves', kind: 'tree', size: { h: 70 }, instances: 1,
+    get: d => kids(d.scene, c => c.children.length === 2 && c.children.every(m => m.isInstancedMesh)) },
+  { id: 'strip', label: 'The leather strip and its letters', kind: 'prop', printable: false,
+    why: 'a ribbon 0.42 wide whose letters are its texture, its shape set each frame: cut it from paper and wind it on a printed stick' },
+  { id: 'terrain', label: 'The meadow, the hills, the mountains and the road', kind: 'ground', printable: false,
+    why: 'the ground the pieces stand on, 440 units across with the road painted on it: print a mat or a board, not a piece' },
+  { id: 'sky', label: 'The golden-hour sky and its clouds', kind: 'sky', printable: false,
+    why: 'a dome around the whole scene with clouds hung 90 units up: nothing to stand on a table' },
+  { id: 'smoke', label: "The smoke of Bob's chimney", kind: 'light', printable: false,
+    why: 'see-through puffs that rise and fade, not matter' },
+  { id: 'labels', label: 'The tags over the sticks and the strip (« 4 lettres par tour », « ATTAQ »)', kind: 'text', printable: false,
+    why: 'screen text: sprites that face the camera' },
+  { id: 'bursts', label: 'The sparks, rings, icons and fireworks over a stick or a person', kind: 'light', printable: false,
+    why: 'light, not matter: particles that burst and fade' },
+];
