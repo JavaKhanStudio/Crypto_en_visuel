@@ -74,13 +74,17 @@ const tops = { a: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y + 22, 0), b: new THRE
 const stand = buildPacket(); stand.scale.setScalar(3.4); stand.visible = false; scene.add(stand);
 // beside the castle on a wide screen, where neither the card nor the panel covers it; in front of it
 // on a tall one, where the sides are out of frame
-const STANDS = { a: [CASTLE_A.x - 18, 14], b: [CASTLE_B.x - 18, -12] }, TALL = { a: [CASTLE_A.x + 15, 20], b: [CASTLE_B.x - 15, 20] };
+// (r511: on a tall one the story panel takes the lower half, so Alice's shot backs off and looks lower,
+// the white city whole above the panel and the packet, a little smaller, before its lowest wall)
+const STANDS = { a: [CASTLE_A.x - 18, 14], b: [CASTLE_B.x - 18, -12] }, TALL = { a: [CASTLE_A.x + 8, 25], b: [CASTLE_B.x - 15, 20] };
+const TALL_SHOTS = { castleA: { pos: new THREE.Vector3(-30, 40, 62), target: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y - 15, 0) } };
+const frame = shot => (innerWidth < innerHeight && TALL_SHOTS[shot]) || shot;
 tickers.add((dt, time) => { if (stand.visible) { stand.rotation.y = Math.sin(time * .5) * .45; stand.position.y = stand.userData.y + Math.sin(time * 1.3) * .4; } });
 function showcase(at, bricks = [], mark = null) {
   stand.visible = !!at;
   if (!at) return;
   const tall = innerWidth < innerHeight, [x, z] = (tall ? TALL : STANDS)[at];
-  stand.userData.y = Math.max(heightAt(x, z), 0) + (tall ? 24 : 18); stand.position.set(x, stand.userData.y, z);
+  stand.scale.setScalar(tall ? 2.8 : 3.4); stand.userData.y = Math.max(heightAt(x, z), 0) + 18; stand.position.set(x, stand.userData.y, z);
   stand.userData.show(bricks); stand.userData.mark(mark);
 }
 
@@ -121,7 +125,7 @@ function resetWorld() {
   riders.clear(); bubbles.clear(); rig.stopFollow();
 }
 
-const ctx = { world, rig, bubbles, inside, toast, instant, ride, wait, showcase, resetWorld, renderCard, mode: () => mode, setMode: m => setMode(m),
+const ctx = { world, rig, bubbles, inside, toast, instant, ride, wait, showcase, frame, resetWorld, renderCard, mode: () => mode, setMode: m => setMode(m),
   onAnswer: right => { right ? sfx.win() : sfx.lose(); if (right) fireworks(new THREE.Vector3(0, 0, 0), [0xffd27a, 0x5fe39a], 3); },
   onEnd: () => fireworks(new THREE.Vector3(0, 0, 0), [0xffd27a, 0x4da3ff, 0xffc24d, 0xffffff], 16) };
 const story = new Story(ctx);

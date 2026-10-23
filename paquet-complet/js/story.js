@@ -87,7 +87,8 @@ export class Story {
     if (step.inside) return this.enter(step, tok);
     // out of a room, the camera backs out of its window and flies on to the step's shot
     const out = c.inside.active;
-    Promise.resolve(out ? c.inside.leave(step.shot) : c.rig.fly(step.shot, c.instant ? 0.001 : 2.2))
+    const shot = c.frame(step.shot);   // r511: a tall screen's own shot of Alice's city
+    Promise.resolve(out ? c.inside.leave(shot) : c.rig.fly(shot, c.instant ? 0.001 : 2.2))
       .then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
     // bubbles appear once the camera has mostly arrived
     setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : out ? 2000 : 1300);
