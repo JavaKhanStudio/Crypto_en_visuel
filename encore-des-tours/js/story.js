@@ -97,7 +97,7 @@ export class Story {
     // out of a room, the camera backs out of its keep's window and flies on to the step's shot
     const out = c.inside.active;
     Promise.resolve(out ? c.inside.leave(step.shot) : c.rig.fly(step.shot, c.instant ? 0.001 : 2.2))
-      .then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
+      .then(() => { if (tok !== this.token) return; if (step.orbit) c.rig.setOrbit(step.orbit); this.ahead(); });
     // bubbles appear once the camera has mostly arrived
     setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : out ? 2000 : 1300);
   }
@@ -111,10 +111,12 @@ export class Story {
     setTimeout(() => { if (live()) for (const s of step.say || []) this.say(s, undefined, () => c.inside.anchor()); }, c.instant ? 0 : 900);
     setTimeout(() => { if (live()) this.ahead(); }, c.instant ? 0 : 1500);
   }
-  // r591: the other keep's room of the chapter, built ahead once this one has arrived, so Suivant slides at once
+  // r591: the other keep's room of the chapter, built ahead once this one has arrived, so Suivant slides at once;
+  // r611: from the valley too (steps 4 and 10, once the camera has arrived: leave() drops it), so the zoom
+  // into the room does not draw it first at the glass under the whole veil (tools/zoom_frames.py)
   ahead() {
-    const step = STEPS[this.i], next = STEPS[this.i + 1];
-    if (step.inside && next?.inside && next.inside !== step.inside) this.ctx.inside.ahead(next.inside, packets());
+    const next = STEPS[this.i + 1];
+    if (next?.inside && next.inside !== this.ctx.inside.room?.name) this.ctx.inside.ahead(next.inside, packets());
   }
 
   say(who, text, anchor) {

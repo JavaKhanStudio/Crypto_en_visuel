@@ -8,6 +8,8 @@ the glass, under the whole veil.
 r602: --ahead first builds the step's room ahead from the page (inside.ahead(name, packets()), what the
 episode's story.js does on the step before), waits until it is warm, then zooms: the swap should then
 be a frame like the others, and it prints whether enter() took that room.
+r611: without --ahead, it prints whether the episode's own story built the room ahead while the step
+before was read (--read ms, 3500 by default: how long that step is read before the click).
 """
 import argparse
 from playwright.sync_api import sync_playwright
@@ -17,11 +19,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument("page"); ap.add_argument("step", type=int)
 ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--ahead", action="store_true")
+ap.add_argument("--read", type=int, default=3500)
 a = ap.parse_args()
 with sync_playwright() as p:
     b = launch(p); pg = b.new_page(viewport={"width": 1280, "height": 760})
     pg.goto(f"{a.base}{a.page}#story={a.step - 1}", wait_until="load")
-    pg.wait_for_function("window.demo && window.demo.ready", timeout=60000); pg.wait_for_timeout(3500)
+    pg.wait_for_function("window.demo && window.demo.ready", timeout=60000); pg.wait_for_timeout(a.read)
     pg.evaluate("""() => { const ins = demo.inside, r = ins.renderer; window.__f = []; const t0 = performance.now();
       const wrap = (o, k, tag) => { const f = o[k]; o[k] = function (...a) { const s = performance.now(); const x = f.apply(this, a);
         (window.__cur ||= {})[tag] = (window.__cur[tag] || 0) + performance.now() - s; return x; }; };
@@ -37,6 +40,7 @@ with sync_playwright() as p:
           await demo.inside.next.ready; window.__ahead = demo.inside.next.warm && demo.inside.next.room;
           return Math.round(performance.now() - t) + ' ms' + (window.__ahead ? '' : ' (NOT warm)'); }}"""))
         pg.wait_for_timeout(500)
+    else: print("built ahead by the story:", pg.evaluate("(n => n ? (n.warm ? 'warm ' : 'NOT warm ') + n.name : 'none')(demo.inside.next)"))
     pg.evaluate(f"demo.story.go({a.step - 1})"); pg.wait_for_timeout(4000)
     if a.ahead: print("taken by enter():", pg.evaluate("demo.inside.room === window.__ahead"))
     f = pg.evaluate("window.__f"); b.close()
