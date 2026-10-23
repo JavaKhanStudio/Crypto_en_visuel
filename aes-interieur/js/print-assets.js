@@ -14,8 +14,8 @@ import * as THREE from 'three';
 const kids = (o, test) => o.children.find(test);
 const box = (w, d) => c => c.isMesh && c.geometry.type === 'BoxGeometry' && c.geometry.parameters.width === w && c.geometry.parameters.depth === d;
 const shownCopy = o => { const c = o.clone(); c.visible = true; c.scale.setScalar(1); return c; };
-// a torch of the wall: its iron holder and its flame (the flame is a ball before the holder's top,
-// struck to it on export); the point light that flickers with it is not a mesh
+// a torch of the wall: its iron holder and its flame (the flame's ball sits on the holder's top, r586);
+// the point light that flickers with it is not a mesh
 function torch(scene) {
   const holder = kids(scene, c => c.isMesh && c.geometry.type === 'CylinderGeometry' && c.geometry.parameters.radiusTop === .1);
   const flame = kids(scene, c => c.isMesh && c.geometry.type === 'SphereGeometry' && c.geometry.parameters.radius === .32
