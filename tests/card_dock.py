@@ -54,12 +54,15 @@ with sync_playwright() as p:
                     bad.append(f"{ep} {w}px: the tapped card {o['card'][0]:.0f}-{o['card'][1]:.0f} is not open above the panel")
                 path = f"out/card-dock-{ep}-open.png"; pg.screenshot(path=path); shots.append(path)
                 pg.click("#card h3"); pg.wait_for_timeout(200)
-            pg.evaluate("demo.setMode('sandbox')"); pg.wait_for_timeout(1500)
-            m = pg.evaluate(MEASURE)
-            if w < 900 and m["card"] and (m["card"][1] > m["panel"] + 1 or m["card"][0] < m["top"] - 1):
-                bad.append(f"{ep} {w}px sandbox: card {m['card'][0]:.0f}-{m['card'][1]:.0f}, panel top {m['panel']:.0f}")
+            if pg.evaluate("typeof demo.setMode === 'function'"):
+                pg.evaluate("demo.setMode('sandbox')"); pg.wait_for_timeout(1500)
+                m = pg.evaluate(MEASURE)
+                if w < 900 and m["card"] and (m["card"][1] > m["panel"] + 1 or m["card"][0] < m["top"] - 1):
+                    bad.append(f"{ep} {w}px sandbox: card {m['card'][0]:.0f}-{m['card'][1]:.0f}, panel top {m['panel']:.0f}")
+                if w < 900:
+                    path = f"out/card-dock-{ep}-sb.png"; pg.screenshot(path=path); shots.append(path)
+            else: print(f"skip {ep} {w}px sandbox: story only, no modes (1.7, r505)")
             if w < 900:
-                path = f"out/card-dock-{ep}-sb.png"; pg.screenshot(path=path); shots.append(path)
                 ims = [Image.open(s).resize((195, 422)) for s in shots]
                 sheet = Image.new("RGB", (195 * 7, 422 * ((len(ims) + 6) // 7)), "black")
                 for k, im in enumerate(ims): sheet.paste(im, (195 * (k % 7), 422 * (k // 7)))
