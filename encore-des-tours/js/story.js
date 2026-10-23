@@ -77,7 +77,7 @@ export class Story {
     addEventListener('resize', () => this.fold());
     this.el.prev.onclick = () => this.go(this.i - 1);
     this.el.next.onclick = () => this.go(this.i + 1);
-    onLang(() => { if (STEPS[this.i].inside) this.ctx.inside.rebuild(packets()); this.render(true); this.card(); });
+    onLang(() => { if (STEPS[this.i].inside) { this.ctx.inside.rebuild(packets()); this.ahead(); } this.render(true); this.card(); });
   }
 
   // what the corner card shows at this step: the view and the story's packets
@@ -109,6 +109,12 @@ export class Story {
     if (room && room.name === step.inside) c.inside.beat(step.id);
     else if (!await (room ? c.inside.cut(step.inside, step.id, packets(), live) : c.inside.enter(step.inside, step.id, packets(), live))) return;
     setTimeout(() => { if (live()) for (const s of step.say || []) this.say(s, undefined, () => c.inside.anchor()); }, c.instant ? 0 : 900);
+    setTimeout(() => { if (live()) this.ahead(); }, c.instant ? 0 : 1500);
+  }
+  // r591: the other keep's room of the chapter, built ahead once this one has arrived, so Suivant slides at once
+  ahead() {
+    const step = STEPS[this.i], next = STEPS[this.i + 1];
+    if (step.inside && next?.inside && next.inside !== step.inside) this.ctx.inside.ahead(next.inside, packets());
   }
 
   say(who, text, anchor) {
