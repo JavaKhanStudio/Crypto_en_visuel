@@ -5,6 +5,7 @@ so shooting one every N ms misses the flight). Also keeps the video (.webm). Nee
 Serve the repo first (python3 -m http.server 8793).
 
     tools/inside_frames.py out/r158/zoom --page eve-lit-tout/ --step 4   # the step that zooms in
+    tools/inside_frames.py out/r496/jump --page paquet-complet/ --from 5 --step 7   # a jump, one room to another
 """
 import argparse, glob, shutil, subprocess, tempfile, time
 from playwright.sync_api import sync_playwright
@@ -17,6 +18,7 @@ ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--page", default="eve-lit-tout/")
 ap.add_argument("--query", default="")
 ap.add_argument("--step", type=int, default=4, help="the step that goes inside (1-based); the shot starts one before")
+ap.add_argument("--from", dest="frm", type=int, default=0, help="the step shown first (1-based), default the one before --step: a jump (r496)")
 ap.add_argument("--every", type=int, default=600)
 ap.add_argument("--n", type=int, default=12)
 ap.add_argument("--lead", type=float, default=4, help="seconds of video before go() by the estimate: the estimate runs late")
@@ -32,10 +34,12 @@ with sync_playwright() as p:
     pg = ctx.new_page(); t_rec = time.time()
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
-    pg.goto(f"{a.base}{a.page}{a.query}#story={a.step - 1}", wait_until="load")
+    frm = a.frm or a.step - 1
+    pg.goto(f"{a.base}{a.page}{a.query}#story={frm}", wait_until="load")
     pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
-    pg.wait_for_timeout(3500)
-    pg.evaluate(f"demo.story.go({a.step - 1})")
+    pg.wait_for_timeout(3500 if not a.frm else 9000)   # a room to start in: its zoom done first
+    # a jump (--from) is not awaited: one that never lands (1.5 before r424, r496) must still be filmed
+    pg.evaluate(f"void demo.story.go({a.step - 1})" if a.frm else f"demo.story.go({a.step - 1})")
     t_go = time.time()
     pg.wait_for_timeout(a.every * a.n + 500)
     t_end = time.time()
