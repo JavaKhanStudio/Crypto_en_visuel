@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
+import { render as md } from '../../lib/md.js';
 import { renderDoors } from '../../lib/doors.js';
 import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
 import * as A from '../../lib/saga-aes.js';
@@ -105,7 +106,7 @@ export class Story {
 
   render(langOnly = false) {
     const step = STEPS[this.i], s = raw('steps')[step.id];
-    this.el.title.textContent = s.t; this.el.text.textContent = s.p; linkify(this.el.text, lang, step.refs);   // « épisode 1.4 » links to its step (r119)
+    this.el.title.textContent = s.t; md(this.el.text, s.p); linkify(this.el.text, lang, step.refs);   // « épisode 1.4 » links to its step (r119)
     if (!langOnly) this.el.panel.classList.remove('open');
     this.el.panel.classList.toggle('roomy', !!step.inside); this.fold();
     this.el.count.textContent = t('nav.count', { i: this.i + 1, n: STEPS.length });
