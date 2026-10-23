@@ -4,7 +4,9 @@
 // mm, max = longest side in mm); omit names the parts that are light, not matter; ground is the asset's
 // y where it meets the ground, cut there on export so it stands flat (lib/print.js repair). An asset that
 // cannot be printed says why. A new asset in the scene gets its line here. strip names the decoration left
-// out of the printed piece only (Simon on r396, r453: the castles' flags, the riders' capes); the scene keeps it.
+// out of the printed piece only (Simon on r396, r453: the riders' capes); the scene keeps it. bodies names
+// the parts printed on their own: the castles' flags (Simon on r453, 23 Oct: « the flag could be inserted as
+// a pin »), so each castle stands about 133 mm without it and keeps the footprint it had with it.
 import { buildRider, guard } from '../../lib/messenger.js';
 
 const kids = (o, test) => o.children.find(test);
@@ -12,10 +14,10 @@ const kids = (o, test) => o.children.find(test);
 export const ASSETS = [
   { id: 'castle-a', label: "Alice's castle (the humans' white city)", kind: 'landmark', size: { max: 150 }, ground: 0,
     get: d => d.world.castleA, omit: d => [d.world.castleA.userData.glow],   // the team ring at its foot is a glow
-    strip: d => ({ flag: d.world.castleA.userData.flag }) },
+    bodies: d => ({ flag: d.world.castleA.userData.flag }) },
   { id: 'castle-b', label: "Bob's castle (the elves' towers)", kind: 'landmark', size: { max: 150 }, ground: 0,
     get: d => d.world.castleB, omit: d => [d.world.castleB.userData.glow],   // the team ring at its foot is a glow
-    strip: d => ({ flag: d.world.castleB.userData.flag }) },
+    bodies: d => ({ flag: d.world.castleB.userData.flag }) },
   { id: 'city', label: "Eve's city and her tower with the Eye", kind: 'landmark', size: { max: 150 }, ground: 0,
     get: d => d.world.city, omit: d => [d.world.city.userData.pivot, d.world.city.userData.spot] },
   { id: 'rider-a', label: "Alice's messenger on his horse", kind: 'figure', size: { h: 90 },

@@ -129,9 +129,10 @@ function show(row) {
   const fov = Math.min(camera.fov, 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect)));
   const dist = Math.max(span * 2.2, Math.hypot(w, s[1], s[2]) / 2 / Math.sin(THREE.MathUtils.degToRad(fov / 2)) * 1.1);
   controls.target.set(0, s[1] * .45, 0); camera.position.set(1.3, 1.0, 1.7).setLength(dist).add(controls.target); controls.update();
-  const nb = bodies.length, st = row.parts.stripped.length;
-  $('cap').textContent = `${row.a.label}: ${s[0]} × ${s[2]} mm on the bed, ${s[1]} mm high, ${row.fix.ps.length} pieces`
-    + (nb > 1 ? ` in ${nb} bodies (${bodies.map(b => b.name).join(', ')})` : '') + (row.fix.log.length ? `, ${row.fix.log.length} fixed for printing` : '')
+  // r453: in several bodies each is sized as it prints (a castle without its flag stands lower than with it)
+  const nb = bodies.length, st = row.parts.stripped.length, mm = b => bounds(b.ps).size.map(x => (x * k).toFixed(0));
+  $('cap').textContent = `${row.a.label}: ${s[0]} × ${s[2]} mm on the bed, ${s[1]} mm high${nb > 1 ? " assembled" : ""}, ${row.fix.ps.length} pieces`
+    + (nb > 1 ? ` in ${nb} bodies (${bodies.map(b => { const [x, y, z] = mm(b); return `${b.name} ${x} × ${z} × ${y} mm`; }).join(', ')})` : '') + (row.fix.log.length ? `, ${row.fix.log.length} fixed for printing` : '')
     + (st ? `, ${st} removed for print (ghosted)` : '');
 }
 
@@ -228,7 +229,8 @@ function files(rows) {
     else out.push({ name: `${r.a.id}/${r.a.id}.stl`, data: stl(ps, r.k) });
     const lines = [`${r.a.label}`, `${r.mm[0]} x ${r.mm[2]} mm on the bed, ${r.mm[1]} mm high, ${(r.k).toFixed(2)} mm per scene unit`,
       checkedOn(r) ? `Checked by a human on ${checkedOn(r)}.` : 'NOT CHECKED BY A HUMAN yet.',
-      ...(many ? [`Printed in ${r.fix.bodies.length} bodies, to glue: ${r.fix.bodies.map(b => `${r.a.id}-${slug(b.name)}.stl (${b.ps.length} pieces)`).join(', ')}`] : []),
+      ...(many ? [`Printed in ${r.fix.bodies.length} bodies, to glue: ${r.fix.bodies.map(b => { const z = bounds(b.ps).size.map(x => (x * r.k).toFixed(0));
+        return `${r.a.id}-${slug(b.name)}.stl (${b.ps.length} pieces, ${z[0]} x ${z[2]} x ${z[1]} mm)`; }).join(', ')}`] : []),
       ...(r.fix.log.length ? [`Fixed for printing (${r.fix.log.length}):`, ...r.fix.log.map(l => '  ' + l)] : []), `${ps.length} pieces:`];
     ps.forEach((p, i) => {
       const c = r.after[i], name = `${String(i + 1).padStart(3, '0')}-${many ? slug(p.body) + '-' : ''}${slug(p.name)}-${hex(p.color)}.stl`;

@@ -84,7 +84,15 @@ with sync_playwright() as p:
         if many:   # r451: one STL per body, each on the bed on its own; the size is checked on the whole below
             for b in r["bodies"]:
                 n = f"{i}/{i}-{slug(b)}.stl"; bt = read_stl(files[n]) if n in files else None
-                report(f"{n}: a body of its own, whole triangles, on the bed", bt is not None and abs(min(t[k] for t in bt for k in (2, 5, 8))) < 1e-3)
+                dims = bt and [max(t[k] for t in bt for k in ax) - min(t[k] for t in bt for k in ax) for ax in ((0, 3, 6), (1, 4, 7), (2, 5, 8))]
+                report(f"{n}: a body of its own, whole triangles, on the bed", bt is not None and abs(min(t[k] for t in bt for k in (2, 5, 8))) < 1e-3,
+                    dims and "%.0f x %.0f x %.0f mm" % tuple(dims))
+                if b == "flag" and dims:   # r453: the flag prints on its own (a pin), the castle keeps the footprint it had with it
+                    m = f"{i}/{i}-main.stl"; mt = read_stl(files[m]) if m in files else []
+                    mh = max((t[k] for t in mt for k in (2, 5, 8)), default=0)
+                    report(f"{i}: the flag apart, the castle under it {mh:.0f} mm high, the footprint {r['mm'][0]}x{r['mm'][2]} mm",
+                        mt and mh < max(r["size"].values()) - 5 and max(r["mm"]) <= max(r["size"].values()) + 1
+                        and f"x {mh:.0f} mm)" in files.get(f"{i}/PRINT.txt", b"").decode())
             continue
         tris = read_stl(files[f"{i}/{i}.stl"])
         report(f"{i}.stl: whole triangles", tris is not None)
