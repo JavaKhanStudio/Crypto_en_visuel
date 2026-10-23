@@ -89,7 +89,7 @@ export class Story {
     const out = c.inside.active;
     const shot = c.frame(step.shot);   // r511: a tall screen's own shot of Alice's city
     Promise.resolve(out ? c.inside.leave(shot) : c.rig.fly(shot, c.instant ? 0.001 : 2.2))
-      .then(() => { if (tok === this.token && step.orbit) c.rig.setOrbit(step.orbit); });
+      .then(() => { if (tok !== this.token) return; if (step.orbit) c.rig.setOrbit(step.orbit); this.ahead(); });
     // bubbles appear once the camera has mostly arrived
     setTimeout(() => { if (tok === this.token) for (const s of step.say || []) this.say(s); }, c.instant ? 0 : out ? 2000 : 1300);
   }
@@ -101,6 +101,13 @@ export class Story {
     if (c.inside.active && c.inside.room.name === step.inside) c.inside.beat(step.id);
     else if (!await c.inside.enter(step.inside, step.id, packets(), live)) return;
     setTimeout(() => { if (live()) for (const s of step.say || []) this.say(s, undefined, () => c.inside.anchor()); }, c.instant ? 0 : 900);
+  }
+
+  // r610: the next step's room built ahead once this valley step's camera has arrived (leave() drops it),
+  // so the zoom into it does not draw it first at the glass under the whole veil (tools/zoom_frames.py)
+  ahead() {
+    const next = STEPS[this.i + 1];
+    if (next?.inside && next.inside !== this.ctx.inside.room?.name) this.ctx.inside.ahead(next.inside, packets());
   }
 
   say(who, text, anchor) {
