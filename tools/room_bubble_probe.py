@@ -2,11 +2,14 @@
 """r529: on a touch phone (390x844, the bar tucked behind #topbar-tab), every room step of every saga room
 episode at rest: the speaker's bubble ends above the top of the frame the room holds (tools/r473_probe.py's
 measure, for all of them). Prints one line a step; fails when a bubble runs into its frame.
-    python3 tools/room_bubble_probe.py [base] [episode ...]      (base default http://localhost:8793/)"""
+--open (r474): the same with the step text opened by « Lire la suite ▾ » (steps whose text folds).
+    python3 tools/room_bubble_probe.py [--open] [base] [episode ...]      (base default http://localhost:8793/)"""
 import sys, json
 from playwright.sync_api import sync_playwright
 from browser import launch
 args = sys.argv[1:]
+OPEN = "--open" in args
+args = [x for x in args if x != "--open"]
 base = (args.pop(0) if args and args[0].startswith("http") else "http://localhost:8793/").rstrip("/") + "/"
 EPISODES = args or "eve-lit-tout octet-change cle-vallee paquet-complet encore-des-tours".split()
 MEASURE = """() => {
@@ -35,6 +38,9 @@ with sync_playwright() as p:
                 pg.wait_for_timeout(2500)
                 if not pg.evaluate("demo.inside.active && !!demo.inside.room"): continue
                 pg.evaluate("demo.inside.hold = 16"); pg.wait_for_timeout(2500)
+                if OPEN:
+                    if not pg.is_visible("#step-more"): continue
+                    pg.click("#step-more"); pg.wait_for_timeout(2500)
                 m = pg.evaluate(MEASURE)
                 ok = m["frameTop"] is not None and all(bot <= m["frameTop"] for _, bot in m["bubbles"])
                 bad += not ok
