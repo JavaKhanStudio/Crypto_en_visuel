@@ -1,0 +1,175 @@
+<!doctype html>
+<!-- r650 lab: round 8's candidates, for Simon to pick (« old alice was way cuter. The bun of her it's missing now … the
+     wartime ones are ugly as sin. eve is ok, but the other 2 ? Do better »). Each candidate is drawn here on top of
+     lib/cast.js person() (its hat or ring swapped), beside the old enigma figure (enigma/js/props.js person()); the
+     picked ones move into lib/cast.js, where lib/fit.js checks them. ?turn=RADIANS sets the angle for a shot,
+     ?row=WORDS keeps the rows whose title has them. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The cast, round 8: candidates</title>
+<script type="importmap">{ "imports": { "three": "../../ficelle/vendor/three/three.module.min.js", "three/addons/": "../../ficelle/vendor/three/addons/" } }</script>
+<style>
+  body { margin: 0; background: #0b0d12; color: #d8dce6; font: 15px system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 16px 16px 6px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 90ch; }
+  section { margin: 0 16px 18px; } h2 { font-size: 15px; margin: 0 0 4px; color: #ffd27a; } h2 small { color: #9aa3b5; font-weight: 400; }
+  canvas { display: block; width: 100%; max-width: 1400px; border: 1px solid #252a35; border-radius: 8px; cursor: grab; }
+  .names { display: grid; max-width: 1400px; font-size: 13px; color: #9aa3b5; text-align: center; }
+</style></head><body>
+<h1>The cast, round 8: candidates (r650)</h1>
+<p>Simon, 24 Oct: « old alice was way cuter. The bun of her it's missing now … the wartime ones are ugly as sin. eve is ok, but the other 2 ? Do better ». The old enigma Alice showed her face: her hair was a cap tilted back, the forehead bare, the bun high on the crown where you see it, and a round, puffy scarf. lib/cast.js's hair is a helmet down to her eyes, the bun sunk behind it, and the scarf a flat washer. Each letter below is a candidate; drag a row to turn it.</p>
+<div id="rows"></div>
+<script type="module">
+import * as THREE from 'three';
+import { person } from '../../ficelle/lib/cast.js';
+import { person as oldPerson } from '../../enigma/js/props.js';
+const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45), only = q.get('row');
+
+// lib/cast.js's measures (the toy's), copied for the candidates; the picked ones move into lib/cast.js
+const TOP = 2.1, HEAD_Y = 2.55, PIN_R = .13, MM = 1 / 17.6, RING_BORE = PIN_R + .2 * MM, RING_H = .08;
+const BLACK = 0x1d1d23, WHITE = 0xeee6d2, GOLD = 0xd8b04a, HAIR = 0x6b3d1f, NAVY = 0x14213d;
+const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: .6, flatShading: true, ...o });
+const metal = c => mat(c, { metalness: .6, roughness: .35 });
+const mesh = (geo, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); return o; };
+const coneR = y => .85 - .4 * y / TOP;
+const onRobe = (a, y, off = .05) => new THREE.Vector3(Math.sin(a) * (coneR(y) + off), y, Math.cos(a) * (coneR(y) + off));
+const lathe = (pts, m, y, n = 24) => mesh(new THREE.LatheGeometry(pts.map(([x, yy]) => new THREE.Vector2(x, yy)), n), m, 0, y);
+// a flat strip between two points, lying on the robe (a lapel, a ribbon)
+const strip = (a, b, w, t, m) => { const d = b.clone().sub(a), s = mesh(new THREE.BoxGeometry(w, d.length(), t), m); s.position.copy(a).add(b).multiplyScalar(.5);
+  const out = new THREE.Vector3(s.position.x, 0, s.position.z).normalize(), up = d.normalize(), across = new THREE.Vector3().crossVectors(up, out).normalize();
+  s.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(across, up, new THREE.Vector3().crossVectors(across, up))); return s; };
+
+// ---------- Alice's hair ----------
+// the fringe: a cap of the ball tilted back, its front rim over the eyes (the forehead bare), its back rim at the head's
+// widest (it still comes down onto the head); the bun on the crown, where the camera sees it
+const fringe = (g, m = mat(HAIR), tilt = .2) => { const c = mesh(new THREE.SphereGeometry(.47, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2 - tilt), m, 0, HEAD_Y); c.rotation.x = -tilt; g.add(c); };
+const BUNS = {
+  crown: (g, m) => g.add(mesh(new THREE.SphereGeometry(.2, 12, 10), m, 0, HEAD_Y + .4, -.3)),   // the old enigma Alice's (y 2.95, z -.3)
+  knot: (g, m) => { g.add(mesh(new THREE.SphereGeometry(.22, 12, 10), m, 0, HEAD_Y + .5, -.17)); g.add(lathe([[.001, 0], [.14, 0], [.14, .05], [.001, .05]], mat(0x4da3ff), HEAD_Y + .38).rotateX(-.35)); },   // high, a blue band under it
+  low: (g, m) => g.add(mesh(new THREE.SphereGeometry(.2, 12, 10), m, 0, HEAD_Y + .12, -.45)),   // a chignon under a cap's back
+};
+const aliceHair = (bun = 'crown', tilt = .2) => g => { const m = mat(HAIR); fringe(g, m, tilt); BUNS[bun](g, m); };
+// the scarf: a round roll on the neck pin (flat under, so it prints), its tail as lib/cast.js draws it
+const puffy = (g, y, c = 0x4da3ff) => { const m = mat(c), pts = [[RING_BORE, 0], [.38, 0]];
+  for (let i = -5; i <= 5; i++) { const a = i / 5 * Math.PI / 2; pts.push([.38 + .11 * Math.cos(a), .11 + .11 * Math.sin(a)]); }
+  pts.push([RING_BORE, .22], [RING_BORE, 0]); g.add(lathe(pts, m, y, 28));
+  g.add(strip(onRobe(.5, y + .05, .1), onRobe(.56, y - .7, .06), .16, .07, m)); };
+
+// ---------- the radio room's caps (Kriegsmarine sailors: no eagle, nothing SS) ----------
+// the sailor's round cap (Tellermütze): a flat top wider than the head, a black band, two ribbons down the back
+const teller = (top = NAVY) => g => { const b = mat(BLACK);
+  g.add(lathe([[.001, 0], [.45, 0], [.45, .13], [.001, .13]], b, HEAD_Y + .28));
+  g.add(lathe([[.001, 0], [.46, 0], [.6, .1], [.58, .16], [.001, .16]], mat(top), HEAD_Y + .41));
+  for (const s of [-1, 1]) { const r = mesh(new THREE.BoxGeometry(.07, .5, .025), b, s * .06, HEAD_Y + .12, -.47); r.rotation.set(.2, 0, s * .12); g.add(r); } };
+// the side cap (Schiffchen), worn tilted: two curved walls meeting along the top, a boat seen from the side
+const sideCap = (c = NAVY) => g => { const m = mat(c), cap = new THREE.Group(); cap.position.set(.1, HEAD_Y + .35, 0); cap.rotation.z = -.28; g.add(cap);
+  const side = new THREE.Shape(); side.moveTo(-.48, 0); side.lineTo(.48, 0); side.quadraticCurveTo(.5, .2, .3, .26); side.quadraticCurveTo(0, .2, -.3, .26); side.quadraticCurveTo(-.5, .2, -.48, 0);
+  for (const s of [-1, 1]) { const w = mesh(new THREE.ExtrudeGeometry(side, { depth: .04, bevelEnabled: false, curveSegments: 10 }), m); w.rotation.set(0, Math.PI / 2, s * .3); w.position.x = s * .17 - .02; cap.add(w); }
+  cap.add(mesh(new THREE.CylinderGeometry(.05, .05, .02, 12).rotateX(Math.PI / 2), metal(GOLD), .02, .14, .49)); };
+// the peaked cap (Schirmmütze) of a petty officer: white top, black band, black peak, a gold cord and button, no eagle
+const peaked = (top = WHITE) => g => { const b = mat(BLACK);
+  g.add(lathe([[.001, 0], [.45, 0], [.45, .14], [.001, .14]], b, HEAD_Y + .28));
+  g.add(lathe([[.001, 0], [.46, 0], [.58, .12], [.56, .17], [.001, .17]], mat(top), HEAD_Y + .42));
+  const peak = mesh(new THREE.CylinderGeometry(.5, .5, .04, 20, 1, false, -Math.PI / 2.6, Math.PI / 1.3), b, 0, HEAD_Y + .3, .1); peak.rotation.x = .25; g.add(peak);
+  g.add(mesh(new THREE.BoxGeometry(.5, .03, .03), metal(GOLD), 0, HEAD_Y + .38, .44)); g.add(mesh(new THREE.CylinderGeometry(.05, .05, .03, 10).rotateX(Math.PI / 2), metal(GOLD), 0, HEAD_Y + .37, .46)); };
+// the knitted watch cap, round and dark, its cuff rolled (lib/cast.js's was grey and sat like a bucket)
+const knit = (c = 0x1b2a44) => g => { const m = mat(c), pts = [];
+  for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI / 2; pts.push([.001 + .5 * Math.cos(a), .52 * Math.sin(a)]); }
+  g.add(lathe(pts, m, HEAD_Y + .02));
+  const cuff = [[.44, 0], [.53, .02], [.55, .1], [.53, .18], [.44, .2], [.44, 0]]; g.add(lathe(cuff, mat(0x15203a), HEAD_Y + .02)); };
+// the radio operator's headset: a band over the head, a cup on each ear
+const headset = (overHat = 0) => g => { const m = mat(0x2a2a2e), band = mesh(new THREE.TorusGeometry(.5 + overHat, .04, 6, 22, Math.PI), m, 0, HEAD_Y + .04); g.add(band);
+  for (const s of [-1, 1]) g.add(mesh(new THREE.CylinderGeometry(.15, .15, .1, 14).rotateZ(Math.PI / 2), mat(0x3a3a3e, { metalness: .4 }), s * (.47 + overHat), HEAD_Y + .02)); };
+// Eve's headphones (the old enigma Eve: she listens): the band behind the neck, under the hat, a cup on each ear
+const evePhones = g => { const m = mat(0x222222, { metalness: .6 }), band = mesh(new THREE.TorusGeometry(.5, .04, 6, 20, Math.PI), m, 0, HEAD_Y + .05); band.rotation.x = -Math.PI / 2 - .5; g.add(band);
+  for (const s of [-1, 1]) g.add(mesh(new THREE.CylinderGeometry(.16, .16, .12, 14).rotateZ(Math.PI / 2), mat(0x333333, { metalness: .5 }), s * .5, HEAD_Y + .05)); };
+
+// ---------- the radio room's collars ----------
+// the sailor's square collar, redrawn: a navy flap down the back with two white stripes, in front a V of navy edged
+// white to a black knot on the chest (lib/cast.js's had the back only, so from the front it was a bare ring)
+const sailor = (g, y) => { const navy = mat(NAVY), white = mat(0xf0f0f0), b = mat(BLACK);
+  g.add(lathe([[RING_BORE, 0], [.5, 0], [.5, RING_H], [RING_BORE, RING_H], [RING_BORE, 0]], navy, y));
+  const back = new THREE.Group(); g.add(back);
+  const panel = (w, y0, y1, m, off) => { const p = mesh(new THREE.BoxGeometry(w, y0 - y1, .05), m, 0, (y0 + y1) / 2, -(coneR((y0 + y1) / 2) + off)); p.rotation.x = Math.atan(.4 / TOP); return p; };
+  back.add(panel(.82, y + RING_H, 1.5, navy, .04)); for (const yy of [1.58, 1.66]) back.add(panel(.74, yy + .035, yy, white, .07));
+  for (const s of [-1, 1]) { const a = onRobe(s * .62, y + .04, .06), c = onRobe(0, 1.55, .06);
+    g.add(strip(a, c, .2, .04, white)); g.add(strip(onRobe(s * .62, y + .04, .09), onRobe(0, 1.55, .09), .13, .04, navy)); }
+  g.add(mesh(new THREE.BoxGeometry(.14, .1, .06), b, 0, 1.53, coneR(1.53) + .1));
+  for (const s of [-1, 1]) g.add(strip(onRobe(s * .03, 1.5, .1), onRobe(s * .1, 1.28, .07), .07, .03, b)); };
+// a pea coat's collar: wide navy lapels in a V, brass buttons down the front
+const pea = (g, y) => { const navy = mat(NAVY);
+  g.add(lathe([[RING_BORE, 0], [.52, 0], [.52, .12], [RING_BORE, .12], [RING_BORE, 0]], navy, y));
+  for (const s of [-1, 1]) g.add(strip(onRobe(s * .5, y + .06, .07), onRobe(s * .12, 1.45, .07), .26, .05, navy));
+  for (const yy of [1.62, 1.42]) for (const s of [-1, 1]) g.add(mesh(new THREE.SphereGeometry(.045, 8, 6), metal(GOLD), s * .12, yy, coneR(yy) + .1)); };
+// the roll-neck, ribbed and navy (lib/cast.js's was a smooth grey drum)
+const ribbed = (g, y, c = 0x1b2a44) => { const pts = [[RING_BORE, 0]];
+  for (let i = 0; i <= 12; i++) pts.push([.38 + (i % 2 ? .04 : .0) + Math.sin(i / 12 * Math.PI) * .06, i / 12 * .26]);
+  pts.push([RING_BORE, .26], [RING_BORE, 0]); g.add(lathe(pts, mat(c), y)); };
+
+// ---------- putting a candidate on a figure ----------
+// a figure from lib/cast.js with its hat and its costume ring swapped for a candidate's (drawn, not fitted)
+const swap = (kind, o, { hat, ring, keepScarf = true, lift } = {}) => () => {
+  const f = person(kind, o), P = f.userData.pieces;
+  if (hat) { P.hat.clear(); hat(P.hat); }
+  if (ring) { const rs = P.shoulder.children, scarf = rs.find(r => r.name === 'scarf'); for (const r of [...rs]) if (r !== scarf) P.shoulder.remove(r);
+    const r = new THREE.Group(); P.shoulder.add(r); ring(r, TOP);
+    if (scarf) { scarf.clear(); if (keepScarf) puffy(scarf, TOP + RING_H); } }
+  else if (keepScarf === 'puffy') { const scarf = P.shoulder.children.find(r => r.name === 'scarf'); scarf.clear(); puffy(scarf, TOP); }
+  if (lift !== undefined) P.head.position.y = P.hat.position.y = lift;
+  return f; };
+// Alice's hair in a look whose hat draws lib/cast.js's bun (palla, helm): its cap and bun moved where the candidate puts them
+const rehair = (o, bun = 'crown') => () => { const f = person('a', o), P = f.userData.pieces, m = mat(HAIR), drop = [];
+  P.hat.traverse(x => { const p = x.geometry?.parameters; if (x.isMesh && x.material.color.getHex() === HAIR) drop.push(x); });
+  for (const x of drop) x.parent.remove(x); fringe(P.hat, m); BUNS[bun](P.hat, m);
+  const scarf = P.shoulder.children.find(r => r.name === 'scarf'); if (scarf) { const y = scarf.children[0].position.y; scarf.clear(); puffy(scarf, y); }
+  return f; };
+const old = k => () => { const f = oldPerson(k); f.children[0].scale.setScalar(1); return f; };
+const W = { disguise: 'wartime' };
+const ROWS = [
+  ['Alice, today', 'the old enigma Alice, lib/cast.js\'s now, and three hairs; A to C keep lib/cast.js\'s flat head, the round scarf is new', [
+    ['old enigma Alice', old('a')], ['lib/cast.js now', () => person('a')],
+    ['A: bun on the crown, round scarf', swap('a', {}, { hat: aliceHair('crown'), keepScarf: 'puffy', lift: .08 })],
+    ['B: a high knot, blue band', swap('a', {}, { hat: aliceHair('knot'), keepScarf: 'puffy', lift: .08 })],
+    ['C: A with lib/cast.js\'s flat scarf', swap('a', {}, { hat: aliceHair('crown') })]]],
+  ['Alice, every look', 'hair A in the other settings: the bun on the crown under the veil and the helm', [
+    ['roman now', () => person('a', { disguise: 'roman' })], ['roman, hair A', rehair({ disguise: 'roman' })],
+    ['medieval now', () => person('a', { disguise: 'medieval' })], ['medieval, hair A', rehair({ disguise: 'medieval' })]]],
+  ['Alice, wartime', 'the radio room (enigma 5.1-5.3): a Kriegsmarine sailor, no eagle', [
+    ['lib/cast.js now', () => person('a', W)],
+    ['D: sailor\'s round cap, square collar', swap('a', W, { hat: g => { aliceHair('low')(g); teller()(g); }, ring: sailor, lift: .18 })],
+    ['E: headset over her hair, square collar', swap('a', W, { hat: g => { aliceHair('crown')(g); headset()(g); }, ring: sailor, lift: .18 })]]],
+  ['Bob, wartime', 'the radio room: Bob stays yellow, his flat belt and buckle; a cap, a collar, the codebook', [
+    ['lib/cast.js now', () => person('b', W)],
+    ['F: sailor\'s round cap, square collar', swap('b', W, { hat: g => { g.add(mesh(new THREE.SphereGeometry(.47, 16, 10, 0, Math.PI * 2, 0, Math.PI * .4), mat(0x4a3424), 0, HEAD_Y)); teller()(g); }, ring: sailor, lift: .0 })],
+    ['G: peaked cap, ribbed roll-neck', swap('b', W, { hat: peaked(), ring: ribbed, lift: .14 })],
+    ['H: watch cap and headset, roll-neck', swap('b', W, { hat: g => { knit()(g); headset(.06)(g); }, ring: ribbed, lift: .14 })]]],
+  ['Eve\'s headphones', 'the old enigma Eve wore them under her hat (the story: she listens); offered in every look', [
+    ['old enigma Eve', old('e')], ['Eve today + headphones', swap('e', {}, { hat: g => { person('e').userData.pieces.hat.children.forEach(c => g.add(c.clone())); evePhones(g); } })],
+    ['Eve wartime + headphones', swap('e', W, { hat: g => { person('e', W).userData.pieces.hat.children.forEach(c => g.add(c.clone())); evePhones(g); } })],
+    ['Eve today now', () => person('e')]]],
+];
+for (const [title, note, cols] of ROWS) {
+  if (only && !title.toLowerCase().includes(only.toLowerCase())) continue;
+  const n = Math.max(cols.length, 4), tall = 1.0, aspect = n / 2 / tall, sec = document.createElement('section');
+  sec.innerHTML = `<h2>${title} <small>· ${note}</small></h2><canvas style="aspect-ratio:${aspect}"></canvas><div class="names" style="grid-template-columns:repeat(${n},1fr)">${cols.map(c => `<span>${c[0]}</span>`).join('')}</div>`;
+  document.getElementById('rows').append(sec);
+  const canvas = sec.querySelector('canvas');
+  const r = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x141824);
+  scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x2a2418, 1.4));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(4, 8, 6); scene.add(sun);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 8), new THREE.MeshStandardMaterial({ color: 0x232838 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  const figs = [], Wd = 2.5;
+  cols.forEach(([, make], i) => { const f = make(); f.position.x = (i - (n - 1) / 2) * Wd; f.rotation.y = turn0; scene.add(f); figs.push(f); });
+  const fov = 22, h = n * Wd / aspect, cam = new THREE.PerspectiveCamera(fov, aspect, .1, 200);
+  const dist = h / 2 / Math.tan(fov / 2 * Math.PI / 180), cy = 1.6;
+  cam.position.set(0, cy + .6, dist); cam.lookAt(0, cy, 0);
+  const draw = () => { const w = canvas.clientWidth; r.setSize(w, w / aspect, false); r.render(scene, cam); };
+  let drag = null;
+  canvas.onpointerdown = e => { drag = e.clientX; canvas.setPointerCapture(e.pointerId); };
+  canvas.onpointermove = e => { if (drag === null) return; for (const f of figs) f.rotation.y += (e.clientX - drag) * .01; drag = e.clientX; draw(); };
+  canvas.onpointerup = () => drag = null;
+  addEventListener('resize', draw); draw();
+}
+window.labReady = true;
+</script>
+</body></html>
