@@ -5,7 +5,8 @@
 // actions animate from there and write back into st what they changed.
 import * as THREE from 'three';
 import { PLACES, TABLE_TOP } from './world.js';
-import { stick, cradles, stylus, person, COLORS, STICK_L } from './props.js';
+import { stick, cradles, stylus, COLORS, STICK_L } from './props.js';
+import { person } from '../../lib/cast.js';
 import { Strip } from './strip.js';
 import { layout, order, lines, show } from './scytale.js';
 import { burst, ring, icon } from '../../lib/fx.js';
@@ -24,8 +25,8 @@ export class Stage {
     this.world = world; this.scene = world.scene; this.tickers = tickers; this.speed = 1; this.token = 0;
     const S = this.scene;
     this.people = {};
-    for (const k of ['a', 'e', 'b']) { const p = person(k); p.position.copy(PLACES[k].person); if (k === 'e') p.rotation.y = .8; S.add(p); this.people[k] = p; }
-    this.couriers = [person('n')]; S.add(...this.couriers);
+    for (const k of ['a', 'e', 'b']) { const p = person(k, { disguise: 'roman' }); p.position.copy(PLACES[k].person); if (k === 'e') p.rotation.y = .8; S.add(p); this.people[k] = p; }
+    this.couriers = [person('n', { disguise: 'roman' })]; S.add(...this.couriers);
     this.sticks = {}; this.tags = {};
     for (const [id, [k, dx, n, wood]] of Object.entries(STICKS)) {
       const s = stick(n, wood); s.position.copy(PLACES[k].table).add(v(dx, AXIS_Y, -.55)); s.userData.id = id; S.add(s); this.sticks[id] = s;

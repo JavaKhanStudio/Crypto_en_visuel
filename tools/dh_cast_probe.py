@@ -4,7 +4,7 @@
     python3 tools/dh_cast_probe.py out/r635/before --base http://localhost:8781/
     python3 tools/dh_cast_probe.py out/r635/after  --base http://localhost:8782/
     python3 tools/dh_cast_probe.py --compare out/r635/before out/r635/after
-Prints page errors per tree; --compare prints every bubble that moved more than 2 px and a before|after sheet per step."""
+--page scytale/ runs it on another episode (r636). Prints page errors per tree; --compare prints every bubble that moved more than 2 px and a before|after sheet per step."""
 import argparse, json, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__))))
 
@@ -12,6 +12,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("out", nargs="?")
 ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--compare", nargs=2)
+ap.add_argument("--page", default="diffie-hellman/")
 a = ap.parse_args()
 
 BUBBLES = """() => [...document.querySelectorAll('#bubbles .bubble.show')].filter(el => getComputedStyle(el).visibility !== 'hidden')
@@ -50,7 +51,7 @@ with sync_playwright() as p:
     for size, (w, h) in SIZES.items():
         pg = br.new_context(viewport={"width": w, "height": h}, has_touch=w < 900, is_mobile=w < 900).new_page()
         pg.on("pageerror", lambda e: errors.append(f"{size}: {e}"))
-        pg.goto(f"{a.base}diffie-hellman/?instant=1&topbar=pin#story=1", wait_until="load")
+        pg.goto(f"{a.base}{a.page}?instant=1&topbar=pin#story=1", wait_until="load")
         pg.wait_for_function("window.demo && window.demo.ready", timeout=60000)
         pg.add_style_tag(content=".bubble { transition: none !important; }")
         n = int(pg.evaluate("document.getElementById('step-count').textContent.match(/(\\d+)\\D*$/)[1]"))

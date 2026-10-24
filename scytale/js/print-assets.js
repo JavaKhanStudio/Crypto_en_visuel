@@ -6,7 +6,8 @@
 // stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
 // gets its line here. The Greek village is this episode's own (js/world.js), not the saga's valley.
 // The sticks and their cradles are sized together: a printed stick rests in its printed cradles.
-import { stick, stylus, person } from './props.js';
+import { stick, stylus } from './props.js';
+import { person } from '../../lib/cast.js';
 import { table, TABLE_SIZE } from './world.js';
 import { STICKS } from './stage.js';
 
@@ -25,11 +26,14 @@ const depth = (o, dd) => o.children.filter(c => c.geometry.parameters.depth === 
 export const deep = (d, o) => ({ posts: [depth(o, .3), [1, 1, 4.4]], prongs: [depth(o, .08), [1, 1, 3]] });
 
 export const ASSETS = [
-  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
-  { id: 'bob', label: "Bob, flat cap and leather apron", kind: 'figure', size: { h: 60 }, get: () => person('b') },
-  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
-  { id: 'courier', label: "The messenger with his broad hat (he carries the strip rolled on his head)", kind: 'figure', size: { h: 60 },
-    get: () => person('n') },
+  { id: 'alice', label: 'Alice, the cast figure (lib/cast.js) in Rome: blue robe, white veil over her bun, toga, a scytale in her fist', kind: 'figure', size: { h: 60 },
+    get: () => person('a', { disguise: 'roman' }) },
+  { id: 'bob', label: 'Bob, the cast figure in Rome: yellow robe, laurel wreath, toga, a scytale in his fist', kind: 'figure', size: { h: 60 },
+    get: () => person('b', { disguise: 'roman' }) },
+  { id: 'eve', label: 'Eve, the cast figure in Rome: the spy, black galea helmet, cape, eye mask', kind: 'figure', size: { h: 60 },
+    get: () => person('e', { disguise: 'roman' }) },
+  { id: 'courier', label: 'The messenger, the cast figure: broad hat, satchel, a scroll (he carries the strip rolled on his head)', kind: 'figure', size: { h: 60 },
+    get: () => person('n', { disguise: 'roman' }) },
   { id: 'scytale-4', label: "Alice's and Bob's scytale, 4 letters a turn", kind: 'prop', size: { max: 70 },
     get: () => rod('a'), strip: grooves },
   { id: 'scytale-3', label: "Eve's thinner stick, 3 letters a turn", kind: 'prop', size: { max: 70 },
