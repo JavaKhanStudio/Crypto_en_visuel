@@ -5,7 +5,8 @@
 // a print does without; ground is the asset's y where it meets the ground, cut there on export so it
 // stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
 // gets its line here. The village is this episode's own (js/world.js), not the saga's valley.
-import { pot, chest, certificate, person } from './props.js';
+import { pot, chest, certificate } from './props.js';
+import { person } from '../../lib/cast.js';
 import { table, TABLE_SIZE } from './world.js';
 
 const kids = (o, test) => o.children.find(test);
@@ -14,11 +15,11 @@ const width = (c, w) => c.isMesh && c.geometry.type === 'BoxGeometry' && c.geome
 const tin = seal => { const p = pot(); p.userData.setSeal(seal); return p; };
 
 export const ASSETS = [
-  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
-  { id: 'bob', label: "Bob, flat cap and painter's apron", kind: 'figure', size: { h: 60 }, get: () => person('b') },
-  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
-  { id: 'courier', label: 'A courier with his cap (two carry the pots along the road)', kind: 'figure', size: { h: 56 },
-    get: () => person('n') },
+  { id: 'alice', label: 'Alice, the cast figure (lib/cast.js): blue robe, scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
+  { id: 'bob', label: 'Bob, the cast figure: yellow robe, flat cap, belt with a gold buckle', kind: 'figure', size: { h: 60 }, get: () => person('b') },
+  { id: 'eve', label: 'Eve, the cast figure: the spy, black fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
+  { id: 'courier', label: 'A courier, the cast messenger with a postman\'s cap and his satchel (two carry the pots along the road)', kind: 'figure', size: { h: 56 },
+    get: () => person('n', { hat: 'postCap' }) },
   { id: 'pot', label: 'A paint pot, its handle up (the paint is a colour, not a shape: paint the print)', kind: 'prop', size: { h: 25 },
     get: () => tin(null) },
   { id: 'pot-sealed', label: "A pot with Bob's gold seal on its side (the parade)", kind: 'prop', size: { h: 25 },

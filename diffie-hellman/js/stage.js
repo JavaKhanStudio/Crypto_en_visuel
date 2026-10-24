@@ -5,7 +5,8 @@
 // actions animate from there.
 import * as THREE from 'three';
 import { PLACES, TABLE_TOP, TABLE_SIZE, SHELF_H } from './world.js';
-import { pot, chest, certificate, person, COLORS, POT_H, POT_R } from './props.js';
+import { pot, chest, certificate, COLORS, POT_H, POT_R } from './props.js';
+import { person } from '../../lib/cast.js';
 import { mix, colorOf } from './paint.js';
 import { burst, ring, icon } from '../../lib/fx.js';
 import { sfx } from '../../lib/sound.js';
@@ -22,7 +23,7 @@ export class Stage {
     for (const k of ['a', 'e', 'b']) {
       const p = person(k); p.position.copy(PLACES[k].person); p.rotation.y = .6; S.add(p); this.people[k] = p;
     }
-    this.couriers = [person('n'), person('n')]; S.add(...this.couriers);
+    this.couriers = [person('n', { hat: 'postCap' }), person('n', { hat: 'postCap' })]; S.add(...this.couriers);
     this.pots = new Map();      // id -> pot, made on first use
     this.chest = chest(); this.chest.scale.setScalar(.55); S.add(this.chest);
     this.cert = certificate(); S.add(this.cert);
