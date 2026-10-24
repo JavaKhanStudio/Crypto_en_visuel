@@ -3,7 +3,8 @@
 // office behind it at the east end. Eve's chart and her stopwatch stand by her. Built from
 // primitives in code: no model files to load. One unit is 10 cm.
 import * as THREE from 'three';
-import { booth, board, gate, bobDesk, chart, stopwatch, person, DESK_Y, BOARD_H } from './props.js';
+import { booth, board, gate, bobDesk, chart, stopwatch, DESK_Y, BOARD_H } from './props.js';
+import { person } from '../../lib/cast.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 // Where things stand, along x. The booth's counter is at z = 4, the guard just behind it.
@@ -70,7 +71,7 @@ export function buildWorld(scene) {
   const watch = stopwatch(); watch.position.set(X.eve - 6, 27, 6); watch.scale.setScalar(2.2); watch.visible = false;
   for (const o of [bth, brd, gt, desk, ch, watch]) scene.add(o);
 
-  const people = { a: person('a'), b: person('b'), e: person('e'), g: person('g') };
+  const people = { a: person('a', { scale: 5.3 }), b: person('b', { scale: 5.3 }), e: person('e', { scale: 5.3 }), g: person('g', { scale: 5.3 }) };
   people.a.position.set(X.alice, 0, 2); people.a.rotation.y = .5;
   people.e.position.set(X.eve, 0, 4); people.e.rotation.y = .45;
   people.g.position.set(X.booth + 3, 0, -6); people.g.rotation.y = 0;

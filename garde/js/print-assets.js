@@ -6,7 +6,8 @@
 // stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
 // gets its line here. Bob's bank is this episode's own (js/world.js): one unit is 10 cm, so a person
 // (about 17 units) at 60 mm puts the hall at about 3.5 mm a unit.
-import { person, badge, booth, gate, bobDesk, chart, stopwatch } from './props.js';
+import { badge, booth, gate, bobDesk, chart, stopwatch } from './props.js';
+import { person } from '../../lib/cast.js';
 import { MSG_A, MAC_A } from './data.js';
 
 const plane = c => c.isMesh && (c.geometry.type === 'PlaneGeometry' || c.geometry.type === 'CircleGeometry');
@@ -17,13 +18,14 @@ function aliceBadge() {
 }
 
 export const ASSETS = [
-  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
-  { id: 'bob', label: 'Bob, flat cap and a gold belt', kind: 'figure', size: { h: 60 }, get: () => person('b') },
-  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
-  { id: 'guard', label: 'The guard: peaked cap with a gold band, a star on the chest, a moustache', kind: 'figure',
-    size: { h: 62 }, get: () => person('g'),
-    // the star is a flat disc on the chest: paint it
-    strip: (d, o) => ({ star: flats(o) }) },
+  { id: 'alice', label: 'Alice, the cast figure (lib/cast.js): blue robe, a bun, the blue scarf ring', kind: 'figure', size: { h: 60 },
+    get: () => person('a', { scale: 5.3 }) },
+  { id: 'bob', label: 'Bob, the cast figure: yellow robe, flat cap, leather belt with a gold buckle', kind: 'figure', size: { h: 60 },
+    get: () => person('b', { scale: 5.3 }) },
+  { id: 'eve', label: 'Eve, the cast figure: the spy, black fedora with a red band, eye mask', kind: 'figure', size: { h: 60 },
+    get: () => person('e', { scale: 5.3 }) },
+  { id: 'guard', label: 'The guard, the cast figure: peaked cap with a gold band, a star half sunk in the chest, a moustache', kind: 'figure',
+    size: { h: 62 }, get: () => person('g', { scale: 5.3 }) },
   { id: 'badge', label: 'A badge: an order and its HMAC (Alice\'s blue, Eve\'s red: paint its face)', kind: 'prop',
     size: { max: 40 }, get: aliceBadge,
     // the order and the HMAC are a picture on a sheet over the front

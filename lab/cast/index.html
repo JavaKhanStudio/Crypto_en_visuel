@@ -30,13 +30,12 @@ Printed 60 mm tall (r196's figure size): neck peg 4.5 mm, arm and hat pegs 3 mm,
 import * as THREE from 'three';
 import { person, explode, CAST } from '../../lib/cast.js';
 import { person as kasiski } from '../../kasiski/js/props.js';
-import { person as garde } from '../../garde/js/props.js';
 import { person as vpn } from '../../vpn/js/props.js';
 const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45), only = q.get('row');   // ?row=satchel: the rows whose title has it
 const ALL = ['a', 'b', 'e', 'n', 'g', 'v', 'i'], MAIN = ['a', 'b', 'e', 'n'];
 const col = (k, f) => [CAST[k].name, f];
 const old = { a: () => kasiski('a'), b: () => kasiski('b'), e: () => kasiski('e'), n: () => kasiski('n'),
-  g: () => { const o = garde('g'); o.children[0].scale.setScalar(1); return o; }, v: () => vpn('v'), i: () => vpn('i') };
+  g: () => person('g'), v: () => vpn('v'), i: () => vpn('i') };   // garde's guard is lib/cast.js's since r640
 const apart = (k, o) => () => { const f = person(k, o); explode(f, 1); return f; };
 const up = (k, o) => () => { const f = person(k, o); for (const a of f.userData.pieces.arms) a.rotation.x = a.userData.swing[0] * Math.PI / 180; return f; };
 // round 6: the joints, wide apart; round 7: every peg in its own piece's colour, as it prints (gold made the neck peg read as a piece of its own)
@@ -64,7 +63,7 @@ const ROWS = [
     ['Alice', () => person('a', { shoulder: 'satchel', hand: 'letter' })], ['Bob', () => person('b', { shoulder: 'satchel', hand: 'letter' })],
     ['Eve', () => person('e', { shoulder: 'satchel', hat: 'fedora' })], ['messenger', () => person('n', { hand: 'letter', hat: 'travellerHat' })]]],
   ['bare', 'the kinds with no costume: what never changes', 1.0, MAIN.map(k => col(k, () => person(k, { disguise: 'none' })))],
-  ['the episodes today', 'their own props.js: kasiski, garde, vpn', 1.0, ALL.map(k => col(k, old[k]))],
+  ['the episodes today', 'their own props.js: kasiski, vpn (garde\'s guard is lib/cast.js\'s since r640)', 1.0, ALL.map(k => col(k, old[k]))],
   ['today', 'lib/cast.js, what the roll-out puts in the episodes (Bob turns yellow)', 1.0, ALL.map(k => col(k, () => person(k)))],
   ...Object.keys(SETTING).map(d => [d, SETTING[d], 1.0, MAIN.map(k => col(k, () => person(k, { disguise: d })))]),
 ];
