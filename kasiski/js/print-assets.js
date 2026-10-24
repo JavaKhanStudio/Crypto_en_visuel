@@ -4,11 +4,12 @@
 // mm, max = longest side in mm); omit names the parts that are light, not matter; strip the decoration
 // a print does without; ground is the asset's y where it meets the ground, cut there on export so it
 // stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
-// gets its line here. The road, the farm and the cast are this episode's own (js/props.js, js/world.js):
-// nothing here comes from the saga. The cart is built fresh, not read from the page: the story hides it
+// gets its line here. The road and the farm are this episode's own (js/props.js, js/world.js), the
+// cast is lib/cast.js's (r641): nothing here comes from the saga. The cart is built fresh, not read from the page: the story hides it
 // once the lane is out, and a hidden mesh is not printed. Its stone sits 2 cm into the road at rest
 // (wedged under the tyre): ground: 0 cuts it there, so the cart stands on its wheels, not on the stone.
-import { car, keyWheel, person } from './props.js';
+import { car, keyWheel } from './props.js';
+import { person } from '../../lib/cast.js';
 
 const kids = (o, test) => o.children.find(test);
 // a house of the farm (world.js house()): a group whose first child is its walls, w wide
@@ -17,9 +18,9 @@ const house = w => c => c.isGroup && c.children[0]?.geometry?.type === 'BoxGeome
 const letters = (d, o) => ({ plates: o.userData.plates, 'side letters': o.userData.sides });
 
 export const ASSETS = [
-  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
-  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
-  { id: 'cart', label: "Alice's farm cart and its horse, Alice and Bob on the bench, the stone under the near front wheel", kind: 'prop',
+  { id: 'alice', label: 'Alice, blue robe, scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
+  { id: 'eve', label: 'Eve, the spy: fedora and an eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
+  { id: 'cart', label: "Alice's farm cart and its horse, Alice and Bob (yellow) on the bench, the stone under the near front wheel", kind: 'prop',
     size: { max: 150 }, ground: 0, get: () => car() },
   { id: 'key-wheel', label: 'The key wheel LEMON: a five-sided drum, one key letter a face', kind: 'prop', size: { max: 55 },
     get: () => keyWheel(), strip: letters },
