@@ -1,0 +1,51 @@
+<!doctype html>
+<!-- r621 lab: the saga's valley on each candidate map of lib/saga/world.js (MAPS), in the real episodes: each map is
+     the episode itself opened with ?map=<name>, never a fork. Simon on r494: « now that we have a bit more, we could
+     adapt the scene. Try and see what you would change ». tools/saga_map_shots.py shoots the same steps as stills. -->
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carte de la vallée · la saga</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0d12; color: #e8e4da; font: 15px system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  #ui { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 10px; }
+  #ui button, #ui select { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid #ffffff40; background: #141820; color: inherit; cursor: pointer; }
+  #ui button.on { background: #e8b34b; color: #1b1408; border-color: #e8b34b; }
+  #say { padding: 0 12px 8px; font-size: 14px; line-height: 1.4; max-width: 900px; }
+  @media (max-width: 720px) { #ui { gap: 4px; padding: 6px; } #ui button, #ui select { padding: 4px 8px; font-size: 13px; } #say { font-size: 12px; padding: 0 8px 6px; } }
+  iframe { flex: 1; border: 0; width: 100%; }
+</style></head><body>
+<div id="ui"></div>
+<div id="say"></div>
+<iframe id="ep" title="épisode"></iframe>
+<script>
+const MAPS = {
+  now: ['Avant', "La vallée telle qu'elle est : une couronne de montagnes enneigées tout autour ; le ciel peint n'apparaît que vu de haut."],
+  col: ['(a) Col au nord', "Derrière les châteaux (le côté que regardent les plans), la crête descend en collines boisées : la forêt peinte devient l'horizon derrière Alice et Bob. Les sommets enneigés restent sur les côtés et devant."],
+  collines: ['(b) Collines', "Toute la couronne descend en collines : plus de neige, la page peinte fait toutes les montagnes au loin."],
+  eperons: ['(c) Col + éperons', "Comme (a), et les châteaux sur des éperons plus hauts et plus raides : chacun se dresse contre le ciel, vu de la vallée."],
+};
+const EPS = { 'deux-generaux': '1.1', 'eve-lit-tout': '1.2', 'octet-change': '1.3', 'cle-vallee': '1.4', 'paquet-complet': '1.5', 'encore-des-tours': '1.6' };
+const q = new URLSearchParams(location.search);
+const st = { map: MAPS[q.get('map')] ? q.get('map') : 'col', ep: EPS[q.get('ep')] ? q.get('ep') : 'deux-generaux', step: +q.get('step') || 2 };
+const ui = document.getElementById('ui'), frame = document.getElementById('ep');
+for (const m in MAPS) { const b = document.createElement('button'); b.dataset.map = m; b.textContent = MAPS[m][0]; b.onclick = () => set({ map: m }); ui.append(b); }
+const sel = document.createElement('select');
+for (const e in EPS) sel.add(new Option(EPS[e] + ' · ' + e, e));
+sel.onchange = () => set({ ep: sel.value, step: 1 }); ui.append(sel);
+for (const [n, label] of [[1, 'intro'], [2, 'Alice'], [3, 'vallée'], [7, 'Bob'], [12, "l'aube"], [14, "vue d'ensemble"]]) {
+  const b = document.createElement('button'); b.dataset.step = n; b.textContent = n + ' ' + label; b.title = "étape " + n + " de l'épisode 1.1";
+  b.onclick = () => set({ step: n }); ui.append(b);
+}
+let loads = 0;
+function set(p) {
+  Object.assign(st, p);
+  for (const b of ui.querySelectorAll('[data-map]')) b.classList.toggle('on', b.dataset.map === st.map);
+  for (const b of ui.querySelectorAll('[data-step]')) { b.classList.toggle('on', +b.dataset.step === st.step); b.hidden = st.ep !== 'deux-generaux'; }
+  sel.value = st.ep;
+  document.getElementById('say').textContent = MAPS[st.map][1];
+  frame.src = `../../${st.ep}/?map=${st.map}&n=${++loads}#story=${st.step}`;   // n: a new page each time, the hash alone would not reload it
+  history.replaceState(null, '', `?map=${st.map}&ep=${st.ep}&step=${st.step}`);
+}
+set({});
+</script>
+</body></html>
