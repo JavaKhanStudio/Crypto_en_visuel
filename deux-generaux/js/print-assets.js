@@ -14,10 +14,10 @@ const kids = (o, test) => o.children.find(test);
 export const ASSETS = [
   { id: 'castle-a', label: "Alice's castle (the humans' white city)", kind: 'landmark', size: { max: 150 }, ground: 0,
     get: d => d.world.castleA, omit: d => [d.world.castleA.userData.glow],   // the team ring at its foot is a glow
-    bodies: d => ({ flag: d.world.castleA.userData.flag }) },
+    bodies: d => ({ flag: d.world.castleA.userData.flag }), flat: ['flag'] },   // r572: the pole plugs into the spire, the flag prints on its cloth
   { id: 'castle-b', label: "Bob's castle (the elves' towers)", kind: 'landmark', size: { max: 150 }, ground: 0,
     get: d => d.world.castleB, omit: d => [d.world.castleB.userData.glow],   // the team ring at its foot is a glow
-    bodies: d => ({ flag: d.world.castleB.userData.flag }) },
+    bodies: d => ({ flag: d.world.castleB.userData.flag }), flat: ['flag'] },
   { id: 'city', label: "Eve's city and her tower with the Eye", kind: 'landmark', size: { max: 150 }, ground: 0,
     get: d => d.world.city, omit: d => [d.world.city.userData.pivot, d.world.city.userData.spot] },
   { id: 'rider-a', label: "Alice's messenger on his horse", kind: 'figure', size: { h: 90 },

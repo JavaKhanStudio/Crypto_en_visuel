@@ -54,7 +54,7 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { pieces, fit, check, floating, repair, cut, pegs, stl, zip, bounds, named } from '../../lib/print.js';
+import { pieces, fit, check, floating, repair, cut, pegs, lay, FLATTEN, stl, zip, bounds, named } from '../../lib/print.js';
 import { JOINT, DEPTH, CLEAR } from '../../lib/fit.js';
 
 // the episodes that have a print list: every slug of home.js EPISODES whose <ep>/js/print-assets.js
@@ -179,13 +179,16 @@ function measure(row) {
   // r552: a list's bodies that sat on each other go back together on a peg, its socket cut in the body under it (glue: [names] opts out)
   const pegRes = !joints && names.length > 1 ? pegs(fix, row.k, { clear: CLEAR, depth: DEPTH, glue: a.glue ?? [] }) : null;
   if (pegRes) { fix.splice(0, fix.length, ...pegRes.ps); log.push(...pegRes.log.map(l => `peg: ${l}`)); }
+  const whole = bounds(fix);   // r572: the size is the assembled asset's, measured before a body is laid flat
+  for (const n of a.flat ?? []) { const ps = fix.filter(p => p.body === n); if (!ps.length) continue;
+    const laid = lay(ps, row.k); if (laid === ps) continue; fix.splice(0, fix.length, ...fix.filter(p => p.body !== n), ...laid); log.push(`${n}: laid flat on its widest side, its lowest ${FLATTEN} mm cut flat`); }
   for (const n of names) {
     const ps = fix.filter(p => p.body === n); if (!ps.length) continue;
     const fa = floating(ps, row.k); after.push(...ps.map((p, i) => ({ ...check(p, row.k), floats: fa[i] }))); bodies.push({ name: n, ps });
   }
   fix.sort((p, q) => names.indexOf(p.body) - names.indexOf(q.body));   // in the order of after
   row.checks = checks; row.fix = { ps: fix, log, bodies }; row.after = after;
-  const b = bounds(row.fix.ps); row.mm = b.size.map(x => +(x * row.k).toFixed(0));
+  row.mm = whole.size.map(x => +(x * row.k).toFixed(0));
   const tally = cs => { const n = f => cs.filter(f).length; return { open: n(c => c.open), flat: n(c => c.flat), thin: n(c => c.thin), floats: n(c => c.floats) }; };
   const words = t => [t.open && `${t.open} open`, t.flat && `${t.flat} flat`, t.thin && `${t.thin} thin`, t.floats && `${t.floats} floating`].filter(Boolean);
   row.issues = tally(row.checks); row.left = tally(row.after);

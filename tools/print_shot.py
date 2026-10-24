@@ -26,10 +26,11 @@ with sync_playwright() as p:
     if a.zoom != 1:   # the wheel zooms the orbit camera towards its target
         box = pg.locator("#view canvas").bounding_box(); pg.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
         for _ in range(int(a.zoom)): pg.mouse.wheel(0, -300); pg.wait_for_timeout(120)
+    if a.no_review: pg.add_style_tag(content="#rv { display: none; }")
+    pg.wait_for_timeout(300)   # r572: hiding the panel reframes the camera (backOff); the close look goes after it
     if a.camera or a.target:
         pg.evaluate("""([c, t]) => { const { camera, controls } = printLab.view; if (t) controls.target.set(...t); if (c) camera.position.set(...c); controls.update(); }""",
             [a.camera and [float(x) for x in a.camera.split(",")], a.target and [float(x) for x in a.target.split(",")]])
-    if a.no_review: pg.add_style_tag(content="#rv { display: none; }")
     pg.wait_for_timeout(800)
     pg.locator("#view").screenshot(path=a.out)
     print(a.out, "errors:", errors or "none")

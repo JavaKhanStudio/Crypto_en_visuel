@@ -9,7 +9,8 @@ shape's fields are proven on a fixture list (tests/print/shape-assets.js): a str
 the files, a scaled part is scaled, a body is its own STL on the bed, a checked asset loses the badge;
 r395: a cast figure's swing: in the list keys the arm it names for that range and leaves the null one a plain peg.
 r552: a body that sat on another (the fixture's rider on his horse) has a 3 mm peg under it and a socket 0.4 mm wider
-in the body below, measured from the STL; glue: [names] opts a body out.
+in the body below, measured from the STL; glue: [names] opts a body out. r572: 1.1's castle flags: the pole is the peg,
+the castle has a socket 0.4 mm wider, and the flag body lies flat (flat: [names]).
 r452: the lab runs only behind tools/serve_review.py (a plain static server gets the 'local only' page);
 a comment survives a reload and a fresh browser, Send makes one ticket with it (dry: the atelier add it
 would run), ticking 'checked' clears the badge. With no base, the test serves the repo itself through
@@ -96,6 +97,21 @@ with sync_playwright() as p:
                     report(f"{i}: the flag apart, the castle under it {mh:.0f} mm high, the footprint {r['mm'][0]}x{r['mm'][2]} mm",
                         mt and mh < max(r["size"].values()) - 5 and max(r["mm"]) <= max(r["size"].values()) + 1
                         and f"x {mh:.0f} mm)" in files.get(f"{i}/PRINT.txt", b"").decode())
+        if "flag" in r["bodies"]:   # r572: the flag's pole is its peg, a socket 0.4 mm wider in the castle, and the flag lies flat
+            ax = pg.evaluate("""async id => { const P = await import('../../lib/print.js'), r = printLab.rows.find(r => r.a.id === id), b = r.fix.bodies.find(b => b.name === 'main');
+                const { lo, hi } = P.bounds(b.ps), pole = r.fix.ps.find(p => p.peg); if (!pole) return null;
+                return { xy: [(pole.axis[0] - (lo[0] + hi[0]) / 2) * r.k, -(pole.axis[2] - (lo[2] + hi[2]) / 2) * r.k], i: r.fix.ps.indexOf(pole) }; }""", i)
+            mt = read_stl(files.get(f"{i}/{i}-main.stl", b"")) or []; ft = read_stl(files.get(f"{i}/{i}-flag.stl", b"")) or []
+            pf = sorted((n for n in files if n.startswith(f"{i}/pieces/")), key=lambda n: int(n.split("/")[-1].split("-")[0]))
+            pt = ax and read_stl(files[pf[ax["i"]]])
+            pd = pt and sorted(max(t[k] for t in pt for k in ax_) - min(t[k] for t in pt for k in ax_) for ax_ in ((0, 3, 6), (1, 4, 7), (2, 5, 8)))[1]   # across the pole: its middle extent
+            wall = ax and [((v[0] - ax["xy"][0]) ** 2 + (v[1] - ax["xy"][1]) ** 2) ** .5 for t in mt for v in (t[0:3], t[3:6], t[6:9])]
+            ring = wall and [round(d, 2) for d in wall if .8 < d < 1.6]   # the socket's wall: the distance most vertices near the axis share
+            sd = ring and 2 * max(set(ring), key=ring.count)
+            fd = ft and [max(t[k] for t in ft for k in a_) - min(t[k] for t in ft for k in a_) for a_ in ((0, 3, 6), (1, 4, 7), (2, 5, 8))]
+            report(f"{i}: the flag's pole is its peg, the castle a socket 0.4 mm wider", bool(pd and sd) and abs(pd - 2) < .1 and abs(sd - pd - .4) < .06 and volume(pt) > 0,
+                f"pole {pd or 0:.2f} mm, socket {sd or 0:.2f} mm")
+            report(f"{i}: the flag lies flat, its thinnest side vertical", bool(fd) and fd[2] == min(fd), fd and "%.1f x %.1f x %.1f mm" % tuple(fd))
         else:
             tris = read_stl(files[f"{i}/{i}.stl"])
             report(f"{i}.stl: whole triangles", tris is not None)
