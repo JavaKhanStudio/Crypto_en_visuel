@@ -259,7 +259,8 @@ function signRoom(scene, pk, portrait) {
     key.position.lerpVectors(keyHome, lockAt, kin); turn.rotation.x = span(time, T.turn, T.turn + .5) * Math.PI / 2;
     // r627: on a phone the key's name waits over the lock (it rode the key in, off the screen's side)
     keyL.position.copy(portrait ? lockAt : key.position).add(portrait ? v(0, 1.6) : v(0, 2.8)); during(keyL, time, T.key, T.out);
-    during(calc, time, T.turn); during(sh1.nameL, time, 1.2); during(sh2.nameL, time, T.z8); during(rsa.nameL, time, T.me - .8);
+    // r629: on a phone the formula goes before the camera leaves the box for the signature (it lay under the bubble)
+    during(calc, time, T.turn, portrait ? T.out + .4 : 1e3); during(sh1.nameL, time, 1.2); during(sh2.nameL, time, T.z8); during(rsa.nameL, time, T.me - .8);
     hide(SIG.B); if (time > T.out) outOf(SIG.B, rsa.mouth(at.sig), time, T.out, T.end - .6); during(SIG.cap, time, T.out + .8);
   }
 
