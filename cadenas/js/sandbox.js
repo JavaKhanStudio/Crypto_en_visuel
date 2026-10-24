@@ -1,7 +1,7 @@
 // The sandbox: lock Alice's box (or not), send it, let Eve grab it (or not), and try
 // to open it as Alice, Eve or Bob. Only Bob's key opens Bob's padlock, unless Eve stole it.
 import { t, raw } from './i18n.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const $ = id => document.getElementById(id);
 

@@ -8,7 +8,7 @@
 // person (17 units) at 60 mm puts the hall at about 3.5 mm a unit.
 import * as THREE from 'three';
 import { crate, press, xorRing, belt, screen } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 
 const plane = c => c.isMesh && c.geometry.type === 'PlaneGeometry';
 const box = (c, w, h, d) => c.isMesh && c.geometry.type === 'BoxGeometry'

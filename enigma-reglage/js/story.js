@@ -6,7 +6,7 @@
 // consistent), flies the camera, pins its bubbles, and offers buttons.
 // auto: the step's action plays by itself once the camera has landed (its button replays it).
 import { t, raw, onLang } from './i18n.js';
-import { render } from '../../lib/md.js';
+import { render } from '../../ficelle/lib/md.js';
 import { press, type, BARE } from './enigma.js';
 import { SEGS } from './stage.js';
 

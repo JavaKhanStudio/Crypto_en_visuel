@@ -7,7 +7,7 @@
 // gets its line here. Bob's bank is this episode's own (js/world.js): one unit is 10 cm, so a person
 // (about 17 units) at 60 mm puts the hall at about 3.5 mm a unit.
 import { badge, booth, gate, bobDesk, chart, stopwatch } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 import { MSG_A, MAC_A } from './data.js';
 
 const plane = c => c.isMesh && (c.geometry.type === 'PlaneGeometry' || c.geometry.type === 'CircleGeometry');

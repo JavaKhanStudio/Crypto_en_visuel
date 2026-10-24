@@ -4,10 +4,10 @@
 // hat's hollow show. Writes an SVG (10 px a mm); magick turns it into a PNG.
 //     node tools/print_section.mjs out/x.svg [kind] [setting] [--z 0]
 import { register } from 'node:module';
-register('./print_probe/hooks.mjs', import.meta.url);
-const { person } = await import('../lib/cast.js');
-const { pieces, fit, repair, cut } = await import('../lib/print.js');
-const { JOINT, DEPTH, CLEAR } = await import('../lib/fit.js');
+register('../ficelle/tools/three_hooks.mjs', import.meta.url);
+const { person } = await import('../ficelle/lib/cast.js');
+const { pieces, fit, repair, cut } = await import('../ficelle/lib/print.js');
+const { JOINT, DEPTH, CLEAR } = await import('../ficelle/lib/fit.js');
 import { writeFileSync } from 'node:fs';
 const args = process.argv.slice(2), zi = args.indexOf('--z'), z0 = zi >= 0 ? +args[zi + 1] : 0, pos = args.filter((a, i) => !a.startsWith('--') && i !== zi + 1 || zi < 0 && !a.startsWith('--'));
 const [out, kind = 'a', setting = 'today'] = pos;

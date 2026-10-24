@@ -6,12 +6,12 @@
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import { renderDoors } from '../../lib/doors.js';
-import { roomFold } from '../../lib/fold.js';
-import { render as md } from '../../lib/md.js';
-import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
-import * as A from '../../lib/saga-aes.js';
-import * as R from '../../lib/rsa.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
+import { roomFold } from '../../ficelle/lib/fold.js';
+import { render as md } from '../../ficelle/lib/md.js';
+import { CASTLE_A, CASTLE_B, CITY } from '../../ficelle/lib/saga/world.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
+import * as R from '../../ficelle/lib/rsa.js';
 import * as P from './packet.js';
 
 const anchors = {
@@ -56,7 +56,7 @@ export const STEPS = [
   { id: 'end', ch: 3, shot: 'overview', orbit: .06, view: 'packet', doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../ficelle/assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../paquet-complet/vignette.jpg', clip: 'img/door-next.mp4', href: '../paquet-complet/' }] },
 ];
 

@@ -4,7 +4,7 @@
 // primitives in code: no model files to load. One unit is 10 cm.
 import * as THREE from 'three';
 import { booth, board, gate, bobDesk, chart, stopwatch, DESK_Y, BOARD_H } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 // Where things stand, along x. The booth's counter is at z = 4, the guard just behind it.

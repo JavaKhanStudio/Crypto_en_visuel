@@ -8,7 +8,7 @@
 // a person (about 17 units) at 60 mm puts the room at about 3.5 mm a unit.
 import * as THREE from 'three';
 import { card, terminal, shaker, machine, cabinet, eveDesk, rig, stopwatch, COLORS } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 
 const plane = c => c.isMesh && (c.geometry.type === 'PlaneGeometry' || c.geometry.type === 'CircleGeometry');
 const flats = o => { const out = []; o.traverse(c => { if (plane(c)) out.push(c); }); return out; };

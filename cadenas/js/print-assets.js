@@ -10,7 +10,7 @@
 // mesh is not printed (lib/print.js pieces).
 import * as THREE from 'three';
 import { padlock, key, chest, COLORS } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 import { table } from './world.js';
 
 const kids = (o, test) => o.children.find(test);

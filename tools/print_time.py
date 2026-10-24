@@ -19,7 +19,7 @@ with sync_playwright() as p:
     t0 = time.time(); pg.goto(f"{base}lab/print/?ep={ep}")
     pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000, polling=50)
     print(f"lab ready in {time.time() - t0:.2f} s")
-    for r in pg.evaluate("""async () => { const P = await import('../../lib/print.js');
+    for r in pg.evaluate("""async () => { const P = await import('../../ficelle/lib/print.js');
         return printLab.rows.filter(r => r.parts).map(r => { const t = performance.now(); const f = P.floating(r.parts, r.k);
           const t1 = performance.now(); const fx = P.repair(r.parts, r.k, { ground: r.a.ground }); const t2 = performance.now();
           return { id: r.a.id, n: r.parts.length, tris: r.parts.reduce((s, p) => s + p.tris.length / 9, 0), floats: f.filter(Boolean).length,

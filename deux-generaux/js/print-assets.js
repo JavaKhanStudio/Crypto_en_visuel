@@ -7,7 +7,7 @@
 // out of the printed piece only (Simon on r396, r453: the riders' capes); the scene keeps it. bodies names
 // the parts printed on their own: the castles' flags (Simon on r453, 23 Oct: « the flag could be inserted as
 // a pin »), so each castle stands about 133 mm without it and keeps the footprint it had with it.
-import { buildRider, guard } from '../../lib/messenger.js';
+import { buildRider, guard } from '../../ficelle/lib/messenger.js';
 
 const kids = (o, test) => o.children.find(test);
 

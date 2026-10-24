@@ -6,7 +6,7 @@
      ?turn=RADIANS sets the angle for a shot, ?row=WORDS keeps the rows whose title has them. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The cast, as toys</title>
-<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<script type="importmap">{ "imports": { "three": "../../ficelle/vendor/three/three.module.min.js", "three/addons/": "../../ficelle/vendor/three/addons/" } }</script>
 <style>
   body { margin: 0; background: #0b0d12; color: #d8dce6; font: 15px system-ui, sans-serif; }
   h1 { font-size: 18px; margin: 16px 16px 6px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 90ch; }
@@ -28,7 +28,7 @@ Printed 60 mm tall (r196's figure size): neck peg 4.5 mm, arm and hat pegs 3 mm,
 <div id="rows"></div>
 <script type="module">
 import * as THREE from 'three';
-import { person, explode, CAST } from '../../lib/cast.js';
+import { person, explode, CAST } from '../../ficelle/lib/cast.js';
 const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45), only = q.get('row');   // ?row=satchel: the rows whose title has it
 const ALL = ['a', 'b', 'e', 'n', 'g', 'v', 'i'], MAIN = ['a', 'b', 'e', 'n'];
 const col = (k, f) => [CAST[k].name, f];

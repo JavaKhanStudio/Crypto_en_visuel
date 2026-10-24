@@ -3,7 +3,7 @@
 // with which colour, and what Eve knows.
 import { t, raw, onLang } from './i18n.js';
 import { cssOf } from './paint.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const $ = id => document.getElementById(id);
 const CHOICES = { alice: ['R', 'B', 'W'], bob: ['B', 'R', 'W'] };

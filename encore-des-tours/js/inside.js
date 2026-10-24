@@ -15,15 +15,15 @@
 // The engine (enter, beat, cut, leave, the free band, the doors) is lib/room.js (r424), as is its API;
 // this file keeps only the rooms (ROOM.rooms), each with its keep, and the stone room around them (shell).
 import * as THREE from 'three';
-import { tile, paint, label, show, buildRoom } from '../../lib/room-parts.js';
+import { tile, paint, label, show, buildRoom } from '../../ficelle/lib/room-parts.js';
 import { t, raw } from './i18n.js';
-import { COLORS } from '../../lib/saga/world.js';
+import { COLORS } from '../../ficelle/lib/saga/world.js';
 import { key as keyProp } from './props.js';
-import * as A from '../../lib/saga-aes.js';
-import * as R from '../../lib/rsa.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
+import * as R from '../../ficelle/lib/rsa.js';
 import * as S from './sign.js';
 import * as P from './packet.js';
-import { sha256 } from '../../lib/hmac.js';
+import { sha256 } from '../../ficelle/lib/hmac.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;

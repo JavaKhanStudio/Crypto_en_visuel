@@ -15,7 +15,7 @@
 import * as THREE from 'three';
 import { t } from './i18n.js';
 import * as A from './values.js';
-import { buildRoom } from '../../lib/room-parts.js';   // the stone room of 1.2, lit by two torches
+import { buildRoom } from '../../ficelle/lib/room-parts.js';   // the stone room of 1.2, lit by two torches
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;

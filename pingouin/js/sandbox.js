@@ -5,7 +5,7 @@ import { t, onLang } from './i18n.js';
 import * as A from './values.js';
 import { SLOT } from './world.js';
 import { show } from './stage.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const $ = id => document.getElementById(id);
 

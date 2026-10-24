@@ -4,7 +4,7 @@
      Query: ?view=over|a|b|gateA|gateB  ?dawn=0..1  ?cam=x,y,z,tx,ty,tz   (tools/shoot.py --page deux-generaux/lab/castles.html) -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Two Generals: castles of Middle-earth (lab)</title>
-<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<script type="importmap">{ "imports": { "three": "../../ficelle/vendor/three/three.module.min.js", "three/addons/": "../../ficelle/vendor/three/addons/" } }</script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0f2c; color: #e6e9f2; font: 14px system-ui, sans-serif; }
   canvas { display: block; width: 100vw; height: 100vh; }
@@ -28,8 +28,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B } from '../../lib/saga/world.js';
-import { SHOTS } from '../../lib/saga/camera.js';
+import { buildWorld, CASTLE_A, CASTLE_B } from '../../ficelle/lib/saga/world.js';
+import { SHOTS } from '../../ficelle/lib/saga/camera.js';
 
 const q = new URLSearchParams(location.search);
 let cam = q.get('cam')?.split(',').map(Number);

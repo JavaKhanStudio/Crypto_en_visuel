@@ -6,8 +6,8 @@
 //
 // The state: AES lays its 16 bytes out in a 4 × 4 grid COLUMN by column: byte i sits in row i % 4,
 // column i / 4 (the first four bytes are the first column).
-import { bytes, fromHex, xor, trace } from '../../lib/aes.js';
-export * from '../../lib/aes.js';
+import { bytes, fromHex, xor, trace } from '../../ficelle/lib/aes.js';
+export * from '../../ficelle/lib/aes.js';
 
 // ---------- the story's values: episode 1.2's, copied (tests/aes_interieur_values.mjs checks they match) ----------
 // Alice's order, 23 bytes: its first block is « ATTAQUE DEMAIN A » (fr) or « ATTACK AT DAWN T » (en)

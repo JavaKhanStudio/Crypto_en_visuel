@@ -8,10 +8,10 @@
 import * as THREE from 'three';
 import { NODES, SPOTS, CUSTOMERS, edge } from './world.js';
 import { envelope, tag, setTag, key, COLORS } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 import { ADDR, NAME, OTHERS, PUBLIC, KEY, hex, sees, route, opened, flipped, SEALED } from './net.js';
-import { burst, ring } from '../../lib/fx.js';
-import { sfx } from '../../lib/sound.js';
+import { burst, ring } from '../../ficelle/lib/fx.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { t, raw } from './i18n.js';
 import { portrait } from './camera.js';
 

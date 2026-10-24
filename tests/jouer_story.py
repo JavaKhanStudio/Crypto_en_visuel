@@ -54,7 +54,7 @@ STATE = """() => ({ state: document.querySelector('.choices')?.dataset.state,
   cont: !!document.getElementById('choice-continue'), again: !!document.getElementById('choice-again'),
   next: !document.getElementById('next').disabled, hash: location.hash })"""
 # the bytes Eve should quote, computed by the page's own module (story.js values())
-BYTES = """async () => { const m = await import('./js/story.js'), A = await import('../lib/saga-aes.js'), v = m.values();
+BYTES = """async () => { const m = await import('./js/story.js'), A = await import('../ficelle/lib/saga-aes.js'), v = m.values();
   const h = b => A.hex(b, 4);
   return { ecb: [h(v.ecb[0]), h(v.ecb[1])], ecbSame: A.same(A.concat(v.ecb), A.concat(v.ecbYesterday)),
     cbc: [h(v.cbc.C[0]), h(v.cbc.C[1])], cbcSame: A.diff(A.concat(v.cbc.C), A.concat(v.cbcYesterday.C)), sum: h(v.sum), back: v.back,

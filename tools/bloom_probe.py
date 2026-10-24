@@ -31,7 +31,7 @@ a = ap.parse_args()
 PROBE = """async ([N, S]) => {
   const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
   const { OutputPass } = await import('three/addons/postprocessing/OutputPass.js');
-  const { addBloom } = await import(new URL('../lib/bloom.js', location.href).href);
+  const { addBloom } = await import(new URL('../ficelle/lib/bloom.js', location.href).href);
   const d = demo, R = d.renderer, gl = R.getContext(), C = d.composer;
   const first = C.passes[0], was = C.passes.slice(1);
   const ub = was.find(p => p.nMips);

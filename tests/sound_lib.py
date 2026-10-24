@@ -16,7 +16,7 @@ bad = 0
 def check(name, ok, got=''):
     global bad; bad += not ok; print('ok  ' if ok else 'FAIL', name, got)
 
-lib = open('lib/sound.js').read()
+lib = open('ficelle/lib/sound.js').read()
 olds = subprocess.run(['git', 'ls-tree', '-r', '--name-only', OLD], capture_output=True, text=True).stdout.split()
 for f in [f for f in olds if f.endswith('/js/sound.js')]:
     src = subprocess.run(['git', 'show', f'{OLD}:{f}'], capture_output=True, text=True).stdout
@@ -46,7 +46,7 @@ with sync_playwright() as p:
               s == {'text': '🔈', 'inTools': quality, 'inRight': True}, s)
         pg.click('#sound'); s = pg.evaluate(PROBE)
         check(f'{ep}: a click turns it on', s['text'] == '🔊', s['text'])
-        played = pg.evaluate("""names => import('../lib/sound.js').then(({ sfx }) => { for (const n of names) sfx[n](); return Object.keys(sfx).length; })""", lib_tone)
+        played = pg.evaluate("""names => import('../ficelle/lib/sound.js').then(({ sfx }) => { for (const n of names) sfx[n](); return Object.keys(sfx).length; })""", lib_tone)
         pg.wait_for_timeout(300)
         check(f'{ep}: all {played} sfx play without a page error', played == len(lib_tone) and not errors, errors)
         pg.click('#sound')

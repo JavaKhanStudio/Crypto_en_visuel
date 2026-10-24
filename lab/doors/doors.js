@@ -7,7 +7,7 @@
 // make: a lit opening the castle does not have yet (drawn by openings()). Simon picked 'hall' and 'talan'
 // (r425): castles.js now builds their doors and sets userData.doors, so they have no make here any more.
 import * as THREE from 'three';
-import { M } from '../../lib/saga/world.js';
+import { M } from '../../ficelle/lib/saga/world.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const TOP = 11.8, T = 10;                  // the white city's top tier and its tower (castles.js TIERS, T)

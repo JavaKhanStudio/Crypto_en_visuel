@@ -2,21 +2,21 @@
 // Deep links: #story=5, #sandbox, #quiz. ?lang=en. ?instant=1 skips camera flights
 // (used by the headless screenshots in tools/shoot.py).
 import * as THREE from 'three';
-import { qualityComposer, addBloom } from '../../lib/episode.js';
+import { qualityComposer, addBloom } from '../../ficelle/lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B } from '../../lib/saga/world.js';
-import { CameraRig } from '../../lib/saga/camera.js';
-import { initFx, updateFx, fireworks } from '../../lib/fx.js';
+import { buildWorld, CASTLE_A, CASTLE_B } from '../../ficelle/lib/saga/world.js';
+import { CameraRig } from '../../ficelle/lib/saga/camera.js';
+import { initFx, updateFx, fireworks } from '../../ficelle/lib/fx.js';
 import { Sim, wait } from './sim.js';
-import { Bubbles } from '../../lib/bubbles.js';
+import { Bubbles } from '../../ficelle/lib/bubbles.js';
 import { renderLadder, ladder3d } from './ladder.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
-import { Quiz } from '../../lib/quiz.js';
+import { Quiz } from '../../ficelle/lib/quiz.js';
 import { QUIZ } from './quiz-data.js';
 import * as i18n from './i18n.js';
 import { march, resetCityFlag, clearArmies, fadeArmies, hasArmies, haltArmies } from './army.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { t, setLang, applyStatic, onLang } from './i18n.js';
 
 const params = new URLSearchParams(location.search);

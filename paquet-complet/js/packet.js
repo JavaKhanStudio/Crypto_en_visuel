@@ -2,9 +2,9 @@
 // encrypted (AES-256-CBC, PKCS#7), IV ‖ ciphertext sealed (HMAC-SHA256), the two keys locked with Bob's
 // padlock (RSA-2048-OAEP, rsa.js). Bob: the keys opened, the seal checked, and only then the order
 // decrypted. Eve, at her gate, changes one byte of one brick, or lets the packet through.
-import * as A from '../../lib/saga-aes.js';
-import * as R from '../../lib/rsa.js';
-import { hmac, equal } from '../../lib/hmac.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
+import * as R from '../../ficelle/lib/rsa.js';
+import { hmac, equal } from '../../ficelle/lib/hmac.js';
 
 // The story's keys, IV and OAEP seed are 1.4's; main.py's scene is the next send, with fresh ones
 export const STORY = { key: A.KEY, macKey: A.MACKEY, iv: A.IV, seed: R.SEED };

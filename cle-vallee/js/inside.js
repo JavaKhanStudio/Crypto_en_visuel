@@ -10,10 +10,10 @@
 // The engine (enter, beat, cut, leave, the free band, the doors) is lib/room.js (r424), as is its API;
 // this file keeps only the rooms (ROOM.rooms) and the engine options this episode needs.
 import * as THREE from 'three';
-import { face, side, tile, paint, label, relabel, show, buildRoom } from '../../lib/room-parts.js';
+import { face, side, tile, paint, label, relabel, show, buildRoom } from '../../ficelle/lib/room-parts.js';
 import { t } from './i18n.js';
 import { padlock, key } from './props.js';
-import * as R from '../../lib/rsa.js';
+import * as R from '../../ficelle/lib/rsa.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;

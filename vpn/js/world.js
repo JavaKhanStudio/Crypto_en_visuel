@@ -5,7 +5,7 @@
 // café → provider, provider → Bob, provider → VPN, VPN → Bob. Built from primitives, except the
 // servers and the laptops, which are Shadow's (assets/shapes, through lib/shapes.js).
 import * as THREE from 'three';
-import { loadShape } from '../../lib/shapes.js';
+import { loadShape } from '../../ficelle/lib/shapes.js';
 import { router, table, cup, building, hall, setPlate, awning, pole, house, TABLE_Y } from './props.js';
 import { raw, onLang } from './i18n.js';
 
@@ -217,7 +217,7 @@ export async function buildWorld(scene) {
   const waves = buildWaves(); scene.add(waves);
 
   // Shadow's items: racks at the provider and at the VPN, a tower at Bob's, a laptop on each table
-  const [rack, tower, laptop] = await Promise.all(['server_rack', 'tower', 'laptop'].map(n => loadShape(`../assets/shapes/${n}.json`)));
+  const [rack, tower, laptop] = await Promise.all(['server_rack', 'tower', 'laptop'].map(n => loadShape(`../ficelle/assets/shapes/${n}.json`)));
   const shadows = o => { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; };
   const items = { racks: [], fans: [], screens: [] };
   // in each hall, full rows of racks across its width (no aisle, r408): the ones at the packet's stop

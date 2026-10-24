@@ -211,7 +211,7 @@ export function machine() {
 }
 
 // A desk on four legs: one copy for the family, lib/enigma/desk.js (r489).
-export { desk, DESK_TOP } from '../../lib/enigma/desk.js';
+export { desk, DESK_TOP } from '../../ficelle/lib/enigma/desk.js';
 
 // A character, facing +z, 17 units tall (1.7 m). kind: 'a' Alice, 'b' Bob, 'e' Eve.
 export function person(kind) {

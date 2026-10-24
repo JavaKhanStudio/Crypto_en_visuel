@@ -7,7 +7,7 @@
 // gets its line here. The valley is 1.1's (lib/saga/world.js), so its lines are 1.1's, flags and capes
 // stripped as Simon asked there (r453).
 import * as THREE from 'three';
-import { buildRider, guard } from '../../lib/messenger.js';
+import { buildRider, guard } from '../../ficelle/lib/messenger.js';
 import { ROOM } from './inside.js';
 import * as A from './values.js';
 

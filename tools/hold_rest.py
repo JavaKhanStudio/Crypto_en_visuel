@@ -12,7 +12,7 @@ ap = argparse.ArgumentParser(); ap.add_argument("cases", nargs="*", default=["en
 ap.add_argument("--base", default="http://localhost:8793/"); ap.add_argument("--out", default=""); ap.add_argument("--wait", type=int, default=9000)
 a = ap.parse_args(); base = a.base.rstrip("/") + "/"
 PROBE = """async () => {
-  const { held } = await import('%slib/saga/camera.js'), { freeBand } = await import('%slib/band.js');
+  const { held } = await import('%sficelle/lib/saga/camera.js'), { freeBand } = await import('%sficelle/lib/band.js');
   const r = demo.rig.held; if (!r) return null;
   const b = freeBand(), now = held(r.shot, demo.camera), d = r.to.pos.distanceTo(now.pos) + r.to.target.distanceTo(now.target);
   const B = x => [Math.round(x.top), Math.round(x.top + x.h)];

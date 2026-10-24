@@ -2,8 +2,8 @@
 // (HMAC-SHA256) as in 1.3, plus her two keys, AES ‖ HMAC, either in the clear or locked with Bob's
 // padlock (RSA-2048-OAEP, rsa.js). Bob opens the keys, checks the seal, and only then decrypts.
 // Eve, at her gate, reads what she can, or changes the order on the way.
-import * as A from '../../lib/saga-aes.js';
-import * as R from '../../lib/rsa.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
+import * as R from '../../ficelle/lib/rsa.js';
 
 // The story's keys and IV are 1.3's (aes.js); the order Eve writes when she has them
 export const STORY = { key: A.KEY, macKey: A.MACKEY, iv: A.IV, seed: R.SEED };

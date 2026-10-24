@@ -4,7 +4,7 @@
 // load. One unit is 10 cm.
 import * as THREE from 'three';
 import { belt, press, xorRing, screen, BELT_Y, CRATE } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 // Where things stand, along x. The crates ride at z = 0; the people stand behind the belt.

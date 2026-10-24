@@ -4,16 +4,16 @@
 // Deep links: #story=2. ?lang=en. ?instant=1 skips camera flights and rides fast
 // (used by the headless screenshots in tools/shoot.py and by tests/jouer_story.py).
 import * as THREE from 'three';
-import { qualityComposer, addBloom } from '../../lib/episode.js';
+import { qualityComposer, addBloom } from '../../ficelle/lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
-import { CameraRig } from '../../lib/saga/camera.js';
-import { initFx, updateFx, fireworks } from '../../lib/fx.js';
-import { Messenger } from '../../lib/messenger.js';
-import { Bubbles } from '../../lib/bubbles.js';
+import { buildWorld, CASTLE_A, CASTLE_B, CITY } from '../../ficelle/lib/saga/world.js';
+import { CameraRig } from '../../ficelle/lib/saga/camera.js';
+import { initFx, updateFx, fireworks } from '../../ficelle/lib/fx.js';
+import { Messenger } from '../../ficelle/lib/messenger.js';
+import { Bubbles } from '../../ficelle/lib/bubbles.js';
 import { Story, STEPS } from './story.js';
 import * as i18n from './i18n.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { setLang, applyStatic } from './i18n.js';
 
 const params = new URLSearchParams(location.search);

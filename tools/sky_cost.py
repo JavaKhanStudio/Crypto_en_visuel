@@ -69,8 +69,8 @@ MEASURE = """async ([N, PER]) => {
   const res = performance.getEntriesByType('resource').filter(e => /parallax/.test(e.name));
   out.fetch = res.map(e => [e.name.split('/').pop(), Math.round(e.duration), Math.round(e.transferSize / 1024)]);
   // the load once more, timed (the files are cached now: decode + canvas cuts)
-  const { loadPage } = await import(new URL('../lib/plax.js', location.href).href);
-  const t = performance.now(); await loadPage(new URL('../assets/parallax/calm-day/calm-day.jplax?again=' + Date.now(), location.href).href); out.reload_ms = Math.round(performance.now() - t);
+  const { loadPage } = await import(new URL('../ficelle/lib/plax.js', location.href).href);
+  const t = performance.now(); await loadPage(new URL('../ficelle/assets/parallax/calm-day/calm-day.jplax?again=' + Date.now(), location.href).href); out.reload_ms = Math.round(performance.now() - t);
   return out;
 }"""
 

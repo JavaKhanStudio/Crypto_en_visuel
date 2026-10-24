@@ -4,8 +4,8 @@
 // forged packet, the project's packet. The sandbox shows its own send, what Eve did, and Bob's verdict.
 import { t, raw, lang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import * as A from '../../lib/saga-aes.js';
-import { hmac } from '../../lib/hmac.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
+import { hmac } from '../../ficelle/lib/hmac.js';
 
 const el = document.getElementById('card');
 const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));

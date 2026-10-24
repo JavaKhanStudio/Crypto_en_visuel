@@ -6,10 +6,10 @@
 // the right fist's hole through. Units in the test are mm.
 //     node tests/print_cut.mjs [kind ...] [--setting today] [--quiet]
 import { register } from 'node:module';
-register('../tools/print_probe/hooks.mjs', import.meta.url);
-const { person, CAST, DISGUISES } = await import('../lib/cast.js');
-const { repair, check } = await import('../lib/print.js');
-const { JOINT, DEPTH } = await import('../lib/fit.js');
+register('../ficelle/tools/three_hooks.mjs', import.meta.url);
+const { person, CAST, DISGUISES } = await import('../ficelle/lib/cast.js');
+const { repair, check } = await import('../ficelle/lib/print.js');
+const { JOINT, DEPTH } = await import('../ficelle/lib/fit.js');
 const args = process.argv.slice(2), quiet = args.includes('--quiet'), only = args.indexOf('--setting'), kinds = args.filter(a => a in CAST);
 let bad = 0;
 const report = (name, ok, note = '') => {

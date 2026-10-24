@@ -2,7 +2,7 @@
 // always grey, since the sender of the last message never knows it arrived.
 import * as THREE from 'three';
 import { t, raw } from './i18n.js';
-import { CASTLE_A, CASTLE_B } from '../../lib/saga/world.js';
+import { CASTLE_A, CASTLE_B } from '../../ficelle/lib/saga/world.js';
 
 const rungsEl = document.getElementById('ladder-rungs'), verdictEl = document.getElementById('ladder-verdict');
 

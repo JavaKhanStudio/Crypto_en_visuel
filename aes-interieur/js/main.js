@@ -5,12 +5,12 @@
 // then set demo.room.instant = false, demo.room.speed = 1 and call demo.room.play().
 import * as THREE from 'three';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { qualityComposer, addBloom } from '../../lib/episode.js';
-import { initFx, updateFx, fireworks } from '../../lib/fx.js';
-import { Quiz } from '../../lib/quiz.js';
-import { sfx } from '../../lib/sound.js';
+import { qualityComposer, addBloom } from '../../ficelle/lib/episode.js';
+import { initFx, updateFx, fireworks } from '../../ficelle/lib/fx.js';
+import { Quiz } from '../../ficelle/lib/quiz.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { Room } from './room.js';
-import { Bubbles } from '../../lib/bubbles.js';
+import { Bubbles } from '../../ficelle/lib/bubbles.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
 import { QUIZ } from './quiz-data.js';

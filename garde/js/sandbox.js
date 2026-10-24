@@ -4,7 +4,7 @@
 // nothing. The HMACs are real (garde/js/hmac.js), the same the story uses.
 import { t, onLang } from './i18n.js';
 import { MSG_E } from './data.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));

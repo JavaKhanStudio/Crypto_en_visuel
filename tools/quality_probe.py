@@ -39,7 +39,7 @@ if a.defaults:   # lib/quality.js is imported straight from the episode's page (
         for name, opts, want in DEVICES:
             ctx = b.new_context(**opts); pg = ctx.new_page()
             pg.goto(f"{a.base}{a.episode}/", wait_until="load")
-            got = pg.evaluate("async () => { localStorage.removeItem('dg-quality'); return (await import('../lib/quality.js')).getQuality(); }")
+            got = pg.evaluate("async () => { localStorage.removeItem('dg-quality'); return (await import('../ficelle/lib/quality.js')).getQuality(); }")
             print("ok  " if got == want else "FAIL", f"{name}: opens on {got} (want {want})"); bad += got != want; ctx.close()
         b.close()
     print("all ok" if not bad else "FAILED"); raise SystemExit(1 if bad else 0)

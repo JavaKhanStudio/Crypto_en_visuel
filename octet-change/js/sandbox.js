@@ -3,7 +3,7 @@
 // Each send draws a fresh key, IV and HMAC key; the card shows the packet, Bob's seal when he
 // rejects it, or the blocks he decrypts and whether they are what Alice wrote.
 import { t, lang, onLang, ORDER_DEFAULT } from './i18n.js';
-import * as A from '../../lib/saga-aes.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
 import { bobSays, eveSays } from './story.js';
 
 const $ = id => document.getElementById(id);

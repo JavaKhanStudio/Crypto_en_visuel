@@ -6,8 +6,8 @@
 import { t, raw, lang, onLang } from './i18n.js';
 import { KEY, MSG_A, MSG_E, MAC_A, guess } from './data.js';
 import { portrait } from './camera.js';
-import { render } from '../../lib/md.js';
-import { renderDoors } from '../../lib/doors.js';
+import { render } from '../../ficelle/lib/md.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
 
 // A story step's state for the stage (see Stage.apply): the guard on duty, the message Eve is
 // after, the prefix she has recovered so far, and which corner card to show.
@@ -52,7 +52,7 @@ export const STEPS = [
   { id: 's10', ch: 4, shot: 'wide', orbit: .02, state: recap, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../ficelle/assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../kasiski/vignette.jpg', clip: 'img/door-next.mp4', href: '../kasiski/' }] },
 ];
 

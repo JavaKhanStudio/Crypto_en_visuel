@@ -3,8 +3,8 @@
 // cle-de-16-octets (so AES-128), the 53-byte message, the IVs drawn once for the slides, the
 // bit-flip. AES, ECB, CBC and PKCS#7 are lib/aes.js (r323), re-exported here so the episode reads
 // both as A.<name>. tests/pingouin_values.mjs checks every value the slides show.
-import { bytes, fromHex, xor, concat, pad, blocks, ecb, cbc, decryptBlock } from '../../lib/aes.js';
-export * from '../../lib/aes.js';
+import { bytes, fromHex, xor, concat, pad, blocks, ecb, cbc, decryptBlock } from '../../ficelle/lib/aes.js';
+export * from '../../ficelle/lib/aes.js';
 
 // Back: Pi = AESdec(Ci) xor Ci-1. Also returns what AES gave back, AESdec(Ci): this episode's
 // cbcDec, which wins over lib/aes.js's (blocks only).

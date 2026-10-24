@@ -169,7 +169,7 @@ ca_ = [inner[i] for i in range(3)]; c = rot(ca_); cx, cy = c[0] + da[0], c[1] + 
 kd = rot([0, 0, 1]); kn = math.hypot(kd[0], kd[1]); kx, ky = kd[0] / kn, kd[1] / kn   # the key sits on the peg's top at rest (+Z, figure frame)
 po = rot(outer); zlo, zhi = min(po[2], c[2]) + da[2], max(po[2], c[2]) + da[2]
 say("")
-KEY = float(re.search(r"export const KEY = ([0-9.]+)", open(ROOT / "lib/print.js").read())[1])
+KEY = float(re.search(r"export const KEY = ([0-9.]+)", open(ROOT / "ficelle/lib/print.js").read())[1])
 say(f"KEY: the arm printed peg up; the peg (r {R:.2f} mm) from z {zlo:.2f} to {zhi:.2f} on the bed, the key a {KEY} mm rib to {R + KEY:.2f} mm from its axis")
 keyrows = []
 for z in sorted(ga):

@@ -7,11 +7,11 @@
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import { renderDoors } from '../../lib/doors.js';
-import { roomFold } from '../../lib/fold.js';
-import { render } from '../../lib/md.js';
-import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
-import * as A from '../../lib/saga-aes.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
+import { roomFold } from '../../ficelle/lib/fold.js';
+import { render } from '../../ficelle/lib/md.js';
+import { CASTLE_A, CASTLE_B, CITY } from '../../ficelle/lib/saga/world.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
 import * as P from './packet.js';
 
 const anchors = {

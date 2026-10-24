@@ -8,13 +8,13 @@
 import * as THREE from 'three';
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import { render } from '../../lib/md.js';
-import { Choices } from '../../lib/choices.js';
-import { renderDoors } from '../../lib/doors.js';
-import { sha256, equal } from '../../lib/hmac.js';
-import { CASTLE_A, CASTLE_B, CITY } from '../../lib/saga/world.js';
-import * as A from '../../lib/saga-aes.js';
-import * as R from '../../lib/rsa.js';
+import { render } from '../../ficelle/lib/md.js';
+import { Choices } from '../../ficelle/lib/choices.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
+import { sha256, equal } from '../../ficelle/lib/hmac.js';
+import { CASTLE_A, CASTLE_B, CITY } from '../../ficelle/lib/saga/world.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
+import * as R from '../../ficelle/lib/rsa.js';
 
 const anchors = {
   a: new THREE.Vector3(CASTLE_A.x, CASTLE_A.y + 27, 0),
@@ -94,7 +94,7 @@ export const STEPS = [
   // the doors out (r105, lib/doors.js): the saga from its start, the home, the next episode (2) last, in gold
   { id: 'end', shot: 'overview', orbit: .06, say: ['b'], doors: [
       { k: 'saga', img: '../deux-generaux/vignette.jpg', href: '../deux-generaux/' },
-      { k: 'home', img: '../assets/doors/home.jpg', href: '../' },
+      { k: 'home', img: '../ficelle/assets/doors/home.jpg', href: '../' },
       { k: 'next', img: '../cadenas/vignette.jpg', href: '../cadenas/' }] },
 ];
 

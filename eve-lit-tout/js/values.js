@@ -2,8 +2,8 @@
 // pair of the last one, and one send all the way. AES-256, CBC and PKCS#7 are lib/aes.js (r323),
 // re-exported here so the episode reads both as A.<name>. Everything on screen is computed in the
 // page; tests/eve_values.mjs checks it against openssl and the browser's own AES (WebCrypto).
-import { bytes, text, fromHex, concat, pad, unpad, blocks, cbc, cbcDec } from '../../lib/aes.js';
-export * from '../../lib/aes.js';
+import { bytes, text, fromHex, concat, pad, unpad, blocks, cbc, cbcDec } from '../../ficelle/lib/aes.js';
+export * from '../../ficelle/lib/aes.js';
 
 // One send, all the way: the order's bytes, padded, cut into blocks, chained, and back at Bob's.
 export function send(order, key, iv) {

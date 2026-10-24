@@ -30,7 +30,7 @@ out = pathlib.Path(a.out); out.mkdir(parents=True, exist_ok=True)
 w, h = map(int, a.size.split("x"))
 
 FRAME = """async ([shot, way, dawn]) => {
-  const { SHOTS, heightAt } = await Promise.all([import('../lib/saga/camera.js'), import('../lib/saga/world.js')])
+  const { SHOTS, heightAt } = await Promise.all([import('../ficelle/lib/saga/camera.js'), import('../ficelle/lib/saga/world.js')])
     .then(([c, w]) => ({ SHOTS: c.SHOTS, heightAt: w.heightAt }));
   const T = demo.THREE, s = SHOTS[shot], pos = s.pos.clone(), target = s.target.clone();
   const off = pos.clone().sub(target), flat = Math.hypot(off.x, off.z), d = off.length();

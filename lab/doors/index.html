@@ -5,7 +5,7 @@
      Query: ?door=a:tower (start on it)  ?k=0..1 (hold the zoom there, for tools/doors_shots.py)  ?marks=0 (no tags) -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Saga: the castles' doors (lab)</title>
-<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<script type="importmap">{ "imports": { "three": "../../ficelle/vendor/three/three.module.min.js", "three/addons/": "../../ficelle/vendor/three/addons/" } }</script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0f2c; color: #e6e9f2; font: 14px system-ui, sans-serif; }
   canvas { display: block; width: 100vw; height: 100vh; }
@@ -34,9 +34,9 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { buildWorld } from '../../lib/saga/world.js';
-import { SHOTS } from '../../lib/saga/camera.js';
-import { ZOOM, windowPath, setVeil } from '../../lib/zoom.js';
+import { buildWorld } from '../../ficelle/lib/saga/world.js';
+import { SHOTS } from '../../ficelle/lib/saga/camera.js';
+import { ZOOM, windowPath, setVeil } from '../../ficelle/lib/zoom.js';
 import { CANDIDATES, doorOf, openings } from './doors.js';
 
 const q = new URLSearchParams(location.search);

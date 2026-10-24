@@ -4,12 +4,12 @@
 // two faces; an open mesh cannot be sliced as a solid).
 // node tools/print_probe/export.mjs [mm per unit, default 20] -> out/print_probe/<model>/<nn>-<name>.stl + report.json
 import { register } from 'node:module';
-register('./hooks.mjs', import.meta.url);
+register('../../ficelle/tools/three_hooks.mjs', import.meta.url);
 const fs = await import('node:fs');
 globalThis.document ??= { createElement: () => ({ getContext: () => null, style: {} }) };
 const THREE = await import('three');
 const { person } = await import('../../scytale/js/props.js');
-const castles = await import('../../lib/saga/castles.js').catch(e => ({ err: e.message }));
+const castles = await import('../../ficelle/lib/saga/castles.js').catch(e => ({ err: e.message }));
 
 const MM = +(process.argv[2] ?? 20), out = new URL('../../out/print_probe/', import.meta.url).pathname;
 function stl(geo) {

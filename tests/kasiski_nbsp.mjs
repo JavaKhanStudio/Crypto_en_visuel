@@ -5,7 +5,7 @@
 globalThis.location = { search: '' };
 globalThis.localStorage = { getItem: () => null, setItem() {} };
 const { DICTS } = await import('../kasiski/js/i18n.js');
-const { tie } = await import('../lib/md.js');
+const { tie } = await import('../ficelle/lib/md.js');
 const BAD = [
   [/\d\}? (?:\{[grb]\|)?(?:k?m|cm|lettres?|letters?)\b/, 'a number apart from its unit'],
   [/ [=×+] |[=×+] \d/, 'a split « a = b × c »'],

@@ -11,7 +11,7 @@ from browser import launch   # r401: GPU, CRYPTO_GL=soft for SwiftShader
 ap = argparse.ArgumentParser()
 ap.add_argument("out"); ap.add_argument("page")
 ap.add_argument("--n", type=int, default=14); ap.add_argument("--spread", type=float)
-ap.add_argument("--mod", default="../lib/fx.js")
+ap.add_argument("--mod", default="../ficelle/lib/fx.js")
 ap.add_argument("--base", default="http://localhost:8793/")
 ap.add_argument("--wait", type=int, default=1800)
 ap.add_argument("--settle", type=int, default=2500)   # the live site loads slower: give it 6000

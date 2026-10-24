@@ -4,8 +4,8 @@
 //     node tests/cle_values.mjs
 import { execFileSync } from 'node:child_process';
 import { createPrivateKey, createPublicKey } from 'node:crypto';
-import * as A from '../lib/saga-aes.js';
-import * as R from '../lib/rsa.js';
+import * as A from '../ficelle/lib/saga-aes.js';
+import * as R from '../ficelle/lib/rsa.js';
 import * as P from '../cle-vallee/js/packet.js';
 let bad = 0;
 const check = (name, got, want) => { const ok = got === want; ok || bad++; console.log(ok ? 'ok  ' : 'FAIL', name, String(got).slice(0, 80), ok ? '' : `(want ${want})`); };

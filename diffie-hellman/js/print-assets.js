@@ -6,7 +6,7 @@
 // stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
 // gets its line here. The village is this episode's own (js/world.js), not the saga's valley.
 import { pot, chest, certificate } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 import { table, TABLE_SIZE } from './world.js';
 
 const kids = (o, test) => o.children.find(test);

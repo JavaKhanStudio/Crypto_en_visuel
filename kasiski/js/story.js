@@ -5,7 +5,7 @@
 // the camera has landed (its button replays it).
 import * as THREE from 'three';
 import { t, raw, onLang } from './i18n.js';
-import { render as md } from '../../lib/md.js';
+import { render as md } from '../../ficelle/lib/md.js';
 import { START_X, LANE_N } from './stage.js';
 
 const END = 86;                                   // the car at the end of the road: its stone wheel at x = 46

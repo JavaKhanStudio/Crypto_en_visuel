@@ -2,7 +2,7 @@
 // (in Victor's place) or at Bob's (in his), let her change a bit on the way, and send a request:
 // her tag and the panel say what she reads there, and whether the packet got through.
 import { t, raw, onLang } from './i18n.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const $ = id => document.getElementById(id);
 const PLACES = ['cafe', 'isp', 'vpn', 'bob'];

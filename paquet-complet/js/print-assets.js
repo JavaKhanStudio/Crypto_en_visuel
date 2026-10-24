@@ -7,8 +7,8 @@
 // gets its line here. The valley is 1.1's (lib/saga/world.js), so its lines are 1.1's; the rider is
 // lib/messenger.js's.
 import * as THREE from 'three';
-import { buildRider, guard } from '../../lib/messenger.js';
-import { COLORS } from '../../lib/saga/world.js';
+import { buildRider, guard } from '../../ficelle/lib/messenger.js';
+import { COLORS } from '../../ficelle/lib/saga/world.js';
 import { packet, padlock, key } from './props.js';
 import { ROOM } from './inside.js';
 import { packets } from './story.js';

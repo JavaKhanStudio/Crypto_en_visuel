@@ -3,7 +3,7 @@
 // n arrives, its receiver knows level n: "Bob knows the plan" (1), "Alice knows
 // that Bob knows" (2), and so on. The sender of the last arrived message never
 // knows that it arrived: that is the whole problem.
-import { Messenger } from '../../lib/messenger.js';
+import { Messenger } from '../../ficelle/lib/messenger.js';
 
 export class Sim {
   constructor(world, hooks) {

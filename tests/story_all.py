@@ -19,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 JOBS = 4                                       # r536, full run on the RTX 5060: -j 1 33.7 min, 2 18.2, 3 13.4, 4 10.9, all ok
 here = os.path.dirname(os.path.abspath(__file__))
 root = os.path.dirname(here)
-EVERYTHING = ("vendor/", "tools/browser.py", "tests/story_all.py")
+EVERYTHING = ("ficelle/vendor/", "ficelle/tools/", "tools/browser.py", "tests/story_all.py")
 QUOTED = re.compile(r"""(?:src|href)\s*=\s*["']([^"'#?]+)|["'`]((?:\.{1,2}/|[\w-]+/)[\w./-]*\.\w+|\.{1,2}/[\w./-]*/)["'`]""")
 
 

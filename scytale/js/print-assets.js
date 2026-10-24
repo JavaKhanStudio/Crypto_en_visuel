@@ -7,7 +7,7 @@
 // gets its line here. The Greek village is this episode's own (js/world.js), not the saga's valley.
 // The sticks and their cradles are sized together: a printed stick rests in its printed cradles.
 import { stick, stylus } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 import { table, TABLE_SIZE } from './world.js';
 import { STICKS } from './stage.js';
 

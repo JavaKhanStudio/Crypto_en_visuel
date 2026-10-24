@@ -98,7 +98,7 @@ with sync_playwright() as p:
                         mt and mh < max(r["size"].values()) - 5 and max(r["mm"]) <= max(r["size"].values()) + 1
                         and f"x {mh:.0f} mm)" in files.get(f"{i}/PRINT.txt", b"").decode())
         if "flag" in r["bodies"]:   # r572: the flag's pole is its peg, a socket 0.4 mm wider in the castle, and the flag lies flat
-            ax = pg.evaluate("""async id => { const P = await import('../../lib/print.js'), r = printLab.rows.find(r => r.a.id === id), b = r.fix.bodies.find(b => b.name === 'main');
+            ax = pg.evaluate("""async id => { const P = await import('../../ficelle/lib/print.js'), r = printLab.rows.find(r => r.a.id === id), b = r.fix.bodies.find(b => b.name === 'main');
                 const { lo, hi } = P.bounds(b.ps), pole = r.fix.ps.find(p => p.peg); if (!pole) return null;
                 return { xy: [(pole.axis[0] - (lo[0] + hi[0]) / 2) * r.k, -(pole.axis[2] - (lo[2] + hi[2]) / 2) * r.k], i: r.fix.ps.indexOf(pole) }; }""", i)
             mt = read_stl(files.get(f"{i}/{i}-main.stl", b"")) or []; ft = read_stl(files.get(f"{i}/{i}-flag.stl", b"")) or []
@@ -132,7 +132,7 @@ with sync_playwright() as p:
             report(f"{i}: PRINT.txt lists the parts removed for print", all(f"{n}: removed for print" in txt for n in r["stripped"]), ", ".join(r["stripped"]))
         if i.startswith("rider-"):   # r453: the 'triangle on top of him' is the beacon gem, a glow left out since r394
             report(f"{i}: no beacon gem in the files", not any("octahedron" in n.lower() for n in files if n.startswith(f"{i}/")), ", ".join(n.split("/")[-1] for n in files if n.startswith(f"{i}/pieces/"))[:120])
-    zb = base64.b64decode(pg.evaluate("""async ids => { const { zip } = await import('../../lib/print.js');
+    zb = base64.b64decode(pg.evaluate("""async ids => { const { zip } = await import('../../ficelle/lib/print.js');
         const b = new Uint8Array(await zip(printLab.files(ids)).arrayBuffer()); let s = ''; for (const c of b) s += String.fromCharCode(c); return btoa(s); }""", pair))
     zf = zipfile.ZipFile(io.BytesIO(zb))
     first = next(n for n in files if n.startswith(f"{pair[0]}/") and n.endswith(".stl"))   # <id>.stl, or a body's (r451, r501)
@@ -148,7 +148,7 @@ with sync_playwright() as p:
     pg.goto(f"{base}lab/print/?ep={ep}&assets=tests/print/shape-assets.js")
     pg.wait_for_function("window.printLab && window.printLab.ready", timeout=120000)
     sh = pg.evaluate("""async () => { const r = printLab.rows.find(r => r.a.id === 'shape-rider'), c = printLab.rows.find(r => r.a.id === 'shape-checked');
-        const P = await import('../../lib/print.js'), z = ps => P.bounds(ps).size[2];
+        const P = await import('../../ficelle/lib/print.js'), z = ps => P.bounds(ps).size[2];
         const scroll = r.fix.ps.find(p => p.scaled === 'scroll'), raw = P.pieces(r.a.get(), { omit: [] }).find(p => p.type === 'CylinderGeometry' && p.name === 'Cylinder' && Math.abs(P.bounds([p]).size[2] - .8) < .05);
         return { rawCape: P.pieces(r.a.get(), { omit: [] }).some(p => p.type === 'PlaneGeometry'), stripped: r.parts.stripped.map(p => p.part), inFix: r.fix.ps.filter(p => p.part).length, log: r.fix.log,
           bodies: r.fix.bodies.map(b => ({ name: b.name, n: b.ps.length, tris: b.ps.reduce((s, p) => s + p.tris.length / 9, 0) })),
@@ -186,7 +186,7 @@ with sync_playwright() as p:
     report("peg: the rider has a 3 mm peg under him, the horse a socket 0.4 mm wider", bool(peg and sock and pin_d and sock_d) and abs(pin_d - 3) < .06 and abs(sock_d - pin_d - .4) < .03
         and peg["closed"] and sock["closed"] and pv_ > 0 and sv > 0 and "peg: rider: a 3 mm peg" in txt and "each peg into its socket (r552)" in txt,
         f"peg {pin_d or 0:.2f} mm ({pv_ or 0:.1f} mm3), socket {sock_d or 0:.2f} mm, {depth or 0:.1f} mm deep ({sv or 0:.0f} mm3)")
-    gl = pg.evaluate("""async () => { const P = await import('../../lib/print.js'), r = printLab.rows.find(r => r.a.id === 'shape-rider');
+    gl = pg.evaluate("""async () => { const P = await import('../../ficelle/lib/print.js'), r = printLab.rows.find(r => r.a.id === 'shape-rider');
         const g = P.pegs(r.fix.ps.filter(p => !p.peg), r.k, { glue: ['rider'] }); return { pegs: g.ps.filter(p => p.peg).length, log: g.log }; }""")
     report("glue: a body the list names in glue gets no peg", gl["pegs"] == 0 and gl["log"] == ["rider: glued, no peg (the list's glue)"], "; ".join(gl["log"]))
     report("bodies: each repaired, nothing left to fix", not any(sh["left"].values()), str(sh["left"]))

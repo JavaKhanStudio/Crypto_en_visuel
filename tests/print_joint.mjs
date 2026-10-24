@@ -9,10 +9,10 @@
 // Units in the report are mm and degrees.
 //     node tests/print_joint.mjs [kind ...] [--setting today]
 import { register } from 'node:module';
-register('../tools/print_probe/hooks.mjs', import.meta.url);
-const { person, CAST } = await import('../lib/cast.js');
-const { solid, touch, check } = await import('../lib/print.js');
-const { JOINT } = await import('../lib/fit.js');
+register('../ficelle/tools/three_hooks.mjs', import.meta.url);
+const { person, CAST } = await import('../ficelle/lib/cast.js');
+const { solid, touch, check } = await import('../ficelle/lib/print.js');
+const { JOINT } = await import('../ficelle/lib/fit.js');
 const { printed } = await import('./print/toy.mjs');
 const args = process.argv.slice(2), set = args.indexOf('--setting'), setting = set >= 0 ? args[set + 1] : 'today', kinds = args.filter(a => a in CAST);
 const STOP = 10;

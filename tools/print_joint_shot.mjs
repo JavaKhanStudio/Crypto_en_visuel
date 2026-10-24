@@ -4,9 +4,9 @@
 // and tools/print_slice.py.
 //     node tools/print_joint_shot.mjs [kind] [out dir, default out/print_joint]
 import { register } from 'node:module';
-register('./print_probe/hooks.mjs', import.meta.url);
+register('../ficelle/tools/three_hooks.mjs', import.meta.url);
 const fs = await import('node:fs');
-const { person } = await import('../lib/cast.js');
+const { person } = await import('../ficelle/lib/cast.js');
 const { printed } = await import('../tests/print/toy.mjs');
 const kind = process.argv[2] ?? 'a', out = process.argv[3] ?? new URL('../out/print_joint/', import.meta.url).pathname;
 fs.mkdirSync(out, { recursive: true });

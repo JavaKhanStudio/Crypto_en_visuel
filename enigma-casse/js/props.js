@@ -13,7 +13,7 @@
 // phi = i * STEP.
 import * as THREE from 'three';
 import { A, ROTORS, REFLECTOR, KEYBOARD, NAMES, pairs } from './enigma.js';
-import { FLOOR } from '../../lib/enigma/world.js';
+import { FLOOR } from '../../ficelle/lib/enigma/world.js';
 
 export const COLORS = { a: 0x4da3ff, b: 0xffc24d, e: 0xff3347 };
 export const STEP = Math.PI * 2 / 26;
@@ -273,7 +273,7 @@ export function rack() {
 }
 
 // A desk on four legs, its top at DESK_TOP: the one of 5.1-5.3, in lib/enigma/desk.js (r489, r579).
-export { desk, DESK_TOP } from '../../lib/enigma/desk.js';
+export { desk, DESK_TOP } from '../../ficelle/lib/enigma/desk.js';
 
 // A character, facing +z, 17 units tall (1.7 m). kind: 'a' Alice, 'b' Bob, 'e' Eve.
 export function person(kind) {

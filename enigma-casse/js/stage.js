@@ -9,11 +9,11 @@
 // under the intercepted cipher and the menu is drawn, and the bombe that runs a menu through the
 // 17 576 positions of one rotor order (enigma.js does the arithmetic; this draws it).
 import * as THREE from 'three';
-import { PLACES, TOP_Y, FLOOR, MAST_H } from '../../lib/enigma/world.js';
+import { PLACES, TOP_Y, FLOOR, MAST_H } from '../../ficelle/lib/enigma/world.js';
 import { machine, person, rack, COLORS, STEP, R, RC, wirePoints, loopPoints, at, DRUM, SLOTS, socketAt, cablePoints, FRONT, APART_C, EVE } from './props.js';
 import { A, ROTORS, NAMES, BARE, STARTS, press, clashes, menuLetters, bombe as runBombe, check, scrambler, posOf } from './enigma.js';
-import { burst, ring } from '../../lib/fx.js';
-import { sfx } from '../../lib/sound.js';
+import { burst, ring } from '../../ficelle/lib/fx.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { raw } from './i18n.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z), X = v(1, 0, 0);

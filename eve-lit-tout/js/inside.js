@@ -6,7 +6,7 @@
 // The engine (enter, beat, cut, leave, the free band, the doors) is lib/room.js (r424), as is its API;
 // this file keeps only the rooms (ROOM.rooms) and the engine options this episode needs.
 import * as THREE from 'three';
-import { litTile, label, relabel, show, buildRoom } from '../../lib/room-parts.js';
+import { litTile, label, relabel, show, buildRoom } from '../../ficelle/lib/room-parts.js';
 import { t } from './i18n.js';
 import * as A from './values.js';
 

@@ -5,9 +5,9 @@
 //     node tools/print_probe/key_inside.mjs [kind, default a] [--tree <repo root>]
 const args = process.argv.slice(2), at = args.indexOf('--tree'), T = at >= 0 ? args.splice(at, 2)[1] : new URL('../..', import.meta.url).pathname.replace(/\/$/, '');
 const kind = args[0] ?? 'a';
-const { register } = await import('node:module'); register(T + '/tools/print_probe/hooks.mjs', import.meta.url);
-const { person } = await import(T + '/lib/cast.js');
-const { repair } = await import(T + '/lib/print.js');
+const { register } = await import('node:module'); register(T + '/ficelle/tools/three_hooks.mjs', import.meta.url);
+const { person } = await import(T + '/ficelle/lib/cast.js');
+const { repair } = await import(T + '/ficelle/lib/print.js');
 function inside(p, t) {   // parity of a ray along a skewed direction
   const d = [.577, .5771, .5779]; let c = 0;
   for (let i = 0; i < t.length; i += 9) {

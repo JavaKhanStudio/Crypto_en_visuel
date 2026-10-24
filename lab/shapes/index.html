@@ -3,7 +3,7 @@
      both from the camera and light of tools/godot_bridge/views.json. Drag a three.js picture to turn it. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shadow → three.js bridge</title>
-<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<script type="importmap">{ "imports": { "three": "../../ficelle/vendor/three/three.module.min.js", "three/addons/": "../../ficelle/vendor/three/addons/" } }</script>
 <style>
   body { margin: 0; background: #0b0d12; color: #d8dce6; font: 15px system-ui, sans-serif; }
   h1 { font-size: 18px; margin: 16px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 70ch; }
@@ -19,7 +19,7 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { loadShape, countParts, animate } from '../../lib/shapes.js';
+import { loadShape, countParts, animate } from '../../ficelle/lib/shapes.js';
 const V = await (await fetch('../../tools/godot_bridge/views.json')).json();
 const lin = a => new THREE.Color().setRGB(...a, THREE.LinearSRGBColorSpace);
 window.labReady = 0;
@@ -37,7 +37,7 @@ for (const [item, c] of Object.entries(V.items)) {
   const sun = new THREE.DirectionalLight(0xffffff, Math.PI); sun.position.set(...V.light); scene.add(sun);
   const cam = new THREE.PerspectiveCamera(V.fov, V.size[0] / V.size[1], 0.01, 50);
   cam.position.set(...c.eye);
-  const shape = await loadShape(`../../assets/shapes/${item}.json`); scene.add(shape);
+  const shape = await loadShape(`../../ficelle/assets/shapes/${item}.json`); scene.add(shape);
   row.querySelector('.n').textContent = countParts(shape) + ' parts';
   const ctl = new OrbitControls(cam, canvas); ctl.target.set(...c.target); ctl.update(); ctl.saveState();
   canvas.ondblclick = () => ctl.reset();

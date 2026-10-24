@@ -108,11 +108,11 @@ if __name__ == '__main__':
     assert cmd == 'split'
     ref = root / 'scytale/css/style.css'
     lib = HEAD + cut(texts[ref], lambda k: k in common)
-    (root / 'lib/episode.css').write_text(lib)
+    (root / 'ficelle/lib/episode.css').write_text(lib)   # r333: in Ficelle's checkout, then sync
     for p, t in texts.items():
         p.write_text(cut(t, lambda k: k not in common))
         html = p.parent.parent / 'index.html'
         h = html.read_text()
         assert h.count(LINK) == 1, html
-        html.write_text(h.replace(LINK, '<link rel="stylesheet" href="../lib/episode.css">\n  ' + LINK))
+        html.write_text(h.replace(LINK, '<link rel="stylesheet" href="../ficelle/lib/episode.css">\n  ' + LINK))
     print(f'lib/episode.css: {len(rules)} rules, {lib.count(chr(10))} lines; {len(texts)} style.css cut')

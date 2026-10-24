@@ -9,7 +9,7 @@
 // once the lane is out, and a hidden mesh is not printed. Its stone sits 2 cm into the road at rest
 // (wedged under the tyre): ground: 0 cuts it there, so the cart stands on its wheels, not on the stone.
 import { car, keyWheel } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 
 const kids = (o, test) => o.children.find(test);
 // a house of the farm (world.js house()): a group whose first child is its walls, w wide

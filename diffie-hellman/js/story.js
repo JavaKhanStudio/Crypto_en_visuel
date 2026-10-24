@@ -4,8 +4,8 @@
 // always land somewhere consistent), flies the camera, pins its bubbles, and offers buttons.
 // auto: the step's action plays by itself once the camera has landed (its button replays it).
 import { t, raw, lang, onLang } from './i18n.js';
-import { render } from '../../lib/md.js';
-import { renderDoors } from '../../lib/doors.js';
+import { render } from '../../ficelle/lib/md.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
 
 // The pots, by id: [table, slot (0 1 2 front, 3 4 5 back), recipe, options]. a = Alice, e = Eve, b = Bob.
 const PUB = { aJ: ['a', 0, 'J'], eJ: ['e', 0, 'J'], bJ: ['b', 0, 'J'] };
@@ -109,7 +109,7 @@ export const STEPS = [
     doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../ficelle/assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../scytale/vignette.jpg', clip: 'img/door-next.mp4', href: '../scytale/' }] },
 ];
 

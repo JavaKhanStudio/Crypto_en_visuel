@@ -3,9 +3,9 @@
 // takes its numbers from the real bytes ({x}, {k}, … filled by vars()), so it says what the cubes show.
 import { t, raw, lang, onLang, fill } from './i18n.js';
 import { linkify } from '../../xref.js';
-import { render } from '../../lib/md.js';
+import { render } from '../../ficelle/lib/md.js';
 import * as A from './values.js';
-import { renderDoors } from '../../lib/doors.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
 
 // which run the room plays: Alice's, or the same block with its first letter changed (the last chapter)
 export const dataOf = run => run === 'changed' ? (c => ({ st: c, ref: c.ref }))(A.changed(lang)) : { st: A.story(lang) };
@@ -27,7 +27,7 @@ export const STEPS = [
   { id: 'end', ch: 3, refs: { '1.2': 5 }, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', go: x => x.mode('quiz') },
-      { k: 'home', img: '../assets/doors/home-2.jpg', href: '../' },
+      { k: 'home', img: '../ficelle/assets/doors/home-2.jpg', href: '../' },
       { k: 'next', img: '../eve-lit-tout/vignette.jpg', href: '../eve-lit-tout/', hash: '#story=5' }] },
 ];
 

@@ -15,7 +15,7 @@ with sync_playwright() as p:
     b = launch(p); pg = b.new_page(viewport={"width": 390, "height": 844})
     for ep, s in CASES:
         pg.goto(f"{base}{ep}/?instant=1#story={s}"); pg.wait_for_timeout(6000)
-        print(ep, s, pg.evaluate("""async () => { const m = await import('/lib/saga/camera.js'), out = {};
+        print(ep, s, pg.evaluate("""async () => { const m = await import('/ficelle/lib/saga/camera.js'), out = {};
           for (const n of ['castleA', 'castleB']) { const h = m.held(n, demo.camera), o = m.SHOTS[n];
             out[n] = +(h.pos.distanceTo(h.target) / o.pos.distanceTo(o.target)).toFixed(2); } return out; }"""))
     b.close()

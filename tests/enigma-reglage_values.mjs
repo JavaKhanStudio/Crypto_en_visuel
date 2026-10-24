@@ -41,7 +41,7 @@ check('years at a million a second', Math.round(Number(TOTAL) / 1e6 / (365.25 * 
 // --- the figures the story writes, in both languages ---
 const text = readFileSync(new URL('../enigma-reglage/js/i18n.js', import.meta.url), 'utf8');
 const fr = text.slice(text.indexOf('const fr'), text.indexOf('const en')), en = text.slice(text.indexOf('const en'), text.indexOf('const dicts'));
-const { plain } = await import('../lib/md.js');   // the step text read without its markup (r240)
+const { plain } = await import('../ficelle/lib/md.js');   // the step text read without its markup (r240)
 const has = (name, dict, ...bits) => { dict = plain(dict); check(name, bits.filter(b => !dict.includes(b)).join(', ') || 'all there', 'all there'); };
 has('fr figures', fr, '17 576', '1 054 560', '150 738 274 937 250', '158 962 555 217 826 360 000', '1,59 × 10²⁰', '325', '276', '26 × 26 = 676', 'SMK', 'AEW', 'BFX', 'P, C, M, le réflecteur, O, M, O, Z', 'S, Z, J, X, Q, Q, H', 'cinq millions');
 has('en figures', en, '17,576', '1,054,560', '150,738,274,937,250', '158,962,555,217,826,360,000', '1.59 × 10²⁰', '325', '276', '26 × 26 = 676', 'SMK', 'AEW', 'BFX', 'P, C, M, the reflector, O, M, O, Z', 'S, Z, J, X, Q, Q, H', 'five million');

@@ -4,23 +4,23 @@
 // Deep links: #story=5, #sandbox, #quiz. ?lang=en. ?instant=1 skips camera flights and rides fast
 // (used by the headless screenshots in tools/shoot.py).
 import * as THREE from 'three';
-import { qualityComposer, addBloom } from '../../lib/episode.js';
+import { qualityComposer, addBloom } from '../../ficelle/lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { buildWorld, CASTLE_A, CASTLE_B, heightAt } from '../../lib/saga/world.js';
+import { buildWorld, CASTLE_A, CASTLE_B, heightAt } from '../../ficelle/lib/saga/world.js';
 import { cargo as buildCargo, packet as buildPacket } from './props.js';
-import { CameraRig } from '../../lib/saga/camera.js';
-import { initFx, updateFx, fireworks } from '../../lib/fx.js';
-import { Messenger } from '../../lib/messenger.js';
-import { Bubbles } from '../../lib/bubbles.js';
-import { Inside } from '../../lib/room.js';
+import { CameraRig } from '../../ficelle/lib/saga/camera.js';
+import { initFx, updateFx, fireworks } from '../../ficelle/lib/fx.js';
+import { Messenger } from '../../ficelle/lib/messenger.js';
+import { Bubbles } from '../../ficelle/lib/bubbles.js';
+import { Inside } from '../../ficelle/lib/room.js';
 import { ROOM } from './inside.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
-import { Quiz } from '../../lib/quiz.js';
+import { Quiz } from '../../ficelle/lib/quiz.js';
 import { QUIZ } from './quiz-data.js';
 import * as i18n from './i18n.js';
 import { renderCard } from './card.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { t, setLang, applyStatic } from './i18n.js';
 
 const params = new URLSearchParams(location.search);

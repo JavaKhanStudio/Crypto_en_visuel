@@ -5,9 +5,9 @@
 import * as THREE from 'three';
 import { PLACES, BENCH, TABLE_TOP } from './world.js';
 import { padlock, key, chest, COLORS } from './props.js';
-import { person } from '../../lib/cast.js';
-import { burst, ring, icon } from '../../lib/fx.js';
-import { sfx } from '../../lib/sound.js';
+import { person } from '../../ficelle/lib/cast.js';
+import { burst, ring, icon } from '../../ficelle/lib/fx.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;

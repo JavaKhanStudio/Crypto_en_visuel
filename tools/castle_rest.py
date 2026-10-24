@@ -13,7 +13,7 @@ ap.add_argument("--base", default="http://localhost:8793/"); ap.add_argument("--
 ap.add_argument("--size", default="390x844"); ap.add_argument("--wait", type=int, default=12000)
 a = ap.parse_args(); W, H = map(int, a.size.split("x")); base = a.base.rstrip("/") + "/"
 PROBE = """async () => {
-  const { BUILT } = await import('%slib/saga/world.js'), { freeBand } = await import('%slib/band.js');
+  const { BUILT } = await import('%sficelle/lib/saga/world.js'), { freeBand } = await import('%sficelle/lib/band.js');
   const cam = demo.camera, b = freeBand(), out = {};
   for (const k of ['castleA', 'castleB']) {
     const c = BUILT[k]; c.updateMatrixWorld(true);

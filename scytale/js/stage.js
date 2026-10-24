@@ -6,11 +6,11 @@
 import * as THREE from 'three';
 import { PLACES, TABLE_TOP } from './world.js';
 import { stick, cradles, stylus, COLORS, STICK_L } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 import { Strip } from './strip.js';
 import { layout, order, lines, show } from './scytale.js';
-import { burst, ring, icon } from '../../lib/fx.js';
-import { sfx } from '../../lib/sound.js';
+import { burst, ring, icon } from '../../ficelle/lib/fx.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { t } from './i18n.js';
 import { ROW_COLORS } from './card.js';
 

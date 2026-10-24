@@ -4,8 +4,8 @@
 // bubbles, and offers buttons. auto: the step's action plays by itself once the camera has
 // landed (its button replays it).
 import { t, raw, lang, onLang } from './i18n.js';
-import { render } from '../../lib/md.js';
-import { renderDoors } from '../../lib/doors.js';
+import { render } from '../../ficelle/lib/md.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
 
 const N = 99;   // « every letter written »: write() stops at the end of the message
 const BLANK = { strip: { on: null, at: 'a', written: 0 } };
@@ -57,7 +57,7 @@ export const STEPS = [
   { id: 's12', ch: 4, shot: 'wide', orbit: .02, state: READ, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../ficelle/assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../enigma/vignette.jpg', clip: 'img/door-next.mp4', href: '../enigma/' }] },
 ];
 

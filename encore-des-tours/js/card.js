@@ -5,7 +5,7 @@
 // The sandbox shows its own send.
 import { t, raw, lang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import * as A from '../../lib/saga-aes.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
 import * as S from './sign.js';
 import * as P from './packet.js';
 import { LAST, bobSays } from './story.js';

@@ -7,7 +7,7 @@
 // gets its line here. The map is this episode's own (js/world.js): one unit is one metre, a person 1.8 m;
 // the servers and the laptops are Shadow's (assets/shapes), read from the page as world.js placed them.
 import { envelope, pole } from './props.js';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 import { SPOTS, NODES, HALLS, CABLE_Y } from './world.js';
 
 const flats = o => { const out = []; o.traverse(c => { if (c.isMesh && (c.geometry.type === 'PlaneGeometry' || c.geometry.type === 'CircleGeometry')) out.push(c); }); return out; };

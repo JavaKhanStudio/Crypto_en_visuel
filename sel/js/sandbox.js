@@ -6,7 +6,7 @@ import { t, onLang, num, dec } from './i18n.js';
 import { saltString } from './hash.js';
 import { USERS, LIST, RATE } from './data.js';
 import { dur } from './stage.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const $ = id => document.getElementById(id);
 const SLIDE = USERS.map(u => u.salt);

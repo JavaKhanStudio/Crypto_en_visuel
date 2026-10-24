@@ -2,8 +2,8 @@
 // It uses every field of the list shape on 1.1's own builders, so the test proves each one without
 // touching an episode's real list (Simon's notes on 1.1 are r453's). Not an episode's list: the
 // checked date below is a fixture, never Simon's word.
-import { buildRider } from '../../lib/messenger.js';
-import { person } from '../../lib/cast.js';
+import { buildRider } from '../../ficelle/lib/messenger.js';
+import { person } from '../../ficelle/lib/cast.js';
 
 const mesh = (o, type, test = () => true) => { let m; o.traverse(c => { if (!m && c.isMesh && c.geometry.type === type && test(c.geometry.parameters)) m = c; }); return m; };
 

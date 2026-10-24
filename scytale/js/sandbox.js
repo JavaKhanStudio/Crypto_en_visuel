@@ -3,7 +3,7 @@
 // read every line. The status gives the strip and the lines read back.
 import { t, onLang } from './i18n.js';
 import { clean, lines, show } from './scytale.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const $ = id => document.getElementById(id);
 const KS = [2, 3, 4, 5, 6];

@@ -2,7 +2,7 @@
 // under the iron tyre of its near front wheel), the key wheel (a five-sided drum, one key letter on
 // each face, that tumbles face after face along the lane), the letter tiles, the floating tags. The characters are lib/cast.js's (r641).
 import * as THREE from 'three';
-import { person } from '../../lib/cast.js';
+import { person } from '../../ficelle/lib/cast.js';
 
 export const COLORS = { a: 0x4da3ff, b: 0xffc24d, e: 0xff3347 };
 

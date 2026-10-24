@@ -2,20 +2,20 @@
 // Enigma, the break (episode 5.3 of « Crypto en visuel »). Deep links: #story=5, #sandbox, #quiz. ?lang=en. ?instant=1 skips camera flights and
 // plays the props' animations at once (used by the headless screenshots in tools/shoot.py).
 import * as THREE from 'three';
-import { qualityComposer, addBloom } from '../../lib/episode.js';
+import { qualityComposer, addBloom } from '../../ficelle/lib/episode.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { buildWorld } from '../../lib/enigma/world.js';
+import { buildWorld } from '../../ficelle/lib/enigma/world.js';
 import { EVE_DESK, evePost } from './props.js';
 import { Stage } from './stage.js';
 import { CameraRig } from './camera.js';
-import { initFx, updateFx, fireworks } from '../../lib/fx.js';
-import { Bubbles } from '../../lib/bubbles.js';
+import { initFx, updateFx, fireworks } from '../../ficelle/lib/fx.js';
+import { Bubbles } from '../../ficelle/lib/bubbles.js';
 import { Story, STEPS } from './story.js';
 import { initSandbox } from './sandbox.js';
-import { Quiz } from '../../lib/quiz.js';
+import { Quiz } from '../../ficelle/lib/quiz.js';
 import { QUIZ } from './quiz-data.js';
 import * as i18n from './i18n.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { renderCard } from './card.js';
 import { setLang, applyStatic } from './i18n.js';
 

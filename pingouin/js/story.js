@@ -4,12 +4,12 @@
 // auto: the step's action plays by itself once the camera has landed (its button replays it).
 import { t, raw, lang, onLang } from './i18n.js';
 import { linkify } from '../../xref.js';
-import { render } from '../../lib/md.js';
+import { render } from '../../ficelle/lib/md.js';
 import * as A from './values.js';
 import { SLOT, CRATE_Y } from './world.js';
 import { CRATE } from './props.js';
 import { ROWS } from './stage.js';
-import { renderDoors } from '../../lib/doors.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
 
 const ids = [0, 1, 2, 3];
 const crates = (bytes, look, label, slot, extra = {}) => ids.map(i => ({ id: 'P' + (i + 1), label: label + (i + 1), bytes: bytes[i], look, x: slot[i], ...(extra[i] || {}) }));
@@ -82,7 +82,7 @@ export const STEPS = [
     doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../ficelle/assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../sel/vignette.jpg', clip: 'img/door-next.mp4', href: '../sel/' }] },
 ];
 

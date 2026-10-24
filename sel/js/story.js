@@ -7,8 +7,8 @@
 import { t, raw, lang, onLang } from './i18n.js';
 import { USERS, BCRYPT, PASSWORD } from './data.js';
 import { baseRow, ROWS } from './stage.js';
-import { render } from '../../lib/md.js';
-import { renderDoors } from '../../lib/doors.js';
+import { render } from '../../ficelle/lib/md.js';
+import { renderDoors } from '../../ficelle/lib/doors.js';
 
 const [A, B] = USERS, pw = PASSWORD;
 const tbl = (kind, rows) => ({ kind, rows });
@@ -81,7 +81,7 @@ export const STEPS = [
   { id: 's13', ch: 5, shot: 'wide', orbit: .02, state: RECAP, doors: [
       { k: 'sandbox', img: 'img/door-sandbox.jpg', clip: 'img/door-sandbox.mp4', go: x => x.mode('sandbox') },
       { k: 'quiz', img: 'img/door-quiz.jpg', clip: 'img/door-quiz.mp4', go: x => x.mode('quiz') },
-      { k: 'home', img: '../assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
+      { k: 'home', img: '../ficelle/assets/doors/home.jpg', clip: 'img/door-home.mp4', href: '../' },
       { k: 'next', img: '../garde/vignette.jpg', clip: 'img/door-next.mp4', href: '../garde/' }] },
 ];
 

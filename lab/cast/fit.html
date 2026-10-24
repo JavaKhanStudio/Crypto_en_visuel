@@ -7,7 +7,7 @@
      the pieces apart (the marks follow their part). Drag a row to turn it. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The cast: does it fit and print?</title>
-<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<script type="importmap">{ "imports": { "three": "../../ficelle/vendor/three/three.module.min.js", "three/addons/": "../../ficelle/vendor/three/addons/" } }</script>
 <style>
   body { margin: 0; background: #0b0d12; color: #d8dce6; font: 15px system-ui, sans-serif; }
   h1 { font-size: 18px; margin: 16px 16px 6px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 100ch; }
@@ -29,8 +29,8 @@ Every joint is one straight peg in one straight hole (round 6): the hole is cut 
 <div id="rows"></div>
 <script type="module">
 import * as THREE from 'three';
-import { person, explode, CAST, DISGUISES } from '../../lib/cast.js';
-import { check, describe } from '../../lib/fit.js';
+import { person, explode, CAST, DISGUISES } from '../../ficelle/lib/cast.js';
+import { check, describe } from '../../ficelle/lib/fit.js';
 const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45), mm = +(q.get('mm') ?? 60), apart = q.has('apart'), pose = q.get('pose') ?? 'bent';
 const settings = q.get('setting') ? q.get('setting').split(',') : Object.keys(DISGUISES);
 const COLOR = { ' x ': 0xff3040, slides: 0xff9a20, loose: 0xe040ff, thin: 0xffe040, swings: 0xff3040, slot: 0x40d0ff };

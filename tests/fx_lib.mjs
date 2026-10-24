@@ -7,13 +7,13 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 const root = new URL('..', import.meta.url).pathname;
-const three = pathToFileURL(root + 'vendor/three/three.module.min.js').href;
+const three = pathToFileURL(root + 'ficelle/vendor/three/three.module.min.js').href;
 const THREE = await import(three);
 // a module from source, with its bare 'three' pointed at vendor/ (the episodes' importmap)
 const load = src => import('data:text/javascript,' + encodeURIComponent(src.replaceAll("from 'three'", `from '${three}'`)));
 const OLD = '9dcc55a';
 const old = ep => execSync(`git show ${OLD}:${ep}/js/fx.js`, { cwd: root }).toString();
-const lib = readFileSync(root + 'lib/fx.js', 'utf8');
+const lib = readFileSync(root + 'ficelle/lib/fx.js', 'utf8');
 
 // seeded Math.random and an immediate setTimeout, so both copies see the same draws in the same order
 let seed;

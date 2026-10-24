@@ -12,11 +12,11 @@
 // The engine (enter, beat, cut, leave, the free band, the doors) is lib/room.js (r424), as is its API;
 // this file keeps only the rooms (ROOM.rooms) and the engine options this episode needs.
 import * as THREE from 'three';
-import { tile, label, relabel, show, buildRoom } from '../../lib/room-parts.js';
+import { tile, label, relabel, show, buildRoom } from '../../ficelle/lib/room-parts.js';
 import { t, raw } from './i18n.js';
-import { COLORS } from '../../lib/saga/world.js';
+import { COLORS } from '../../ficelle/lib/saga/world.js';
 import { key, padlock, packet } from './props.js';
-import * as A from '../../lib/saga-aes.js';
+import * as A from '../../ficelle/lib/saga-aes.js';
 import * as P from './packet.js';
 
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);

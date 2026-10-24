@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { t, onLang } from './i18n.js';
 import { TEXT, clean, vigenere, randomRoad, gaps, track, wheelCounts, best, repeats, counts, columns, metres, CANDIDATES } from './kasiski.js';
 import { START_X, LANE_N } from './stage.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 import { lang } from './i18n.js';
 
 const $ = id => document.getElementById(id);

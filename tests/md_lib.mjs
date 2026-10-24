@@ -26,7 +26,7 @@ class El {   // just what md.js calls
 }
 globalThis.document = { createElement: t => new El(t) };
 const load = src => import('data:text/javascript,' + encodeURIComponent(src));
-const lib = await import('../lib/md.js');
+const lib = await import('../ficelle/lib/md.js');
 const draw = (m, s) => { const el = new El('div'); m.render(el, s); return String(el); };
 const NBSP = String.fromCharCode(160), sp = t => t.replaceAll(NBSP, ' ');
 

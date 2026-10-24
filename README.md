@@ -388,7 +388,7 @@ que montrent les cubes à chaque étape et dans le bac à sable.
 
 ## Lancer
 
-Aucune dépendance, aucun build : three.js r170 est copié dans `vendor/` (la démo marche hors
+Aucune dépendance, aucun build : three.js r170 est copié dans `ficelle/vendor/` (la démo marche hors
 ligne, en salle). Il faut seulement un serveur HTTP (les modules ES ne se chargent pas en `file://`) :
 
 ```sh
@@ -396,6 +396,18 @@ python3 -m http.server 8793
 ```
 
 puis http://localhost:8793/ (l'accueil) ou http://localhost:8793/deux-generaux/.
+
+## Ficelle (le moteur, à une version figée)
+
+Le moteur des épisodes (`lib/`), les images et modèles partagés (`assets/`), three.js (`vendor/`) et le
+tampon `credit.js` sont ceux de **Ficelle** (dépôt privé JavaKhanStudio/Ficelle, r333), copiés ici dans
+`ficelle/` à la version que nomme `ficelle.lock`. Un épisode importe `../../ficelle/lib/<x>.js`.
+On ne modifie jamais `ficelle/` : `python3 ficelle/tools/check.py` échoue dessus. Un changement du
+moteur se fait dans Ficelle (ses tests, un tag `vN`), puis ici, dans un checkout propre :
+
+```sh
+~/Documents/GitHub/ficelle/ficelle sync . --version vN   # puis les tests de ce dépôt, un commit
+```
 
 ## Déployer (simonbedardprog.com/ficelle/)
 
@@ -416,9 +428,9 @@ que donne le cours.
 Trois règles pour ne pas le casser :
 
 1. **Tout lien reste relatif.** Le site vit sous `/ficelle/` : un chemin absolu depuis la racine
-   (`/lib/...`, `src="/assets/..."`, `fetch('/...')`) vise simonbedardprog.com/lib/ et casse.
-   Écrire `../lib/...`, `../../lib/...`, `../assets/...`. Vérifier (ne doit rien trouver) :
-   `grep -rnE "(src|href)=./[a-z]|from ./[a-z]|fetch\(./[a-z]" --include=*.html --include=*.js --include=*.css . | grep -vE '^./(tools|tests|out|worker|vendor)/'`
+   (`/ficelle/lib/...`, `src="/ficelle/assets/..."`, `fetch('/...')`) vise la racine de simonbedardprog.com et casse.
+   Écrire `../ficelle/lib/...`, `../../ficelle/lib/...`, `../ficelle/assets/...`. Vérifier (ne doit rien trouver) :
+   `grep -rnE "(src|href)=./[a-z]|from ./[a-z]|fetch\(./[a-z]" --include=*.html --include=*.js --include=*.css . | grep -vE '^./(tools|tests|out|worker|ficelle/vendor)/'`
 2. **Un nouveau dossier de premier niveau qui n'est pas pour le web** (outils, captures, données
    de travail) va dans `.assetsignore` dans le même commit.
 3. **Après toute modification de `wrangler.jsonc` ou de `worker/`**, lancer
@@ -444,8 +456,8 @@ Liens directs : `deux-generaux/#story=5`, `#sandbox`, `#quiz` ; `?lang=en`.
 
 ```
 index.html, home.js, home.css   l'accueil de la série (liste des épisodes, renvoi des anciens liens)
-vendor/three/       three.js r170, partagé par les épisodes
-lib/saga/           la vallée de la saga 1.1-1.6, une seule copie (r423) :
+ficelle/            Ficelle à la version de ficelle.lock (r333) : lib/, assets/, vendor/three (three.js r170), credit.js ; jamais modifié ici
+ficelle/lib/saga/           la vallée de la saga 1.1-1.6, une seule copie (r423) :
   world.js            terrain, châteaux, ville d'Eve, route, ciel, aube (buildWorld(scene, { castles: 'middle-earth' | 'keep' }))
   castles.js          les deux châteaux de la Terre du Milieu : la cité blanche des humains (Alice), Caras Galadhon, la cité des mallorns des elfes (Bob)
   camera.js           plans nommés, vols, poursuite d'un messager

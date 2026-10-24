@@ -75,7 +75,7 @@ globalThis.location = { search: '' };
 globalThis.localStorage = { getItem: () => null, setItem() {} };
 const N = await import('../vpn/js/net.js');
 const { DICTS } = await import('../vpn/js/i18n.js');
-const { plain } = await import('../lib/md.js');
+const { plain } = await import('../ficelle/lib/md.js');
 const { QUIZ } = await import('../vpn/js/quiz-data.js');
 const enc = s => new TextEncoder().encode(s);
 check('demo secrets are 32 bytes', `${N.SECRET.a.length} ${N.SECRET.v.length}`, '32 32');

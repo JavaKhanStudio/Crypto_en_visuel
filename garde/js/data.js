@@ -3,7 +3,7 @@
 // the slide just before it, « HMAC » (key = b"cle_secrete_partagee", message = b"Transfert 1000
 // euros a Bob"). Eve's message changes only the beneficiary. tests/garde_values.mjs checks the
 // macs against Python's hmac and node:crypto.
-import { hmacHex } from '../../lib/hmac.js';
+import { hmacHex } from '../../ficelle/lib/hmac.js';
 
 export const KEY = 'cle_secrete_partagee';
 export const MSG_A = 'Transfert 1000 euros a Bob';

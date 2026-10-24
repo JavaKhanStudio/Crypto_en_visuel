@@ -6,7 +6,7 @@
 import { t, onLang } from './i18n.js';
 import { A, clashes, places, menu, menuLetters, lamps } from './enigma.js';
 import { CIPHER, CRIB, ROT } from './story.js';
-import { sfx } from '../../lib/sound.js';
+import { sfx } from '../../ficelle/lib/sound.js';
 
 const $ = id => document.getElementById(id);
 const clean = s => s.toUpperCase().replace(/[^A-Z]/g, '');

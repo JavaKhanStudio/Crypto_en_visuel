@@ -9,7 +9,7 @@
      anywhere else it says so and loads nothing. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Print a scene · Crypto en visuel</title>
-<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<script type="importmap">{ "imports": { "three": "../../ficelle/vendor/three/three.module.min.js", "three/addons/": "../../ficelle/vendor/three/addons/" } }</script>
 <style>
   body { margin: 0; background: #0b0d12; color: #d8dce6; font: 14px system-ui, sans-serif; display: grid; grid-template-columns: minmax(420px, 46%) 1fr; height: 100vh; }
   @media (max-width: 860px) { body { grid-template-columns: 1fr; grid-template-rows: auto 60vh; height: auto; } }
@@ -54,8 +54,8 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { pieces, fit, check, floating, repair, cut, pegs, lay, FLATTEN, stl, zip, bounds, named } from '../../lib/print.js';
-import { JOINT, DEPTH, CLEAR } from '../../lib/fit.js';
+import { pieces, fit, check, floating, repair, cut, pegs, lay, FLATTEN, stl, zip, bounds, named } from '../../ficelle/lib/print.js';
+import { JOINT, DEPTH, CLEAR } from '../../ficelle/lib/fit.js';
 
 // the episodes that have a print list: every slug of home.js EPISODES whose <ep>/js/print-assets.js
 // exists, so an episode that writes its list shows here with no edit to this page
