@@ -54,7 +54,8 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { pieces, fit, check, floating, repair, stl, zip, bounds, named } from '../../lib/print.js';
+import { pieces, fit, check, floating, repair, cut, stl, zip, bounds, named } from '../../lib/print.js';
+import { JOINT, DEPTH, CLEAR } from '../../lib/fit.js';
 
 // the episodes that have a print list: every slug of home.js EPISODES whose <ep>/js/print-assets.js
 // exists, so an episode that writes its list shows here with no edit to this page
@@ -164,12 +165,21 @@ function measure(row) {
     log.push(`${n}: removed for print (${how} piece${how > 1 ? 's' : ''})`);
   for (const [n, [, f]] of Object.entries(a.scale ? a.scale(demo, row.obj) : {})) log.push(`${n}: reshaped for print, scaled ${f.join(' x ')} about its foot`);
   for (const n of names) {
-    const ps = row.parts.filter(p => p.body === n), fl = floating(ps, row.k), r = repair(ps, row.k, { ground: a.ground }), fa = floating(r.ps, row.k);
+    const ps = row.parts.filter(p => p.body === n), fl = floating(ps, row.k), r = repair(ps.filter(p => !p.hole), row.k, { ground: a.ground });   // a toy's drawn hole is cut, never printed (r501)
     checks.push(...ps.map((p, i) => ({ ...check(p, row.k), floats: fl[i] })));
-    for (const p of r.ps) p.body = n;   // a pin belongs to the body of what it holds
-    log.push(...r.log.map(l => names.length > 1 ? `[${n}] ${l}` : l)); fix.push(...r.ps); after.push(...r.ps.map((p, i) => ({ ...check(p, row.k), floats: fa[i] })));
-    bodies.push({ name: n, ps: r.ps });
+    for (const p of r.ps) { p.body = n; p.piece ??= n; }   // a pin belongs to the body of what it holds
+    log.push(...r.log.map(l => names.length > 1 ? `[${n}] ${l}` : l)); fix.push(...r.ps);
   }
+  // r501: a toy (lib/cast.js) has its sockets cut as lib/fit.js checks them: one body per part, its drawn holes gone
+  const joints = row.obj?.userData?.joints, J = (m, f) => joints.find(x => x.male === m && x.female === f);
+  const cutRes = joints ? cut(fix, row.parts, row.k, { play: (m, f) => { const x = J(m, f); return x ? +((JOINT[x.kind][0] + JOINT[x.kind][1]) / 2).toFixed(3) : null; },
+    bore: (m, f) => J(m, f)?.bore != null, depth: DEPTH, clear: CLEAR }) : null;
+  if (cutRes) { fix.splice(0, fix.length, ...cutRes.ps); log.push(...cutRes.log.map(l => `cut: ${l}`)); }
+  for (const n of names) {
+    const ps = fix.filter(p => p.body === n); if (!ps.length) continue;
+    const fa = floating(ps, row.k); after.push(...ps.map((p, i) => ({ ...check(p, row.k), floats: fa[i] }))); bodies.push({ name: n, ps });
+  }
+  fix.sort((p, q) => names.indexOf(p.body) - names.indexOf(q.body));   // in the order of after
   row.checks = checks; row.fix = { ps: fix, log, bodies }; row.after = after;
   const b = bounds(row.fix.ps); row.mm = b.size.map(x => +(x * row.k).toFixed(0));
   const tally = cs => { const n = f => cs.filter(f).length; return { open: n(c => c.open), flat: n(c => c.flat), thin: n(c => c.thin), floats: n(c => c.floats) }; };
@@ -248,7 +258,7 @@ function files(rows) {
     else out.push({ name: `${r.a.id}/${r.a.id}.stl`, data: stl(ps, r.k) });
     const lines = [`${r.a.label}`, `${r.mm[0]} x ${r.mm[2]} mm on the bed, ${r.mm[1]} mm high, ${(r.k).toFixed(2)} mm per scene unit`,
       checkedOn(r) ? `Checked by a human on ${checkedOn(r)}.` : 'NOT CHECKED BY A HUMAN yet.',
-      ...(many ? [`Printed in ${r.fix.bodies.length} bodies, to glue: ${r.fix.bodies.map(b => { const z = bounds(b.ps).size.map(x => (x * r.k).toFixed(0));
+      ...(many ? [`Printed in ${r.fix.bodies.length} bodies, ${r.obj?.userData?.joints ? 'that go together, each peg into its socket (r501)' : 'to glue'}: ${r.fix.bodies.map(b => { const z = bounds(b.ps).size.map(x => (x * r.k).toFixed(0));
         return `${r.a.id}-${slug(b.name)}.stl (${b.ps.length} pieces, ${z[0]} x ${z[2]} x ${z[1]} mm)`; }).join(', ')}`] : []),
       ...(r.fix.log.length ? [`Fixed for printing (${r.fix.log.length}):`, ...r.fix.log.map(l => '  ' + l)] : []), `${ps.length} pieces:`];
     ps.forEach((p, i) => {

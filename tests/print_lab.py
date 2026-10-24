@@ -93,15 +93,16 @@ with sync_playwright() as p:
                     report(f"{i}: the flag apart, the castle under it {mh:.0f} mm high, the footprint {r['mm'][0]}x{r['mm'][2]} mm",
                         mt and mh < max(r["size"].values()) - 5 and max(r["mm"]) <= max(r["size"].values()) + 1
                         and f"x {mh:.0f} mm)" in files.get(f"{i}/PRINT.txt", b"").decode())
-            continue
-        tris = read_stl(files[f"{i}/{i}.stl"])
-        report(f"{i}.stl: whole triangles", tris is not None)
-        if not tris: continue
-        xs = [t[k] for t in tris for k in (0, 3, 6)]; ys = [t[k] for t in tris for k in (1, 4, 7)]; zs = [t[k] for t in tris for k in (2, 5, 8)]
-        w, d, h = max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs)
-        want = r["size"].get("h") or r["size"].get("max"); got = h if "h" in r["size"] else max(w, d, h)
-        report(f"{i}.stl: {want} mm as asked", abs(got - want) < 1, f"{w:.0f} x {d:.0f} x {h:.0f} mm")
-        report(f"{i}.stl: stands on the bed", abs(min(zs)) < 1e-3)
+        else:
+            tris = read_stl(files[f"{i}/{i}.stl"])
+            report(f"{i}.stl: whole triangles", tris is not None)
+            if not tris: continue
+            xs = [t[k] for t in tris for k in (0, 3, 6)]; ys = [t[k] for t in tris for k in (1, 4, 7)]; zs = [t[k] for t in tris for k in (2, 5, 8)]
+            w, d, h = max(xs) - min(xs), max(ys) - min(ys), max(zs) - min(zs)
+            want = r["size"].get("h") or r["size"].get("max"); got = h if "h" in r["size"] else max(w, d, h)
+            report(f"{i}.stl: {want} mm as asked", abs(got - want) < 1, f"{w:.0f} x {d:.0f} x {h:.0f} mm")
+            report(f"{i}.stl: stands on the bed", abs(min(zs)) < 1e-3)
+        # r501: a body per part (a cast figure, its sockets cut) has its pieces checked like any asset's
         pieces = sorted((n for n in files if n.startswith(f"{i}/pieces/")), key=lambda n: int(n.split("/")[-1].split("-")[0]))
         report(f"{i}: one STL per piece", len(pieces) == r["n"])
         vols = [volume(read_stl(files[n])) for n, c in zip(pieces, r["closed"]) if c]
@@ -115,7 +116,8 @@ with sync_playwright() as p:
     zb = base64.b64decode(pg.evaluate("""async ids => { const { zip } = await import('../../lib/print.js');
         const b = new Uint8Array(await zip(printLab.files(ids)).arrayBuffer()); let s = ''; for (const c of b) s += String.fromCharCode(c); return btoa(s); }""", pair))
     zf = zipfile.ZipFile(io.BytesIO(zb))
-    report("the .zip opens, every CRC right", zf.testzip() is None and zf.read(f"{pair[0]}/{pair[0]}.stl") == files[f"{pair[0]}/{pair[0]}.stl"], f"{len(zf.namelist())} files")
+    first = next(n for n in files if n.startswith(f"{pair[0]}/") and n.endswith(".stl"))   # <id>.stl, or a body's (r451, r501)
+    report("the .zip opens, every CRC right", zf.testzip() is None and zf.read(first) == files[first], f"{len(zf.namelist())} files")
     pg.locator(f"tr.asset[data-id={land}]").click(); pg.wait_for_timeout(800)
     pg.screenshot(path=f"out/print_lab-{ep}.png")
     figure = next((i for i in ids if "rider" in i), None) or next((i for i in ids if kinds[i] == "figure"), None) \
