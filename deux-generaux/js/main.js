@@ -102,11 +102,11 @@ function endDusk() {
 function gaze(k) { const c = world.city.userData; c.beam.material.opacity = .11 * k; c.spot.material.opacity = .45 * k; }
 
 // Sunrise and the armies that act on it.
-async function dawn(k) {
+async function dawn(k, shot = 'both') {
   endDusk(); const outcome = sim.dawn(k), mine = era;
   resetCityFlag(world);   // a replay on the same step starts with the flag up and the spire standing
   bubbles.clear(); rig.setOrbit(0);
-  rig.fly('both', 2);
+  rig.fly(shot, 2);
   await new Promise(res => { let v = 0; const tick = dt => { if (era !== mine) return tickers.delete(tick); v = Math.min(1, v + dt / 2.4); world.setDawn(v); if (v >= 1) { tickers.delete(tick); res(); } }; tickers.add(tick); });
   const teams = { both: ['a', 'b'], a: ['a'], b: ['b'], none: [] }[outcome];
   const verdict = () => { toast(t('dawn.' + outcome), 5000); (outcome === 'both' ? sfx.win : outcome === 'none' ? () => {} : sfx.lose)(); };

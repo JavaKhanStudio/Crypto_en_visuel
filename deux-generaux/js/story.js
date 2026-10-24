@@ -49,13 +49,13 @@ export const STEPS = [
       x.say('n', t('m.burstResult', { ok }));
     } },
   { id: 's12', ch: 4, shot: 'both', orbit: .03, state: S(0, 1), say: [['n', null, 'tcp']] },
-  { id: 's13', ch: 4, shot: 'both', state: S(2, 1), noBeam: true, go: async (x) => {
+  { id: 's13', ch: 4, shot: 'dawn', state: S(2, 1), noBeam: true, go: async (x) => {
       x.apply(); await x.dawn(1);
     }, go2: async (x) => {
       x.apply(S(0, 1));
       await x.ride('b', { fate: 'capture' });
       if (!x.live()) return;
-      await x.fly('both'); await x.dawn(1);
+      await x.fly('dawn'); await x.dawn(1);
     } },
   { id: 'tricks', ch: 5, shot: 'city', orbit: .04, state: S(2, 1), say: ['e'] },
   // r105: the last step is the doors out, each with its picture; the next episode is last, at the right
@@ -162,7 +162,7 @@ export class Story {
       fly: shot => live() ? c.rig.fly(shot) : null,
       say: (who, text) => live() && this.say(who, null, text),
       ride: async (from, opts) => { const m = c.sim.send(from, opts); c.rig.chase(m.obj); const r = await m.done; await wait(600); return r; },
-      dawn: k => c.dawn(k),
+      dawn: k => c.dawn(k, STEPS[this.i].shot),   // the sun rises in the step's own shot (r620: 'dawn', tilted to the sky)
       // the searchlight took the rider: show the valley, let Eve gloat, and the button sends again
       caught: async () => { if (!live()) return; await c.rig.fly('both'); x.say('e', 'caught'); },
       mode: m => c.setMode(m),
