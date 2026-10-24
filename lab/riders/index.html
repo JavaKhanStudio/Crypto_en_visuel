@@ -1,0 +1,88 @@
+<!doctype html>
+<!-- r645 lab: the saga's riders and Eve's guards (lib/messenger.js buildRider, guard) today vs built from lib/cast.js
+     person(), before any roll-out. Each candidate is drawn here, not in lib/messenger.js, until Simon picks.
+     Query: ?d=15 (camera distance: 15 close, 70 the 'valley' shot, 140 'both')  ?turn=0 (yaw)  ?x=-22|0|22 (centre one group)  ?still=1  -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saga: riders and guards from the cast (lab)</title>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0f2c; color: #e6e9f2; font: 14px system-ui, sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  #ui { position: fixed; left: 12px; top: 12px; display: flex; gap: 4px; background: #141a33cc; padding: 5px; border-radius: 8px; }
+  button { background: #252d52; color: #e6e9f2; border: 1px solid #39437a; border-radius: 6px; padding: 4px 9px; font: inherit; cursor: pointer; }
+  button.on { background: #e8b84a; color: #1b1405; border-color: #e8b84a; }
+  .tag { position: fixed; transform: translate(-50%, 0); background: #141a33dd; color: #e6e9f2; font: 600 12px system-ui;
+    padding: 2px 6px; border-radius: 6px; pointer-events: none; white-space: nowrap; }
+</style></head><body>
+<canvas id="scene"></canvas>
+<div id="ui"></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { buildRider, guard, gallop } from '../../lib/messenger.js';
+import { person } from '../../lib/cast.js';
+import { COLORS } from '../../lib/saga/world.js';
+
+const q = new URLSearchParams(location.search);
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('scene'), antialias: true });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.shadowMap.enabled = true;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x24345e); scene.fog = new THREE.Fog(0x24345e, 160, 420);
+scene.add(new THREE.HemisphereLight(0xbfd2ff, 0x3a3020, 1.1));
+const sun = new THREE.DirectionalLight(0xfff0d8, 2.2); sun.position.set(30, 50, 40); sun.castShadow = true;
+Object.assign(sun.shadow.camera, { left: -60, right: 60, top: 40, bottom: -40 }); sun.shadow.mapSize.set(2048, 2048); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0x4d6b3a, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+// a cast figure seated on today's horse: the robe sinks into the horse to its middle (SEAT), sized so its head
+// and hat stand where today's rider's do (horse's back at 2.55, helm top at 4.7)
+const SEAT = 1.05, S = .95;
+function castRider(team, fig, forged) {
+  const r = buildRider(team, forged), ud = r.userData, body = ud.body;
+  for (const o of [...body.children]) if (o.geometry && /Cylinder|Sphere|Cone/.test(o.geometry.type) && o.position.y > 2.9 && o !== ud.scroll && o !== ud.beacon) body.remove(o);
+  body.remove(ud.scroll);
+  fig.scale.setScalar(S); fig.position.set(-.1, 2.55 - SEAT * S, 0); fig.rotation.y = Math.PI / 2; body.add(fig);
+  fig.userData.arms.rotation.x = -.5;   // reins forward
+  return r;
+}
+const ROWS = [
+  ['today', (t, f) => buildRider(t, f), () => guard()],
+  ['messenger in the team\'s colour (medieval: traveller hat, scroll)',
+    (t, f) => castRider(t, person('n', { disguise: 'medieval', cloth: COLORS[t] }), f),
+    () => person('g', { cloth: 0x8a1020, hat: 'helm' })],
+  ['the general rides (Alice, Bob medieval: helm, tabard, banner)',
+    (t, f) => castRider(t, person(t, { disguise: 'medieval' }), f),
+    () => person('g', { disguise: 'today' })],
+];
+const riders = [], tags = [];
+ROWS.forEach(([label, rider, g], i) => {   // one group per row of ROWS, side by side: Alice's, Bob's, the forged rider, two guards behind
+  const x0 = (i - 1) * 22;
+  [['a', -6], ['b', 0], ['forged', 6]].forEach(([t, dx]) => {
+    const r = t === 'forged' ? rider('a', true) : rider(t); r.position.set(x0 + dx, 0, 0); scene.add(r); riders.push(r);
+  });
+  for (let k = 0; k < 2; k++) { const gg = g(); gg.position.set(x0 - 2 + k * 4, 0, -6); scene.add(gg); }
+  tags.push([label, new THREE.Vector3(x0, -.5, 3)]);
+});
+riders.forEach(r => r.traverse(o => o.castShadow = true));
+
+const d = +(q.get('d') || 15), turn = +(q.get('turn') || 0);
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, .1, 1000);
+const tx = +(q.get('x') || 0);   // ?x=-22|0|22: centre one group
+camera.position.set(tx + Math.sin(turn) * d * 3, d * .5 + 2, Math.cos(turn) * d * 3); camera.lookAt(tx, 2, -2);
+const controls = new OrbitControls(camera, renderer.domElement); controls.target.set(tx, 2, -2); controls.update();
+const ui = document.getElementById('ui');
+for (const [k, v] of [['close', 15], ['valley', 70], ['both', 140]]) {
+  const b = document.createElement('button'); b.textContent = k; b.className = v === d ? 'on' : '';
+  b.onclick = () => { q.set('d', v); location.search = q; }; ui.appendChild(b);
+}
+const tagEls = tags.map(([t]) => { const e = document.createElement('div'); e.className = 'tag'; e.textContent = t; document.body.appendChild(e); return e; });
+const run = !q.has('still'); let time = 0;
+function frame() {
+  renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  if (run) time += 1 / 60;
+  riders.forEach(r => gallop(r.userData, time));
+  renderer.render(scene, camera);
+  tags.forEach(([, p], i) => { const s = p.clone().project(camera); tagEls[i].style.left = (s.x + 1) / 2 * innerWidth + 'px'; tagEls[i].style.top = (1 - s.y) / 2 * innerHeight + 'px'; tagEls[i].style.display = d > 20 ? 'none' : ''; });
+  requestAnimationFrame(frame);
+}
+frame(); window.labReady = true;
+</script></body></html>
