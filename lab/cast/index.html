@@ -3,7 +3,7 @@
      pin, head with its pin, hat with its peg, the arms off their shoulder pins, held item); 'arms up' swings them
      forward as far as they go; row 2 shows the satchel on anyone; then the kinds bare,
      today (against the episodes' own copies), and one row per setting. Drag a row to turn its figures;
-     ?turn=RADIANS sets the angle for a shot. -->
+     ?turn=RADIANS sets the angle for a shot, ?row=WORDS keeps the rows whose title has them. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The cast, as toys</title>
 <script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
@@ -32,7 +32,7 @@ import { person, explode, CAST } from '../../lib/cast.js';
 import { person as kasiski } from '../../kasiski/js/props.js';
 import { person as garde } from '../../garde/js/props.js';
 import { person as vpn } from '../../vpn/js/props.js';
-const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45);
+const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45), only = q.get('row');   // ?row=satchel: the rows whose title has it
 const ALL = ['a', 'b', 'e', 'n', 'g', 'v', 'i'], MAIN = ['a', 'b', 'e', 'n'];
 const col = (k, f) => [CAST[k].name, f];
 const old = { a: () => kasiski('a'), b: () => kasiski('b'), e: () => kasiski('e'), n: () => kasiski('n'),
@@ -69,6 +69,7 @@ const ROWS = [
   ...Object.keys(SETTING).map(d => [d, SETTING[d], 1.0, MAIN.map(k => col(k, () => person(k, { disguise: d })))]),
 ];
 for (const [title, note, tall, cols] of ROWS) {
+  if (only && !title.includes(only)) continue;
   const n = Math.max(cols.length, 4), aspect = n / 2 / tall, sec = document.createElement('section');
   sec.innerHTML = `<h2>${title} <small>· ${note}</small></h2><canvas style="aspect-ratio:${aspect}"></canvas><div class="names" style="grid-template-columns:repeat(${n},1fr)">${cols.map(c => `<span>${c[0]}</span>`).join('')}</div>`;
   document.getElementById('rows').append(sec);
