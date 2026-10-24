@@ -145,8 +145,9 @@ with sync_playwright() as p:
     # idle: how much of a core the page burns standing still (CDP TaskDuration over 5 s), and its frame rate
     cdp = ctx.new_cdp_session(pg); cdp.send("Performance.enable")
     m0 = {m["name"]: m["value"] for m in cdp.send("Performance.getMetrics")["metrics"]}
-    fps = pg.evaluate("""() => new Promise(r => { let n = 0; const t0 = performance.now();
-      const f = () => { n++; if (performance.now() - t0 < 5000) requestAnimationFrame(f); else r(n / ((performance.now() - t0) / 1000)); }; requestAnimationFrame(f); })""")
+    # r546: the frames drawn, not the loop's ticks: a still scene skips about every other one (lib/still.js)
+    fps = pg.evaluate("""() => new Promise(r => { const s = demo.composer.stillFrames, d0 = s ? s.drawn : 0; let n = 0; const t0 = performance.now();
+      const f = () => { n++; if (performance.now() - t0 < 5000) requestAnimationFrame(f); else r((s ? s.drawn - d0 : n) / ((performance.now() - t0) / 1000)); }; requestAnimationFrame(f); })""")
     m1 = {m["name"]: m["value"] for m in cdp.send("Performance.getMetrics")["metrics"]}
     span = m1["Timestamp"] - m0["Timestamp"]
     r = pg.evaluate(MEASURE, a.frames)

@@ -124,6 +124,7 @@ function tick(dt) {
   composer.render();
 }
 function loop() {
+  if (composer.idle()) return requestAnimationFrame(loop);   // r546: a still scene at 30 fps (lib/still.js)
   const dt = Math.min(clock.getDelta(), .05);
   if (!frozen) tick(dt);
   requestAnimationFrame(loop);

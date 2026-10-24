@@ -103,6 +103,7 @@ addEventListener('keydown', e => {
 // ---------- loop ----------
 const clock = new THREE.Clock();
 function loop() {
+  if (composer.idle()) return requestAnimationFrame(loop);   // r546: a still scene at 30 fps (lib/still.js)
   const dt = Math.min(clock.getDelta(), .05), time = clock.elapsedTime;
   world.update(dt, time);
   for (const f of [...tickers]) f(dt, time);

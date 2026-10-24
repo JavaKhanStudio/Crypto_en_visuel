@@ -24,12 +24,13 @@ ap.add_argument("--settle", type=int, default=8000)
 ap.add_argument("--eps", nargs="*", default=list(STILL))
 a = ap.parse_args()
 
-# frames the page drew (requestAnimationFrame) and shadow redraws, over ms
+# frames the page drew and shadow redraws, over ms (r546: drawn frames are composer.stillFrames.drawn,
+# lib/still.js: a still scene, a rider seen from a still camera included, skips about every other tick)
 COUNT = """async (ms) => {
-  const s = demo.scene.userData, d0 = s.shadowDraws || 0; let f = 0, run = true;
+  const s = demo.scene.userData, d0 = s.shadowDraws || 0, sf = demo.composer.stillFrames, n0 = sf ? sf.drawn : 0; let f = 0, run = true;
   const tick = () => { if (run) { f++; requestAnimationFrame(tick); } }; requestAnimationFrame(tick);
   await new Promise(res => setTimeout(res, ms)); run = false;
-  return [f, (s.shadowDraws || 0) - d0];
+  return [sf ? sf.drawn - n0 : f, (s.shadowDraws || 0) - d0];
 }"""
 bad = 0
 with sync_playwright() as p:
