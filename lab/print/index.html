@@ -45,7 +45,7 @@
   <p><label>Episode <select id="ep"></select></label> <span id="state"></span></p>
   <table><thead><tr><th></th><th>Asset</th><th>Size (mm)</th><th>Pieces</th><th>Before printing</th></tr></thead><tbody id="rows"></tbody></table>
   <p><button class="go" id="dl" disabled>Download the ticked assets (.zip)</button> <span id="sel"></span></p>
-  <p style="font-size:12px">In the zip, per asset: <code>&lt;id&gt;.stl</code> (every piece in one file, for a one-colour print; an asset printed in several bodies has one <code>&lt;id&gt;-&lt;body&gt;.stl</code> each, to glue), <code>pieces/</code> (one STL per piece, named with its colour, for painting or colour changes), and <code>PRINT.txt</code> (sizes and what to fix). « open » is a piece whose surface is not closed, a slicer may refuse or misread it; « flat » has no thickness (a flag, a door), it needs one; « thin » is under 1 mm, two nozzle lines or fewer; « floating » touches nothing (a gem above a head), it needs a pin or a stand. The export fixes them (lib/print.js repair, each fix listed in PRINT.txt): open pieces capped, sheets thickened to 1 mm, thin ones widened to 1 mm, floating ones pinned to the nearest piece above or below, and a landmark cut at its ground so it stands flat. Parts the list removes for print (a flag, a cape) show as ghosts and are not in the files. An asset no human has checked yet says so in amber.</p>
+  <p style="font-size:12px">In the zip, per asset: <code>&lt;id&gt;.stl</code> (every piece in one file, for a one-colour print; an asset printed in several bodies has one <code>&lt;id&gt;-&lt;body&gt;.stl</code> each: a body that sat on another has a 3 mm peg under it and a socket in the one below, or is glued where the peg does not fit), <code>pieces/</code> (one STL per piece, named with its colour, for painting or colour changes), and <code>PRINT.txt</code> (sizes and what to fix). « open » is a piece whose surface is not closed, a slicer may refuse or misread it; « flat » has no thickness (a flag, a door), it needs one; « thin » is under 1 mm, two nozzle lines or fewer; « floating » touches nothing (a gem above a head), it needs a pin or a stand. The export fixes them (lib/print.js repair, each fix listed in PRINT.txt): open pieces capped, sheets thickened to 1 mm, thin ones widened to 1 mm, floating ones pinned to the nearest piece above or below, and a landmark cut at its ground so it stands flat. Parts the list removes for print (a flag, a cape) show as ghosts and are not in the files. An asset no human has checked yet says so in amber.</p>
 </div>
 <div id="view"><div id="cap"></div>
   <div id="rv"><div id="review"><h2>Review</h2><p>Pick an asset.</p></div>
@@ -54,7 +54,7 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { pieces, fit, check, floating, repair, cut, stl, zip, bounds, named } from '../../lib/print.js';
+import { pieces, fit, check, floating, repair, cut, pegs, stl, zip, bounds, named } from '../../lib/print.js';
 import { JOINT, DEPTH, CLEAR } from '../../lib/fit.js';
 
 // the episodes that have a print list: every slug of home.js EPISODES whose <ep>/js/print-assets.js
@@ -97,6 +97,7 @@ const scene = new THREE.Scene(); scene.background = new THREE.Color(0x10131a);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x404050, 2.2));
 const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(80, 160, 120); scene.add(sun);
 const camera = new THREE.PerspectiveCamera(35, 1, 1, 5000), controls = new OrbitControls(camera, renderer.domElement);
+window.printLab.view = { camera, controls };   // r552: tools/print_shot.py --camera/--target set them
 let grid = null, shown = new THREE.Group(), fixes = q.get('fixes') !== '0'; scene.add(shown);
 // r559: the asset is framed clear of the Review panel (#rv), in the larger free region: left of it or above
 // it (the one whose shorter side is longer); the picture runs on under the panel
@@ -175,6 +176,9 @@ function measure(row) {
   const cutRes = joints ? cut(fix, row.parts, row.k, { play: (m, f) => { const x = J(m, f); return x ? +((JOINT[x.kind][0] + JOINT[x.kind][1]) / 2).toFixed(3) : null; },
     bore: (m, f) => J(m, f)?.bore != null, depth: DEPTH, clear: CLEAR, swing: a.swing ? a.swing(demo, row.obj) : {} }) : null;   // r395: a turning peg keyed, its groove cut over its range (the list's swing: overrides it)
   if (cutRes) { fix.splice(0, fix.length, ...cutRes.ps); log.push(...cutRes.log.map(l => `cut: ${l}`)); }
+  // r552: a list's bodies that sat on each other go back together on a peg, its socket cut in the body under it (glue: [names] opts out)
+  const pegRes = !joints && names.length > 1 ? pegs(fix, row.k, { clear: CLEAR, depth: DEPTH, glue: a.glue ?? [] }) : null;
+  if (pegRes) { fix.splice(0, fix.length, ...pegRes.ps); log.push(...pegRes.log.map(l => `peg: ${l}`)); }
   for (const n of names) {
     const ps = fix.filter(p => p.body === n); if (!ps.length) continue;
     const fa = floating(ps, row.k); after.push(...ps.map((p, i) => ({ ...check(p, row.k), floats: fa[i] }))); bodies.push({ name: n, ps });
@@ -258,7 +262,7 @@ function files(rows) {
     else out.push({ name: `${r.a.id}/${r.a.id}.stl`, data: stl(ps, r.k) });
     const lines = [`${r.a.label}`, `${r.mm[0]} x ${r.mm[2]} mm on the bed, ${r.mm[1]} mm high, ${(r.k).toFixed(2)} mm per scene unit`,
       checkedOn(r) ? `Checked by a human on ${checkedOn(r)}.` : 'NOT CHECKED BY A HUMAN yet.',
-      ...(many ? [`Printed in ${r.fix.bodies.length} bodies, ${r.obj?.userData?.joints ? 'that go together, each peg into its socket (r501)' : 'to glue'}: ${r.fix.bodies.map(b => { const z = bounds(b.ps).size.map(x => (x * r.k).toFixed(0));
+      ...(many ? [`Printed in ${r.fix.bodies.length} bodies, ${r.obj?.userData?.joints ? 'that go together, each peg into its socket (r501)' : r.fix.ps.some(p => p.peg) ? 'that go together, each peg into its socket (r552), the rest glued' : 'to glue'}: ${r.fix.bodies.map(b => { const z = bounds(b.ps).size.map(x => (x * r.k).toFixed(0));
         return `${r.a.id}-${slug(b.name)}.stl (${b.ps.length} pieces, ${z[0]} x ${z[2]} x ${z[1]} mm)`; }).join(', ')}`] : []),
       ...(r.fix.log.length ? [`Fixed for printing (${r.fix.log.length}):`, ...r.fix.log.map(l => '  ' + l)] : []), `${ps.length} pieces:`];
     ps.forEach((p, i) => {

@@ -8,6 +8,8 @@ turns Y up into Z up without mirroring). r451: every asset shows whether a human
 shape's fields are proven on a fixture list (tests/print/shape-assets.js): a stripped part is absent from
 the files, a scaled part is scaled, a body is its own STL on the bed, a checked asset loses the badge;
 r395: a cast figure's swing: in the list keys the arm it names for that range and leaves the null one a plain peg.
+r552: a body that sat on another (the fixture's rider on his horse) has a 3 mm peg under it and a socket 0.4 mm wider
+in the body below, measured from the STL; glue: [names] opts a body out.
 r452: the lab runs only behind tools/serve_review.py (a plain static server gets the 'local only' page);
 a comment survives a reload and a fresh browser, Send makes one ticket with it (dry: the atelier add it
 would run), ticking 'checked' clears the badge. With no base, the test serves the repo itself through
@@ -149,6 +151,28 @@ with sync_playwright() as p:
         ok = ok and t is not None and len(t) == b["tris"] and abs(min(v[k] for v in t for k in (2, 5, 8))) < 1e-3
     report("bodies: the rider is an STL of its own, the horse another, each on the bed", ok and "shape-rider/shape-rider.stl" not in sf and "Printed in 2 bodies" in txt,
         ", ".join(f"{b['name']} {b['n']} pieces {b['tris']} tris" for b in sh["bodies"]))
+    # r552: the rider goes back on his horse on a peg: a 3 mm post under his foot, a socket 0.4 mm wider cut in the
+    # horse's back, both measured from the files the zip gets, both closed with a positive volume
+    pk = pg.evaluate("""() => { const r = printLab.rows.find(r => r.a.id === 'shape-rider');
+        return r.fix.ps.map((p, i) => ({ i, body: p.body, peg: !!p.peg, cut: !!p.cut, closed: !r.after[i].open && !r.after[i].flat })); }""")
+    pf = sorted((n for n in sf if n.startswith("shape-rider/pieces/")), key=lambda n: int(n.split("/")[-1].split("-")[0]))
+    ext = lambda vs, k: max(v[k] for v in vs) - min(v[k] for v in vs)
+    pv = lambda t: [v[j:j + 3] for v in t for j in (0, 3, 6)]
+    peg = next((q for q in pk if q["peg"]), None); sock = next((q for q in pk if q["cut"] and q["body"] == "main"), None)
+    rt = read_stl(sf.get("shape-rider/shape-rider-rider.stl", b"")) or []
+    low = [v for v in pv(rt) if v[2] < 2.9]   # the rider stands on his peg's tip: under 2.9 mm there is only the peg
+    pin_d = low and (ext(low, 0) + ext(low, 1)) / 2
+    st = read_stl(sf[pf[sock["i"]]]) if sock else []
+    vs = pv(st); lo = [min(v[k] for v in vs) for k in range(3)] if vs else []; hi = [max(v[k] for v in vs) for k in range(3)] if vs else []
+    hole = [v for v in vs if all(lo[k] + .5 < v[k] < hi[k] - .5 for k in (0, 1)) and lo[2] + .1 < v[2] < hi[2] - .1]   # inside the horse's back, off its faces
+    sock_d = hole and (ext(hole, 0) + ext(hole, 1)) / 2; depth = hole and hi[2] - min(v[2] for v in hole)
+    pv_ = peg and volume(read_stl(sf[pf[peg["i"]]])); sv = st and volume(st)
+    report("peg: the rider has a 3 mm peg under him, the horse a socket 0.4 mm wider", bool(peg and sock and pin_d and sock_d) and abs(pin_d - 3) < .06 and abs(sock_d - pin_d - .4) < .03
+        and peg["closed"] and sock["closed"] and pv_ > 0 and sv > 0 and "peg: rider: a 3 mm peg" in txt and "each peg into its socket (r552)" in txt,
+        f"peg {pin_d or 0:.2f} mm ({pv_ or 0:.1f} mm3), socket {sock_d or 0:.2f} mm, {depth or 0:.1f} mm deep ({sv or 0:.0f} mm3)")
+    gl = pg.evaluate("""async () => { const P = await import('../../lib/print.js'), r = printLab.rows.find(r => r.a.id === 'shape-rider');
+        const g = P.pegs(r.fix.ps.filter(p => !p.peg), r.k, { glue: ['rider'] }); return { pegs: g.ps.filter(p => p.peg).length, log: g.log }; }""")
+    report("glue: a body the list names in glue gets no peg", gl["pegs"] == 0 and gl["log"] == ["rider: glued, no peg (the list's glue)"], "; ".join(gl["log"]))
     report("bodies: each repaired, nothing left to fix", not any(sh["left"].values()), str(sh["left"]))
     # r395: swing: overrides a cast figure's range: the right arm keyed for 30 degrees, the left one a plain peg
     cl = pg.evaluate("() => { const r = printLab.rows.find(r => r.a.id === 'shape-cast'); return { log: r.fix.log, keys: r.fix.ps.filter(p => p.key).map(p => p.piece) }; }")
