@@ -257,7 +257,8 @@ function signRoom(scene, pk, portrait) {
     const kf = span(time, T.key, T.key + .5), kin = span(time, T.lock, T.turn);
     key.visible = kf > .01; key.scale.setScalar(Math.max(.001, kf));
     key.position.lerpVectors(keyHome, lockAt, kin); turn.rotation.x = span(time, T.turn, T.turn + .5) * Math.PI / 2;
-    keyL.position.copy(key.position).add(portrait ? v(0, 1.6) : v(0, 2.8)); during(keyL, time, T.key, T.out);
+    // r627: on a phone the key's name waits over the lock (it rode the key in, off the screen's side)
+    keyL.position.copy(portrait ? lockAt : key.position).add(portrait ? v(0, 1.6) : v(0, 2.8)); during(keyL, time, T.key, T.out);
     during(calc, time, T.turn); during(sh1.nameL, time, 1.2); during(sh2.nameL, time, T.z8); during(rsa.nameL, time, T.me - .8);
     hide(SIG.B); if (time > T.out) outOf(SIG.B, rsa.mouth(at.sig), time, T.out, T.end - .6); during(SIG.cap, time, T.out + .8);
   }
@@ -268,14 +269,18 @@ function signRoom(scene, pk, portrait) {
   const box = id => around(at[id], { pk: pkS, sh1, st: stS, sh2, em: EMc, rsa: { w: 6, h: 9 }, sig: SIG }[id]);
   const F = (...ids) => ids.flatMap(box);
   const win = r => { const a = Math.max(0, Math.min(11, Math.round(r - 2.5))); return rowsOf(EM, a, a + 4); };
+  // r627: on a phone the key's label, wider than the box, waits over the lock; the frame holds it whole, the key
+  // where it comes in from (its bow 1.9 to the left of keyHome, its bit 2.1 to the right) and the formula under
+  const sprite = (l, at = l.position) => around(at, { w: l.scale.x, h: l.scale.y }, .3);
+  const keyPath = [...sprite(keyL, lockAt.clone().add(v(0, 1.6))), v(keyHome.x - 2.1, keyHome.y - .8), v(keyHome.x + 2.3, keyHome.y + .8)];
   const frame = time => !portrait
     ? time < T.dg ? F('pk', 'sh1') : time < T.z8 ? F('pk', 'sh1', 'st') : time < T.zeros ? F('st', 'sh2', 'em') : time < T.lock ? F('sh2', 'em', 'rsa') : F('em', 'rsa', 'sig')
     // a phone's strip is short and wide: three to five rows of a wall, or one box, at a time
     : time < T.h1 + .6 ? rowsOf(PK[0].B, 0, 7, CAP) : time < T.dg ? [...rowsOf(PK[3].B, 0, 0), ...mbox(sh1)] : time < T.z8 ? rowsOf(DG.B, 0, 1, CAP)
       : time < T.h2 ? [...rowsOf(Z8.B, 0, 0, CAP), ...rowsOf(SL.B, 0, 1)] : time < T.H ? [...rowsOf(SL.B, 1, 1), ...mbox(sh2)]
       : time < T.zeros ? rowsOf(EM, 12, 15) : time < T.one ? rowsOf(EM, 7, 11) : time < T.m ? rowsOf(EM, 10, 14)
-      : time < T.me + .3 ? win(mask(time, T.m, T.me, 0, DBn / 16)) : time < T.lock ? rowsOf(EM, 0, 3, CAP)
-      : time < T.out + .8 ? around(at.rsa, { w: 6, h: 9 }) : rowsOf(SIG.B, 0, 4, CAP);
+      : time < T.me + .3 ? win(mask(time, T.m, T.me, 0, DBn / 16)) : time < T.key ? rowsOf(EM, 0, 3, CAP)
+      : time < T.out + .8 ? [...around(at.rsa, { w: 6, h: 9 }), ...keyPath, ...sprite(calc)] : rowsOf(SIG.B, 0, 4, CAP);
   return { size: L.size, beats: { sign: { end: T.end } }, pose, frame: (b, time) => frame(time), tiles: { em: E2, sig: SIG.B, digest: DG.B } };
 }
 
