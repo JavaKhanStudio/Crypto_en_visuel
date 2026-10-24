@@ -31,7 +31,6 @@ ap.add_argument("--frames", type=int, default=40)
 ap.add_argument("--settle", type=int, default=6000, help="ms after ready before measuring")
 ap.add_argument("--dpr", type=float, default=1, help="devicePixelRatio (a laptop's HiDPI screen: 2)")
 ap.add_argument("--json")
-ap.add_argument("--bilinear", action="store_true", help="r613 prototype: the 'PCF' line measures tools/shadow_filter_shots.py's 4-fetch bilinear filter")
 a = ap.parse_args()
 
 MEASURE = """async (N) => {
@@ -98,7 +97,7 @@ MEASURE = """async (N) => {
   const recompile = () => scene.traverse(o => [].concat(o.material || []).forEach(m => m.needsUpdate = true));
   const T0 = R.shadowMap.type, setType = t => { R.shadowMap.type = t; recompile(); };
   out.shadowType = T0; out.types = {}; out.receivers = [];
-  if (lights.length) for (const [k, t] of [['PCF', 1], ['Basic', 0]]) if (t !== T0)
+  if (lights.length) for (const [k, t] of [['PCFSoft', 2], ['Bilinear', 1], ['Basic', 0]]) if (t !== T0)
     out.types[k] = saves(() => setType(T0), () => setType(t));
   if (lights.length) for (const o of scene.children) {
     const rs = []; o.traverse(m => { if (m.isMesh && m.receiveShadow) rs.push(m); });
@@ -150,12 +149,7 @@ with sync_playwright() as p:
       const f = () => { n++; if (performance.now() - t0 < 5000) requestAnimationFrame(f); else r(n / ((performance.now() - t0) / 1000)); }; requestAnimationFrame(f); })""")
     m1 = {m["name"]: m["value"] for m in cdp.send("Performance.getMetrics")["metrics"]}
     span = m1["Timestamp"] - m0["Timestamp"]
-    if a.bilinear:
-        from shadow_bilinear import BILINEAR
-        assert pg.evaluate(BILINEAR)
     r = pg.evaluate(MEASURE, a.frames)
-    if a.bilinear and "PCF" in r.get("types", {}):
-        r["types"]["Bilinear"] = r["types"].pop("PCF")
     r["idle"] = {"fps": round(fps, 1), "cpu_pct": round(100 * (m1["TaskDuration"] - m0["TaskDuration"]) / span, 1),
                  "script_pct": round(100 * (m1["ScriptDuration"] - m0["ScriptDuration"]) / span, 1),
                  "heap_mb": round(m1["JSHeapUsedSize"] / 1048576, 1)}
@@ -172,7 +166,7 @@ print(f"shadow     costs {r['noShadow']['saves_ms']:5.2f} ms  {f['calls'] - r['n
 print(f"  map redrawn every frame would add {r['shadowRedraw_ms']:5.2f} ms; "
       + ("the page redraws it only when a caster or the light moved (r543), so the rest is shading the receivers" if r['shadowCached'] else "the page already does"))
 if r.get("receivers"):
-    print(f"  filter {['Basic', 'PCF', 'PCFSoft', 'VSM'][r['shadowType']]}: " + ", ".join(f"{k} instead saves {v:5.2f} ms" for k, v in r["types"].items())
+    print(f"  filter {['Basic', 'Bilinear', 'PCFSoft', 'VSM'][r['shadowType']]}: " + ", ".join(f"{k} instead saves {v:5.2f} ms" for k, v in r["types"].items())
           + ";  receiveShadow off saves: " + ", ".join(f"{x['part'][:14]} {x['saves_ms']:.2f}" for x in r["receivers"][:6]))
 print(f"idle       {r['idle']['fps']} fps, {r['idle']['cpu_pct']}% of a core on the main thread ({r['idle']['script_pct']}% script), heap {r['idle']['heap_mb']} MB")
 print(f"world.update {r.get('worldUpdate_ms')} ms a frame (CPU)   gpu memory: {r['memory']}")
