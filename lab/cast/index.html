@@ -1,0 +1,97 @@
+<!doctype html>
+<!-- r330 lab: the cast from lib/cast.js as toys made of pieces. Row 1 pulls figures apart (body, rings on the neck
+     pin, head with its pin, hat with its peg, the arms off their shoulder pins, held item); 'arms up' swings them
+     forward as far as they go; row 2 shows the satchel on anyone; then the kinds bare,
+     today (against the episodes' own copies), and one row per setting. Drag a row to turn its figures;
+     ?turn=RADIANS sets the angle for a shot. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The cast, as toys</title>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.min.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+<style>
+  body { margin: 0; background: #0b0d12; color: #d8dce6; font: 15px system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 16px 16px 6px; } p { margin: 0 16px 12px; color: #9aa3b5; max-width: 90ch; }
+  section { margin: 0 16px 18px; } h2 { font-size: 15px; margin: 0 0 4px; color: #ffd27a; } h2 small { color: #9aa3b5; font-weight: 400; }
+  canvas { display: block; width: 100%; max-width: 1400px; border: 1px solid #252a35; border-radius: 8px; cursor: grab; }
+  .names { display: grid; max-width: 1400px; font-size: 13px; color: #9aa3b5; text-align: center; }
+</style></head><body>
+<h1>The cast as toys (lib/cast.js), round 7</h1>
+<p><b>Round 7</b> (Simon, 23 Oct: « make the top of the head flat to make it easier to print … the cylinder at the bottom of the head seem to be another piece, yet it should be part of the head, the invert of a lego piece »): the head is a ball cut flat on top (8.7 mm across at 60 mm), the hat's peg going into that flat; its neck peg is drawn and printed in its skin, one solid with it, so the head prints upside down standing on its flat top, the peg straight up (row « as printed »).</p>
+<p><b>Round 6</b> (Simon, 23 Oct: « The connectors are too complex. Remember this is for 3D print. A single male female slot would work WAY better here »; and: « The hole you made to connect the arm remain, it is important to slot it in. But we ALSO need to gap so that, once slot in, it can move »): every joint is now <b>one straight peg in one straight hole</b>, nothing else: no bulb, no hub. The arm: a 3 mm peg straight out of its top into a hole in the robe's shoulder, the arm hanging 0.4 mm clear of the robe, so it turns on its peg (hanging to 60° forward, meeting nothing). The hat: a 3 mm peg straight down into the head. The head: its 4.5 mm neck peg into the body. An item: a 2.6 mm pin or pole in the fist's hole. The play is one table, from Bloc-Art's pegs and slots and FDM practice (.claude/skills/fdm-joints): 0.1 mm a side where a piece stays put, 0.2 mm where it turns, each hole 0.5 mm deeper than its peg. lib/fit.js checks every joint against it (<a href="fit.html" style="color:#ffd27a">fit.html</a> lists them under each figure).</p>
+<p><b>Round 5</b>, replaced by round 6 for the joints (Simon, 23 Oct: « I did not want a swing, i wanted a gap like what r395 does … it's a toy, it's supposed to be somewhat interactive. The bended arm are not a terrible idea tho, let's keep both. »): the robe is no longer cut. Each arm turns on a hub that stands 0.4 mm clear of the robe and hangs beside it, parallel to its slope, the same gap away, on a 2.4 mm pin snapped into the robe (as in r395's probe). So it rises freely as the episodes raise it: lib/fit.js turns it from hanging to 60° forward and it meets nothing, the robe included (raised right over the head, Alice's would meet her scarf). Both arms are kept: <b>bent</b>, the fist upright with a hole down through it (a flag's pole goes through it, below), and <b>straight</b>, round 2's. Every piece prints as one continuous solid (lib/fit.js finds no loose bit and no wall under 1 mm in any of them). The stops at the ends of the turn are r395's, in the export.</p>
+<p><b>Round 4</b>, replaced by round 5 for the arms (Simon, 23 Oct: « The arm will need to be inserted with a socket if we want to be able to move them. The hair will need to be clipable on the head »): the arms are their own pieces now. Each snaps into the robe on a 2.4 mm pin across the shoulder (r395's probe size) that ends in a bulb 0.5 mm wider than the socket's lip, and turns on it, up to 35° forward, in a slot the robe is hollowed with (cyan in <a href="fit.html" style="color:#ffd27a">fit.html</a>). Every hat and hair has a peg under it that snaps the same way into a socket on top of the head, so it clips on and off. lib/fit.js checks the snaps, and swings each arm with what it holds through its whole range (at 40°, Alice's signal pad meets her scarf, so the range stops at 35°). Stops at the ends of the swing are r395's.</p>
+<p><b>Round 3</b>: every figure below goes together and prints at 60 mm, checked by lib/fit.js (<a href="fit.html" style="color:#ffd27a">fit.html</a> draws what it finds). The arm is new: the forearm comes forward and the fist stands upright with a hole down through it, so a banner's pole goes through and an item stands on a pin (round 2's straight arm could not hold anything without the item cutting into the fist: <a href="fit.html?pose=straight&setting=roman" style="color:#ffd27a">see it</a>). The satchel's strap crosses the back: in front, the forearms would stop its ring coming down.</p>
+<p>Every figure is seven pieces that come apart. <b>Body</b>: the robe, the kind's colour, a hole at the neck and one in each shoulder. <b>Arms</b>: two, each a peg into the shoulder, hanging 0.4 mm clear of the robe; bent (a hole through the fist) or straight.
+<b>Rings</b>: every ring drops over the neck pin and sits on the shoulders; what hangs from it (a scarf tail, a toga's sash, a strap, a tabard) hangs between the arms, so it goes on and off with the arms on. The head holds it down.
+<b>Head</b>: the face and its fixed trait, a peg under it (the neck, hidden once assembled), a hole on top. <b>Hat</b>: hair or a hat with a straight peg pressed into the head. Eve's is always black. <b>Item</b>: a pole through the fist, or an item on a pin in it.
+Printed 60 mm tall (r196's figure size): neck peg 4.5 mm, arm and hat pegs 3 mm, fist hole 2.8 mm, every wall 1 mm or more.</p>
+<p>What never changes (the kind): Alice: blue robe, bun, blue scarf ring. Bob: yellow robe, leather belt with a gold buckle, flush with the robe. Eve: red robe, black mask with white eyes, a black hat. Messenger: the satchel (strap, wax seal, post horn), the piece the others can borrow.</p>
+<div id="rows"></div>
+<script type="module">
+import * as THREE from 'three';
+import { person, explode, CAST } from '../../lib/cast.js';
+import { person as kasiski } from '../../kasiski/js/props.js';
+import { person as garde } from '../../garde/js/props.js';
+import { person as vpn } from '../../vpn/js/props.js';
+const q = new URLSearchParams(location.search), turn0 = +(q.get('turn') ?? .45);
+const ALL = ['a', 'b', 'e', 'n', 'g', 'v', 'i'], MAIN = ['a', 'b', 'e', 'n'];
+const col = (k, f) => [CAST[k].name, f];
+const old = { a: () => kasiski('a'), b: () => kasiski('b'), e: () => kasiski('e'), n: () => kasiski('n'),
+  g: () => { const o = garde('g'); o.children[0].scale.setScalar(1); return o; }, v: () => vpn('v'), i: () => vpn('i') };
+const apart = (k, o) => () => { const f = person(k, o); explode(f, 1); return f; };
+const up = (k, o) => () => { const f = person(k, o); for (const a of f.userData.pieces.arms) a.rotation.x = a.userData.swing[0] * Math.PI / 180; return f; };
+// round 6: the joints, wide apart; round 7: every peg in its own piece's colour, as it prints (gold made the neck peg read as a piece of its own)
+const pegs = (k, o, t = 1.25, side = false) => () => { const f = person(k, o); explode(f, t); if (side) f.userData.turn = Math.PI / 2; return f; };
+// round 7: the head and the hat as they print, beside the body: the head upside down on its flat top, the neck peg straight up
+const printed = (k, o) => () => { const f = person(k, o), P = f.userData.pieces, b = new THREE.Box3();
+  const lay = (p, x, flip) => { p.rotation.x = flip ? Math.PI : 0; p.position.set(0, 0, 0); f.updateMatrixWorld(true); b.setFromObject(p);
+    p.position.set(x - (b.min.x + b.max.x) / 2, -b.min.y, 1.15 - (b.min.z + b.max.z) / 2); };
+  lay(P.head, .6, true); lay(P.hat, -.6, false); P.shoulder.position.y = .3; return f; };
+const SETTING = { roman: 'scytale', wartime: 'enigma 5.1-5.3: the German navy\'s radio room, Eve at Bletchley Park', medieval: 'the saga 1.1-1.6: the two generals, their messenger, Eve the spy' };
+const ROWS = [
+  ['as printed', 'round 7: the head is one piece, its neck peg its own, its top flat: it prints upside down on that flat (in front, right), the hat as it sits, brim down, printed with support inside its crown (in front, left)', 1.0, [
+    ['Alice, today', printed('a')], ['Eve, today', printed('e')], ['Bob, medieval', printed('b', { disguise: 'medieval' })], ['messenger, today', printed('n')]]],
+  ['joints', 'round 6: one straight peg in one straight hole each, every peg printed with its piece: the head\'s neck peg into the body, the hat\'s peg into the head\'s flat top, each arm\'s peg into the shoulder, the item\'s pin into the fist', 1.9, [
+    ['Alice, today', pegs('a')], ['Eve, wartime: the cup on its pin', pegs('e', { disguise: 'wartime' })], ['Bob, medieval: the pole through the fist', pegs('b', { disguise: 'medieval' })]]],
+  ['pieces', 'pulled apart: body, arms, rings, head (its pin), hat (its peg), item', 1.9, [
+    ['Alice, today', apart('a')], ['Bob, today', apart('b')], ['messenger, today', apart('n')],
+    ['Alice, roman', apart('a', { disguise: 'roman' })], ['Eve, medieval', apart('e', { disguise: 'medieval' })], ['Bob, medieval', apart('b', { disguise: 'medieval' })]]],
+  ['both arms', 'bent (a hole through the fist: the flag goes through it) and straight, on either side', 1.0, [
+    ['Alice, bent right, straight left', () => person('a', { arms: ['bent', 'straight'] })], ['Bob, bent: the flag through the fist', () => person('b', { hand: 'banner' })],
+    ['Eve, both straight', () => person('e', { arms: 'straight' })], ['messenger, straight right, bent left', () => person('n', { arms: ['straight', 'bent'] })]]],
+  ['arms up', 'each arm turned on its pin as far as it goes, 60° forward (the episodes raise them 0.8 to 1 rad)', 1.0, [
+    ['Alice, today', up('a')], ['Bob, roman', up('b', { disguise: 'roman' })], ['Eve, wartime', up('e', { disguise: 'wartime' })], ['Bob, medieval', up('b', { disguise: 'medieval' })]]],
+  ['the satchel on anyone', 'the messenger\'s ring on the other kinds\' pins', 1.0, [
+    ['Alice', () => person('a', { shoulder: 'satchel', hand: 'letter' })], ['Bob', () => person('b', { shoulder: 'satchel', hand: 'letter' })],
+    ['Eve', () => person('e', { shoulder: 'satchel', hat: 'fedora' })], ['messenger', () => person('n', { hand: 'letter', hat: 'travellerHat' })]]],
+  ['bare', 'the kinds with no costume: what never changes', 1.0, MAIN.map(k => col(k, () => person(k, { disguise: 'none' })))],
+  ['the episodes today', 'their own props.js: kasiski, garde, vpn', 1.0, ALL.map(k => col(k, old[k]))],
+  ['today', 'lib/cast.js, what the roll-out puts in the episodes (Bob turns yellow)', 1.0, ALL.map(k => col(k, () => person(k)))],
+  ...Object.keys(SETTING).map(d => [d, SETTING[d], 1.0, MAIN.map(k => col(k, () => person(k, { disguise: d })))]),
+];
+for (const [title, note, tall, cols] of ROWS) {
+  const n = Math.max(cols.length, 4), aspect = n / 2 / tall, sec = document.createElement('section');
+  sec.innerHTML = `<h2>${title} <small>· ${note}</small></h2><canvas style="aspect-ratio:${aspect}"></canvas><div class="names" style="grid-template-columns:repeat(${n},1fr)">${cols.map(c => `<span>${c[0]}</span>`).join('')}</div>`;
+  document.getElementById('rows').append(sec);
+  const canvas = sec.querySelector('canvas');
+  const r = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x141824);
+  scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x2a2418, 1.4));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(4, 8, 6); scene.add(sun);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 8), new THREE.MeshStandardMaterial({ color: 0x232838 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  const figs = [], W = 2.5;
+  cols.forEach(([, make], i) => { const f = make(); f.position.x = (i - (n - 1) / 2) * W; f.rotation.y = f.userData.turn ?? turn0; scene.add(f); figs.push(f); });
+  // n columns of W metres fill the width exactly, so the names sit under their figures
+  const fov = 22, h = n * W / aspect, cam = new THREE.PerspectiveCamera(fov, aspect, .1, 200);
+  const dist = h / 2 / Math.tan(fov / 2 * Math.PI / 180), cy = tall > 1 ? 2.75 : 1.6;
+  cam.position.set(0, cy + .6, dist); cam.lookAt(0, cy, 0);
+  const draw = () => { const w = canvas.clientWidth; r.setSize(w, w / aspect, false); r.render(scene, cam); };
+  let drag = null;
+  canvas.onpointerdown = e => { drag = e.clientX; canvas.setPointerCapture(e.pointerId); };
+  canvas.onpointermove = e => { if (drag === null) return; for (const f of figs) f.rotation.y += (e.clientX - drag) * .01; drag = e.clientX; draw(); };
+  canvas.onpointerup = () => drag = null;
+  addEventListener('resize', draw); draw();
+}
+window.labReady = true;
+</script>
+</body></html>
