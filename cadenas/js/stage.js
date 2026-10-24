@@ -4,7 +4,8 @@
 // says, instantly; the async actions animate from there.
 import * as THREE from 'three';
 import { PLACES, BENCH, TABLE_TOP } from './world.js';
-import { padlock, key, chest, person, COLORS } from './props.js';
+import { padlock, key, chest, COLORS } from './props.js';
+import { person } from '../../lib/cast.js';
 import { burst, ring, icon } from '../../lib/fx.js';
 import { sfx } from '../../lib/sound.js';
 
@@ -21,7 +22,7 @@ export class Stage {
     for (const k of ['a', 'e', 'b']) {
       const p = person(k); p.position.copy(PLACES[k].person); p.rotation.y = .6; S.add(p); this.people[k] = p;
     }
-    this.courier = person('n'); S.add(this.courier);
+    this.courier = person('n', { hat: 'postCap' }); S.add(this.courier);
     this.chest = chest(); S.add(this.chest);
     // the two padlocks that can hang on the chest: Alice's own (chapter 1) and Bob's
     this.aliceLock = padlock(COLORS.a); this.chest.add(this.aliceLock); this.aliceLock.position.copy(this.chest.userData.hasp);

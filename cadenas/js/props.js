@@ -1,5 +1,5 @@
 // The objects of the story, built from primitives: a padlock whose shackle opens,
-// a key, a chest with a hinged lid and a letter inside, and the three characters.
+// a key, a chest with a hinged lid and a letter inside. The characters are lib/cast.js's (r634).
 import * as THREE from 'three';
 
 export const COLORS = { a: 0x4da3ff, b: 0xffc24d, e: 0xff3347 };
@@ -83,43 +83,5 @@ export function chest() {
   g.userData.hasp = new THREE.Vector3(0, .9, .72);
   g.userData.setLid = v => { hinge.rotation.x = -v * 1.9; plate.visible = true; letter.material.emissiveIntensity = v * .5; letter.position.y = .75 + v * .35; ribbon.position.y = letter.position.y; g.userData.lid = v; };
   g.userData.setLid(0);
-  return g;
-}
-
-// A character, about 3.2 tall, facing +z. kind: 'a' Alice, 'b' Bob, 'e' Eve, 'n' the courier.
-export function person(kind) {
-  const g = new THREE.Group(), c = COLORS[kind];
-  const cloth = mat({ a: 0x2a5ea8, b: 0x6b4a2b, e: 0x7a1424, n: 0x5d6b5a }[kind]), skin = mat(0xf0c8a0);
-  const robe = new THREE.Mesh(new THREE.CylinderGeometry(.45, .85, 2.1, 10), cloth); robe.position.y = 1.05; robe.castShadow = true; g.add(robe);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(.42, 16, 12), skin); head.position.y = 2.55; head.castShadow = true; g.add(head);
-  for (const x of [-.14, .14]) { const eye = new THREE.Mesh(new THREE.SphereGeometry(.05, 8, 6), dark); eye.position.set(x, 2.6, .38); g.add(eye); }
-  const arms = new THREE.Group(); arms.position.y = 1.8; g.add(arms);
-  for (const s of [-1, 1]) {
-    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(.13, .8, 4, 8), cloth);
-    arm.position.set(s * .55, -.3, .15); arm.rotation.z = s * .35; arm.rotation.x = -.5; arms.add(arm);
-  }
-  if (kind === 'a') {          // Alice: blue scarf and a bun
-    const hair = mat(0x6b3d1f);
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(.45, 16, 10, 0, Math.PI * 2, 0, Math.PI * .55), hair); cap.position.y = 2.6; cap.rotation.x = -.35; g.add(cap);
-    const bun = new THREE.Mesh(new THREE.SphereGeometry(.2, 10, 8), hair); bun.position.set(0, 2.95, -.3); g.add(bun);
-    const scarf = new THREE.Mesh(new THREE.TorusGeometry(.4, .1, 8, 16), mat(c)); scarf.rotation.x = Math.PI / 2; scarf.position.y = 2.12; g.add(scarf);
-  } else if (kind === 'b') {   // Bob: flat cap, leather apron, his key on the belt
-    const capM = mat(0x3d2c1c);
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(.46, .46, .16, 16), capM); cap.position.y = 2.88; g.add(cap);
-    const brim = new THREE.Mesh(new THREE.BoxGeometry(.5, .05, .35), capM); brim.position.set(0, 2.82, .4); g.add(brim);
-    const apron = new THREE.Mesh(new THREE.CylinderGeometry(.5, .86, 1.7, 10, 1, true, -.9, 1.8), mat(0x9b6a3a, { side: THREE.DoubleSide })); apron.position.y = .9; apron.scale.set(1.04, 1, 1.04); g.add(apron);
-    const belt = new THREE.Mesh(new THREE.TorusGeometry(.62, .06, 6, 20), mat(c, { metalness: .5 })); belt.rotation.x = Math.PI / 2; belt.position.y = 1.55; g.add(belt);
-  } else if (kind === 'n') {   // the courier: a postman's cap
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(.4, .44, .3, 14), mat(0x2f3a2e)); cap.position.y = 2.9; g.add(cap);
-  } else {                     // Eve: a spy's dark fedora with a red band, a black eye mask (r65: not a pointed hood)
-    const felt = mat(0x2a2a30), hat = new THREE.Group(); hat.position.y = 2.86; hat.rotation.x = .12; g.add(hat);
-    const brim = new THREE.Mesh(new THREE.CylinderGeometry(.74, .74, .05, 24), felt); brim.castShadow = true; hat.add(brim);
-    const crown = new THREE.Mesh(new THREE.CylinderGeometry(.31, .41, .36, 16), felt); crown.position.y = .19; crown.castShadow = true; hat.add(crown);
-    const hatband = new THREE.Mesh(new THREE.CylinderGeometry(.415, .42, .1, 16), mat(0x9e1b2e)); hatband.position.y = .08; hat.add(hatband);
-    const mask = new THREE.Mesh(new THREE.TorusGeometry(.42, .075, 6, 20, Math.PI), dark); mask.rotation.x = Math.PI / 2; mask.position.y = 2.6; g.add(mask);
-    for (const x of [-.14, .14]) { const white = new THREE.Mesh(new THREE.SphereGeometry(.07, 10, 8), mat(0xfaf6ee)); white.position.set(x, 2.6, .45); g.add(white);
-      const pupil = new THREE.Mesh(new THREE.SphereGeometry(.04, 8, 6), dark); pupil.position.set(x, 2.6, .51); g.add(pupil); }
-  }
-  g.userData.head = head; g.userData.arms = arms;
   return g;
 }

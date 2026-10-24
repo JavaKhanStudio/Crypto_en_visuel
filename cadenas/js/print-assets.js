@@ -9,7 +9,8 @@
 // The props the story hides and shows (the courier, the padlocks, the keys) are built fresh: a hidden
 // mesh is not printed (lib/print.js pieces).
 import * as THREE from 'three';
-import { padlock, key, chest, person, COLORS } from './props.js';
+import { padlock, key, chest, COLORS } from './props.js';
+import { person } from '../../lib/cast.js';
 import { table } from './world.js';
 
 const kids = (o, test) => o.children.find(test);
@@ -28,11 +29,11 @@ function letter() {
 }
 
 export const ASSETS = [
-  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
-  { id: 'bob', label: 'Bob, the locksmith: flat cap, leather apron, a gold belt', kind: 'figure', size: { h: 60 }, get: () => person('b') },
-  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
-  { id: 'courier', label: 'The courier who carries the chest on his head, a postman\'s cap', kind: 'figure', size: { h: 60 },
-    get: () => person('n') },
+  { id: 'alice', label: 'Alice, the cast figure (lib/cast.js): blue robe, scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
+  { id: 'bob', label: 'Bob, the locksmith, the cast figure: yellow robe, flat cap, belt with a gold buckle', kind: 'figure', size: { h: 60 }, get: () => person('b') },
+  { id: 'eve', label: 'Eve, the cast figure: the spy, black fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
+  { id: 'courier', label: 'The courier who carries the chest on his head, the cast messenger with a postman\'s cap and his satchel', kind: 'figure', size: { h: 60 },
+    get: () => person('n', { hat: 'postCap' }) },
   { id: 'chest', label: "Alice's chest: wooden base, round lid, two iron bands, the hasp and its staple", kind: 'prop', size: { max: 40 },
     get: () => chest(),
     // the lid's underside is a sheet seen only when the chest is open; the letter lies inside (its own line)
