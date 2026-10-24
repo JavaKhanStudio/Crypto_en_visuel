@@ -6,7 +6,8 @@
 // stands flat (lib/print.js repair). An asset that cannot be printed says why. A new asset in the scene
 // gets its line here. The map is this episode's own (js/world.js): one unit is one metre, a person 1.8 m;
 // the servers and the laptops are Shadow's (assets/shapes), read from the page as world.js placed them.
-import { person, envelope, pole } from './props.js';
+import { envelope, pole } from './props.js';
+import { person } from '../../lib/cast.js';
 import { SPOTS, NODES, HALLS, CABLE_Y } from './world.js';
 
 const flats = o => { const out = []; o.traverse(c => { if (c.isMesh && (c.geometry.type === 'PlaneGeometry' || c.geometry.type === 'CircleGeometry')) out.push(c); }); return out; };
@@ -39,9 +40,9 @@ const trees = d => d.scene.children.find(c => c.isGroup && c.children.length ===
   && c.children[1].geometry.type === 'IcosahedronGeometry');
 
 export const ASSETS = [
-  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
-  { id: 'bob', label: 'Bob, flat cap and a gold belt', kind: 'figure', size: { h: 60 }, get: () => person('b') },
-  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
+  { id: 'alice', label: 'Alice, blue robe, a bun and a blue scarf', kind: 'figure', size: { h: 60 }, get: () => person('a') },
+  { id: 'bob', label: 'Bob, yellow robe, a flat cap and a belt with a gold buckle', kind: 'figure', size: { h: 60 }, get: () => person('b') },
+  { id: 'eve', label: 'Eve, the spy: red robe, black fedora, black eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
   { id: 'victor', label: 'Victor, who runs the VPN server: green hoodie and a headset', kind: 'figure', size: { h: 60 },
     get: () => person('v') },
   { id: 'customer', label: "One of Victor's other customers, a laptop in hand (three at the doors of his town, in purple, rust and teal)",

@@ -7,7 +7,8 @@
 // from there and write back into st what they changed.
 import * as THREE from 'three';
 import { NODES, SPOTS, CUSTOMERS, edge } from './world.js';
-import { envelope, tag, setTag, key, person, COLORS } from './props.js';
+import { envelope, tag, setTag, key, COLORS } from './props.js';
+import { person } from '../../lib/cast.js';
 import { ADDR, NAME, OTHERS, PUBLIC, KEY, hex, sees, route, opened, flipped, SEALED } from './net.js';
 import { burst, ring } from '../../lib/fx.js';
 import { sfx } from '../../lib/sound.js';
@@ -16,7 +17,7 @@ import { portrait } from './camera.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-const PERSON = .56;                               // the characters are built 3.2 tall: 1.8 m here
+const PERSON = .56;                               // lib/cast.js builds the characters about 3.2 tall: 1.8 m here
 const SPEED = 14;
 const KEY_SIZE = 4.5;                             // the keys float big over Alice and Victor: the map is seen whole                                 // an envelope's pace along a cable, m/s
 const WATCHERS = ['e', 'i', 'v', 'b'];
@@ -57,7 +58,7 @@ export class Stage {
     // Victor's other customers (step 12, r367): at their doors, turned to his hall, a laptop in hand; a tag
     // over each says its address while their packets fly
     this.customers = CUSTOMERS.map(({ at, cloth }, k) => {
-      const p = person('c' + k, cloth); p.scale.setScalar(PERSON); p.position.copy(at);
+      const p = person('i', { cloth }); p.scale.setScalar(PERSON); p.position.copy(at);
       p.rotation.y = Math.atan2(NODES.v.x - at.x, NODES.v.z - at.z);
       const l = world.laptops.a.clone(); l.position.set(0, 1.55, .8); l.rotation.set(-.35, Math.PI, 0); l.scale.setScalar(.8 / PERSON); p.add(l);
       const s = tag(); s.position.copy(at).add(v(0, 2.6, 0)); s.visible = false; S.add(p, s);
