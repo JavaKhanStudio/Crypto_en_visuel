@@ -12,10 +12,12 @@ like python3 -m http.server, plus the print lab's review (Simon's pick A on r452
 Bound to 127.0.0.1 only: nobody else reaches it. The review file is written in the working tree; the
 session that takes the sent ticket commits it with its work.
 
-    python3 tools/serve_review.py [port] [--review-dir DIR] [--dry-send FILE]
+    python3 tools/serve_review.py [port] [--review-dir DIR] [--dry-send FILE] [--follow]
 
---review-dir writes the review elsewhere (a test's temp dir); --dry-send appends each ticket it would
-add to FILE (JSON lines) instead of running atelier add. From Python: serve(port=0, ...) -> (base url, server).
+--review-dir writes the review elsewhere (a test's temp dir, or the shared checkout when the viewer serves
+origin's tree); --dry-send appends each ticket it would add to FILE (JSON lines) instead of running atelier add.
+--follow (r633, tools/site_serve.sh): this tree is a detached worktree kept at origin/main, re-synced every
+FOLLOW seconds, so a lab pushed from any worktree opens from Labs; refused on a tree with a branch checked out. From Python: serve(port=0, ...) -> (base url, server).
 """
 import json, os, re, subprocess, sys, threading, datetime
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
@@ -24,6 +26,27 @@ from functools import partial
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SLUG = re.compile(r"^[a-z0-9-]+$")
 lock = threading.Lock()
+FOLLOW = float(os.environ.get("CRYPTO_SITE_FOLLOW", 60))   # seconds; a test sets it short
+
+
+def git(*a):
+    return subprocess.run(["git", "-C", ROOT, *a], capture_output=True, text=True)
+
+
+def follow():   # r633: keep ROOT at origin/main; only ever a detached tree, never a session's checkout
+    if git("symbolic-ref", "-q", "HEAD").returncode == 0:
+        sys.exit(f"--follow refused: {ROOT} has a branch checked out; it is for tools/site_serve.sh's own worktree")
+    if git("status", "--porcelain", "-uno").stdout.strip():
+        sys.exit(f"--follow refused: {ROOT} has uncommitted changes, and following would overwrite them")
+    def sync():
+        f = git("fetch", "-q", "origin", "main")
+        c = git("checkout", "-q", "-f", "--detach", "origin/main")
+        if f.returncode or c.returncode: print("follow:", (f.stderr + c.stderr).strip()[-300:], flush=True)
+    def loop():
+        while True:
+            threading.Event().wait(FOLLOW); sync()
+    sync(); threading.Thread(target=loop, daemon=True).start()
+    print("following origin/main at", git("rev-parse", "--short", "HEAD").stdout.strip(), flush=True)
 
 
 def where(ep, cfg):
@@ -144,6 +167,7 @@ def serve(port=0, review_dir=None, dry_send=None, verbose=False):
 if __name__ == "__main__":
     args = sys.argv[1:]; opt = lambda n: args[args.index(n) + 1] if n in args else None
     port = int(next((a for a in args if a.isdigit()), 8794))
+    if "--follow" in args: follow()
     url, srv = serve(port, opt("--review-dir"), opt("--dry-send"), verbose=True)
     print(f"serving {ROOT} at {url} (review in {srv.RequestHandlerClass.keywords['cfg']['review_dir']})", flush=True)
     try: threading.Event().wait()
