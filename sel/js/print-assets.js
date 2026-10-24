@@ -7,7 +7,8 @@
 // gets its line here. The site's back room is this episode's own (js/world.js): one unit is 10 cm, so
 // a person (about 17 units) at 60 mm puts the room at about 3.5 mm a unit.
 import * as THREE from 'three';
-import { person, card, terminal, shaker, machine, cabinet, eveDesk, rig, stopwatch, COLORS } from './props.js';
+import { card, terminal, shaker, machine, cabinet, eveDesk, rig, stopwatch, COLORS } from './props.js';
+import { person } from '../../lib/cast.js';
 
 const plane = c => c.isMesh && (c.geometry.type === 'PlaneGeometry' || c.geometry.type === 'CircleGeometry');
 const flats = o => { const out = []; o.traverse(c => { if (plane(c)) out.push(c); }); return out; };
@@ -24,9 +25,12 @@ function token() {
 }
 
 export const ASSETS = [
-  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
-  { id: 'bob', label: 'Bob, flat cap and a gold belt', kind: 'figure', size: { h: 60 }, get: () => person('b') },
-  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
+  { id: 'alice', label: 'Alice, the cast figure (lib/cast.js): blue robe, a bun, the blue scarf ring', kind: 'figure', size: { h: 60 },
+    get: () => person('a', { scale: 5.3 }) },
+  { id: 'bob', label: 'Bob, the cast figure: yellow robe, flat cap, leather belt with a gold buckle', kind: 'figure', size: { h: 60 },
+    get: () => person('b', { scale: 5.3 }) },
+  { id: 'eve', label: 'Eve, the cast figure: the spy, black fedora with a red band, eye mask', kind: 'figure', size: { h: 60 },
+    get: () => person('e', { scale: 5.3 }) },
   { id: 'card', label: 'A card that flies between the machines (a password, a salt, a fingerprint: paint its text)', kind: 'prop',
     size: { max: 40 }, get: token,
     // the text is a picture on a sheet over the front

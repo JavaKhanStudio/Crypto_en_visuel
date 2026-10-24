@@ -3,7 +3,8 @@
 // book and her rig at the east end, under its counter. Built from primitives in code: no model
 // files to load. One unit is 10 cm.
 import * as THREE from 'three';
-import { terminal, shaker, machine, cabinet, eveDesk, rig, stopwatch, person, DESK_Y, COLORS } from './props.js';
+import { terminal, shaker, machine, cabinet, eveDesk, rig, stopwatch, DESK_Y, COLORS } from './props.js';
+import { person } from '../../lib/cast.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 // Where things stand, along x. The desks are at z = 0, the people just behind and beside them.
@@ -82,7 +83,7 @@ export function buildWorld(scene) {
   const watch = stopwatch(); watch.position.set(X.machine - 14, DESK_Y + 16, 5); watch.scale.setScalar(1.8); watch.visible = false;   // by the machine, while bcrypt works
   for (const o of [...Object.values(terms), salt, mach, base, desk, gpu, watch]) scene.add(o);
 
-  const people = { a: person('a'), b: person('b'), e: person('e') };
+  const people = { a: person('a', { scale: 5.3 }), b: person('b', { scale: 5.3 }), e: person('e', { scale: 5.3 }) };
   people.a.position.set(X.alice, 0, -3); people.a.rotation.y = .6;
   people.b.position.set(X.bob, 0, -3); people.b.rotation.y = .6;
   people.e.position.set(X.eve, 0, -4); people.e.rotation.y = .5;
