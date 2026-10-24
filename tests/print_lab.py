@@ -6,7 +6,8 @@ within 1 mm), standing on z = 0, repaired (r394: lib/print.js repair leaves 0 op
 floating pieces, and PRINT.txt lists the fixes), and closed pieces with a positive volume (outward faces: the export
 turns Y up into Z up without mirroring). r451: every asset shows whether a human checked it, and the list
 shape's fields are proven on a fixture list (tests/print/shape-assets.js): a stripped part is absent from
-the files, a scaled part is scaled, a body is its own STL on the bed, a checked asset loses the badge.
+the files, a scaled part is scaled, a body is its own STL on the bed, a checked asset loses the badge;
+r395: a cast figure's swing: in the list keys the arm it names for that range and leaves the null one a plain peg.
 r452: the lab runs only behind tools/serve_review.py (a plain static server gets the 'local only' page);
 a comment survives a reload and a fresh browser, Send makes one ticket with it (dry: the atelier add it
 would run), ticking 'checked' clears the badge. With no base, the test serves the repo itself through
@@ -149,6 +150,10 @@ with sync_playwright() as p:
     report("bodies: the rider is an STL of its own, the horse another, each on the bed", ok and "shape-rider/shape-rider.stl" not in sf and "Printed in 2 bodies" in txt,
         ", ".join(f"{b['name']} {b['n']} pieces {b['tris']} tris" for b in sh["bodies"]))
     report("bodies: each repaired, nothing left to fix", not any(sh["left"].values()), str(sh["left"]))
+    # r395: swing: overrides a cast figure's range: the right arm keyed for 30 degrees, the left one a plain peg
+    cl = pg.evaluate("() => { const r = printLab.rows.find(r => r.a.id === 'shape-cast'); return { log: r.fix.log, keys: r.fix.ps.filter(p => p.key).map(p => p.piece) }; }")
+    report("swing: the list's range keys the right arm (-30 to 0), not the left", cl["keys"] == ["arm right"] and any(l.startswith("cut: arm right turns -30 to 0 degrees") for l in cl["log"]),
+           f"keys on {cl['keys']}; " + next((l for l in cl["log"] if " turns " in l), "no key in the log")[:110])
     report("checked: the badge on an unchecked asset, a date on a checked one", sh["badge"] and not sh["cBadge"] and "2026-10-23" in (sh["cMark"] or "") and "NOT CHECKED BY A HUMAN" in txt, sh["cMark"])
     # r452: Simon's review. Local only: a plain static server gets the notice, not the lab
     pp = br.new_page(); pp.goto(f"http://127.0.0.1:{plain.server_address[1]}/lab/print/?ep={ep}"); pp.wait_for_selector("#local-only", timeout=20000)

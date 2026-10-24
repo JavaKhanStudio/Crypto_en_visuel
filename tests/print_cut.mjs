@@ -8,22 +8,14 @@
 import { register } from 'node:module';
 register('../tools/print_probe/hooks.mjs', import.meta.url);
 const { person, CAST, DISGUISES } = await import('../lib/cast.js');
-const { pieces, fit, repair, cut, check, bounds } = await import('../lib/print.js');
-const { JOINT, DEPTH, CLEAR } = await import('../lib/fit.js');
+const { repair, check } = await import('../lib/print.js');
+const { JOINT, DEPTH } = await import('../lib/fit.js');
 const args = process.argv.slice(2), quiet = args.includes('--quiet'), only = args.indexOf('--setting'), kinds = args.filter(a => a in CAST);
 let bad = 0;
 const report = (name, ok, note = '') => {
   const known = !ok && Object.keys(KNOWN).find(w => name.startsWith(w + ':'));
   console.log((ok ? 'ok   ' : known ? 'KNOWN ' : 'FAIL ') + name + (note ? '  ' + note : '') + (known ? `  (${KNOWN[known]})` : '')); if (!ok && !known) bad++; };
-// what lab/print/ does with a toy: pieces, sized, each part repaired as its own body, then cut
-export function printed(fig, h = 60) {
-  const raw = pieces(fig), k = fit(raw, { h }), joints = fig.userData.joints;
-  const ps = [...new Set(raw.map(p => p.body))].flatMap(n => repair(raw.filter(p => p.body === n && !p.hole), k).ps.map(p => ({ ...p, body: n, piece: p.piece ?? n })));
-  const j = (m, f) => joints.find(x => x.male === m && x.female === f);
-  const t = Date.now(), r = cut(ps, raw, k, { play: (m, f) => { const x = j(m, f); return x ? +((JOINT[x.kind][0] + JOINT[x.kind][1]) / 2).toFixed(3) : null; },
-    bore: (m, f) => j(m, f)?.bore != null, depth: DEPTH, clear: CLEAR });
-  return { raw, k, ps: r.ps, log: r.log, ms: Date.now() - t };
-}
+const { printed } = await import('./print/toy.mjs');
 const volume = t => { let s = 0; for (let i = 0; i < t.length; i += 9) s += t[i] * (t[i + 4] * t[i + 8] - t[i + 5] * t[i + 7]) - t[i + 1] * (t[i + 3] * t[i + 8] - t[i + 5] * t[i + 6]) + t[i + 2] * (t[i + 3] * t[i + 7] - t[i + 4] * t[i + 6]); return s / 6; };
 // is point p inside the closed soup t (a ray's crossings, counted)
 function inside(p, t) {

@@ -38,6 +38,9 @@ The play is per SIDE: a 3 mm peg with 0.1 mm play wants a 3.2 mm hole.
 - lib/cast.js: every joint is pushed to `userData.joints` ({ name, male, female, r, bore | none, deep, kind, gap }),
   in the figure's units. A peg mesh has `userData.pin`; the hole it goes into is cut by lib/fit.js (and, after
   r501, by the export), never modelled, unless the female draws it (a ring's bore, the fist's hole: `bore`).
+- A part that turns only so far (r395, Simon's r196 note: an arm that swings by a set amount): lib/print.js cut() puts a
+  KEY (1.2 mm square rib) on the peg of any part with `userData.swing` and cuts the socket with a groove swept over that
+  range, so it stops about 5 degrees past each end; checked by node tests/print_joint.mjs. Still one peg in one hole.
 - lib/fit.js holds the table (`JOINT`, `PEG_MIN`, `DEPTH`, `GAP_MIN`) and checks every joint against it, plus the
   voxel checks (clips, slides, loose islands, thin walls, swings). The play is finer than the 0.2 mm voxels, so it
   is checked from the numbers, not from the voxels.

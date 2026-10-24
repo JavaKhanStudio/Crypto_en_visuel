@@ -173,7 +173,7 @@ function measure(row) {
   // r501: a toy (lib/cast.js) has its sockets cut as lib/fit.js checks them: one body per part, its drawn holes gone
   const joints = row.obj?.userData?.joints, J = (m, f) => joints.find(x => x.male === m && x.female === f);
   const cutRes = joints ? cut(fix, row.parts, row.k, { play: (m, f) => { const x = J(m, f); return x ? +((JOINT[x.kind][0] + JOINT[x.kind][1]) / 2).toFixed(3) : null; },
-    bore: (m, f) => J(m, f)?.bore != null, depth: DEPTH, clear: CLEAR }) : null;
+    bore: (m, f) => J(m, f)?.bore != null, depth: DEPTH, clear: CLEAR, swing: a.swing ? a.swing(demo, row.obj) : {} }) : null;   // r395: a turning peg keyed, its groove cut over its range (the list's swing: overrides it)
   if (cutRes) { fix.splice(0, fix.length, ...cutRes.ps); log.push(...cutRes.log.map(l => `cut: ${l}`)); }
   for (const n of names) {
     const ps = fix.filter(p => p.body === n); if (!ps.length) continue;

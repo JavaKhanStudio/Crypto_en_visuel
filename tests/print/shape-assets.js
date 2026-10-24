@@ -3,6 +3,7 @@
 // touching an episode's real list (Simon's notes on 1.1 are r453's). Not an episode's list: the
 // checked date below is a fixture, never Simon's word.
 import { buildRider } from '../../lib/messenger.js';
+import { person } from '../../lib/cast.js';
 
 const mesh = (o, type, test = () => true) => { let m; o.traverse(c => { if (!m && c.isMesh && c.geometry.type === type && test(c.geometry.parameters)) m = c; }); return m; };
 
@@ -14,4 +15,7 @@ export const ASSETS = [
     bodies: (d, o) => ({ rider: [mesh(o, 'CylinderGeometry', p => p.radiusTop === .35), mesh(o, 'SphereGeometry'), mesh(o, 'ConeGeometry'), o.userData.scroll] }) },
   { id: 'shape-checked', label: 'A soldier, checked (a fixture date)', kind: 'figure', size: { h: 25 }, checked: '2026-10-23',
     get: d => new d.THREE.Mesh(new d.THREE.ConeGeometry(.6, 2, 6), new d.THREE.MeshStandardMaterial({ color: 0x4da3ff })) },
+  // r395: swing: a part's range in degrees on its peg, over lib/cast.js's userData.swing; null leaves a plain peg
+  { id: 'shape-cast', label: 'Alice, the cast figure: her right arm turns 30 degrees, her left one has no stops', kind: 'figure', size: { h: 60 },
+    get: () => person('a'), swing: () => ({ 'arm right': [-30, 0], 'arm left': null }) },
 ];
