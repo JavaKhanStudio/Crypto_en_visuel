@@ -7,7 +7,8 @@
 // gets its line here. The sorting hall is this episode's own (js/world.js): one unit is 10 cm, so a
 // person (17 units) at 60 mm puts the hall at about 3.5 mm a unit.
 import * as THREE from 'three';
-import { person, crate, press, xorRing, belt, screen } from './props.js';
+import { crate, press, xorRing, belt, screen } from './props.js';
+import { person } from '../../lib/cast.js';
 
 const plane = c => c.isMesh && c.geometry.type === 'PlaneGeometry';
 const box = (c, w, h, d) => c.isMesh && c.geometry.type === 'BoxGeometry'
@@ -22,9 +23,12 @@ function gather(scene, test, x, z) {
 const near = (c, x, z, r) => Math.abs(c.position.x - x) < r && Math.abs(c.position.z - z) < r;
 
 export const ASSETS = [
-  { id: 'alice', label: 'Alice, blue scarf and a bun', kind: 'figure', size: { h: 60 }, get: () => person('a') },
-  { id: 'bob', label: 'Bob, flat cap and a gold belt', kind: 'figure', size: { h: 60 }, get: () => person('b') },
-  { id: 'eve', label: 'Eve, the spy: fedora with a red band, eye mask', kind: 'figure', size: { h: 60 }, get: () => person('e') },
+  { id: 'alice', label: 'Alice, the cast figure (lib/cast.js): blue robe, a bun, the blue scarf ring', kind: 'figure', size: { h: 60 },
+    get: () => person('a', { scale: 5.3 }) },
+  { id: 'bob', label: 'Bob, the cast figure: yellow robe, flat cap, leather belt with a gold buckle', kind: 'figure', size: { h: 60 },
+    get: () => person('b', { scale: 5.3 }) },
+  { id: 'eve', label: 'Eve, the cast figure: the spy, black fedora with a red band, eye mask', kind: 'figure', size: { h: 60 },
+    get: () => person('e', { scale: 5.3 }) },
   { id: 'crate', label: 'A crate: one 16-byte block (its bytes are painted on the front and the lid: paint the print)', kind: 'prop',
     size: { h: 25 }, get: () => crate(),
     // the 4 x 4 grid of bytes is a picture on two sheets laid on the box

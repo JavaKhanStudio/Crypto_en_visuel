@@ -3,7 +3,8 @@
 // back wall, three screens for the penguin. Built from primitives in code: no model files to
 // load. One unit is 10 cm.
 import * as THREE from 'three';
-import { belt, press, xorRing, screen, person, BELT_Y, CRATE } from './props.js';
+import { belt, press, xorRing, screen, BELT_Y, CRATE } from './props.js';
+import { person } from '../../lib/cast.js';
 
 const v = (x, y, z) => new THREE.Vector3(x, y, z);
 // Where things stand, along x. The crates ride at z = 0; the people stand behind the belt.
@@ -95,7 +96,7 @@ export function buildWorld(scene) {
   const screens = { plain: screen(30, 35, 'image'), ecb: screen(30, 35, 'ECB'), cbc: screen(30, 35, 'CBC') };
   for (const [k, s] of Object.entries(screens)) { s.position.copy(SCREENS[k]); scene.add(s); }
 
-  const people = { a: person('a'), e: person('e'), b: person('b') };
+  const people = { a: person('a', { scale: 5.3 }), e: person('e', { scale: 5.3 }), b: person('b', { scale: 5.3 }) };
   people.a.position.set(X.alice, 0, -10); people.a.rotation.y = .9;
   people.b.position.set(X.bob, 0, -10); people.b.rotation.y = -.9;
   people.e.position.set(X.eve - 6, 0, -13); people.e.rotation.y = .3;
