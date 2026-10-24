@@ -1,5 +1,5 @@
 # The Ficelle this visuel runs on, written by Ficelle's tools/ficelle_sync.py. Never edit ficelle/:
 # change Ficelle, tag it, then `ficelle sync <this checkout> --version <tag>` and run the tests.
-version v0.1.2
-commit 05ff2ef399cfe591f2336b892c81e44b39112850
-tree 7bc17100b73f83646236eb517bd2c884ec2d684ff467bbdce61997ad479ede87
+version v0.1.3
+commit 11fc31e652c3810009092f0fc23834143c358a71
+tree 18c825dec82f33781bde8b987d00ee725e78301b3309070185c9cd1aba6c836b

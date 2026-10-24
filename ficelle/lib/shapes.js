@@ -1,4 +1,4 @@
-// r207: Shadow's code-built items (server_rack, tower, laptop…) in three.js. tools/godot_bridge/export.gd
+// r207: Shadow's code-built items (server_rack, tower, laptop…) in three.js. pipeline/godot_bridge/export.gd
 // builds them in Godot and writes assets/shapes/<item>.json; this rebuilds a Group from it, part for
 // part. Any episode can load one:
 //     import { loadShape } from '../lib/shapes.js';

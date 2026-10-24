@@ -223,7 +223,7 @@ const SHOULDER = {
     g.add(washer(RING_BORE, .5 + o.off, RING_H, navy, o.y)); g.add(panel(.8, o.y + RING_H, 1.5, navy, -1, .07, .04 + o.off));
     for (const yy of [1.58, 1.68]) g.add(panel(.72, yy + .04, yy, stripe, -1, .07, .04 + o.off));
     },
-  rollNeck(g, o) { g.add(mesh(new THREE.LatheGeometry([0, 1, 2, 3, 4, 5, 6].map(i => new THREE.Vector2(PIN_R + .01 + Math.sin(i / 6 * Math.PI) * .12 + .24, i / 6 * .26)).concat([new THREE.Vector2(PIN_R + .01, .26), new THREE.Vector2(PIN_R + .01, 0)]), 20), mat(0x6f737a), 0, o.y)); },
+  rollNeck(g, o) { g.add(mesh(new THREE.LatheGeometry([0, 1, 2, 3, 4, 5, 6].map(i => new THREE.Vector2(PIN_R + .01 + Math.sin(i / 6 * Math.PI) * .12 + .24, i / 6 * .26)).concat([new THREE.Vector2(PIN_R + .01, .26), new THREE.Vector2(PIN_R + .01, 0), new THREE.Vector2(PIN_R + .01 + .24, 0)]), 20), mat(0x6f737a), 0, o.y)); },
   collegeScarf(g, o) { const a = mat(0x1b2a55), b = mat(0xd9d2bf);   // Bletchley: a striped college scarf, two tails
     g.add(washer(RING_BORE, .54 + o.off, .12, a, o.y));
     for (const s of [-1, 1]) for (let k = 0; k < 6; k++) { const y = o.y - .06 - k * .15;   // each stripe a hair into the next, the first into the ring

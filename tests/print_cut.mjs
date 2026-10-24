@@ -46,7 +46,7 @@ function hole(ps, part, a, b, f, k) {
 }
 const settings = only >= 0 ? [args[only + 1]] : Object.keys(DISGUISES);
 // known, each with its ticket: reported, not counted (remove the line with the fix)
-const KNOWN = { 'Bob, wartime': 'r647: the roll-neck ring is drawn from an open profile (lib/cast.js), two discs over its bore' };
+const KNOWN = {};
 for (const d of settings) for (const kind of kinds.length ? kinds : Object.keys(DISGUISES[d])) {
   const fig = person(kind, { disguise: d }), { raw, k, ps, log, ms } = printed(fig), who = `${CAST[kind].name}, ${d}`;
   const parts = [...new Set(ps.map(p => p.body))], open = ps.filter(p => check(p, k).open), neg = ps.filter(p => volume(p.tris) <= 0);

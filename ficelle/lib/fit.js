@@ -22,7 +22,7 @@
 // (a turning part's clearance to the part it turns against) }, in the asset's units; each must be a peg at least
 // PEG_MIN mm across with JOINT[kind] mm of play a side, a turning part GAP_MIN mm clear (r.joints). The numbers,
 // and why, are in .claude/skills/fdm-joints/SKILL.md. Every userData.pin mesh must be a straight cylinder. A mesh with userData.hole is drawn, not printed: its volume is cut out of its part (the
-// dark socket at the neck). What is cut here the export has to cut too (lib/print.js does not yet). The asset says
+// dark socket at the neck). What is cut here the export has to cut too (lib/print.js cut() does since r501: sockets, seats, drawn holes). The asset says
 // what is put on from above, in order, in userData.assembly: ['body', 'ring scarf', 'head', 'hat'];
 // userData.side names the parts put on sideways right after the first (the arms, onto their shoulder
 // pins): they block what comes down after them but are not slid; the parts named nowhere (a held item)
