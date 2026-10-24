@@ -356,10 +356,12 @@ function verifyRoom(scene, pk, portrait) {
   const sizes = { sig: SIG, rsa: { w: 6, h: 9 }, em: EMc, cmp: { w: cmS.w, h: cmS.h + 2.2 }, sh2, st: stS, sh1, pk: pkS };
   const F = (...ids) => ids.flatMap(id => around(id === 'cmp' ? v(at.cmp.x, at.cmp.y - 1.1) : at[id], sizes[id]));
   const win = r => { const a = Math.max(0, Math.min(11, Math.round(r - 2.5))); return rowsOf(EM, a, a + 4); };
+  // r626: the box's words, wider than the box (her public key over it, the formula under it), held whole too
+  const sprite = l => around(l.position, { w: l.scale.x, h: l.scale.y }, .3);
   const frame = time => !portrait
     ? time < T.h ? F('sig', 'rsa', 'em') : time < T.salt ? F('em', 'cmp') : time < T.pk ? F('em', 'cmp', 'sh2', 'st') : time < T.z8 ? F('st', 'sh1', 'pk')
       : time < T.cmp ? F('cmp', 'sh2', 'st') : F('em', 'cmp')
-    : time < T.rsa + .4 ? rowsOf(SIG.B, 0, 4, CAP) : time < T.em ? mbox(rsa) : time < T.h ? rowsOf(EM, 0, 4, CAP)
+    : time < T.rsa + .4 ? rowsOf(SIG.B, 0, 4, CAP) : time < T.em ? [...mbox(rsa), ...sprite(pub), ...sprite(calc)] : time < T.h ? rowsOf(EM, 0, 4, CAP)
       : time < T.m ? rowsOf(EM, 12, 15) : time < T.me + .3 ? win(mask(time, T.m, T.me, DBn / 16, 0))
       : time < T.pk ? rowsOf(SL.B, 0, 1, CAP) : time < T.dg ? mbox(sh1) : time < T.h2 ? [...rowsOf(Z8.B, 0, 0, CAP), ...rowsOf(DG.B, 0, 1)]
       : time < T.hm ? mbox(sh2) : [...rowsOf(HIN.B, 0, 1, CAP), ...rowsOf(HME.B, 0, 1)];
