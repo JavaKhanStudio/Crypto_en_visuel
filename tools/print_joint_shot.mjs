@@ -1,6 +1,7 @@
 // r395: writes a cast figure's shoulder as printed, for tools/print_joint_render.py to draw: the body (its socket and
 // groove cut), the right arm with its peg's key at each end of its range (rest, turned) and pulled 8 mm off its peg. One
-// frame for all files (mm, Z up), so they line up in Blender. Also axis.json: the peg's axis, for the camera.
+// frame for all files (mm, Z up), so they line up in Blender. Also axis.json: the peg's axis and radius (mm), for the camera
+// and tools/print_slice.py.
 //     node tools/print_joint_shot.mjs [kind] [out dir, default out/print_joint]
 import { register } from 'node:module';
 register('./print_probe/hooks.mjs', import.meta.url);
@@ -28,5 +29,5 @@ write('head', ps.filter(p => p.piece === 'head'));
 const [a0, a1] = pin.pin.swing, [inn, outer] = Math.abs(pin.pin.a[0]) < Math.abs(pin.pin.b[0]) ? [pin.pin.a, pin.pin.b] : [pin.pin.b, pin.pin.a];
 const L = Math.hypot(...outer.map((x, c) => x - inn[c])), off = v => v.map((t, i) => t + (outer[i] - inn[i]) / L * 8 / k);
 for (const [n, f] of [['rest', turn(a1)], ['turned', turn(a0)], ['off', off]]) { write(`arm-${n}`, arm, f); write(`key-${n}`, key, f); }
-fs.writeFileSync(out + 'axis.json', JSON.stringify({ a: zup(pin.pin.a), b: zup(pin.pin.b), swing: pin.pin.swing, k }));
+fs.writeFileSync(out + 'axis.json', JSON.stringify({ a: zup(pin.pin.a), b: zup(pin.pin.b), r: pin.pin.r * k, swing: pin.pin.swing, k }));
 console.log(`wrote ${out}: body, head, arm and key at ${a1} (rest), at ${a0} (turned), 8 mm off`);

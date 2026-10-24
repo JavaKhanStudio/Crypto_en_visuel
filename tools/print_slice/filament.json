@@ -1,0 +1,2 @@
+{"type": "filament", "name": "deux-generaux PLA", "from": "User", "inherits": "Creality Generic PLA", "instantiation": "true",
+ "compatible_printers": ["Creality Ender-3 V2 0.4 nozzle", "deux-generaux Ender-3 V2 0.4"]}
